@@ -1,0 +1,146 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
+export OPENFRAME_STATE="${OPENFRAME_STATE:-${XDG_STATE_HOME:-$HOME/.local/state}/openframe}"
+export OPENFRAME_CONFIG="${OPENFRAME_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/openframe/env}"
+fail() { echo "$*" >&2; exit 1; }
+need() { command -v "$1" >/dev/null || fail "Missing command: $1"; }
+load_env() {
+  [[ -f "$OPENFRAME_CONFIG" ]] || fail "Run $0 init, then configure $OPENFRAME_CONFIG"
+  # This is a trusted, user-owned shell configuration, never uploaded input.
+  set -a
+  source "$OPENFRAME_CONFIG"
+  set +a
+  for name in DB_URL DB_HOSTNAME DB_DATABASE_NAME DB_USERNAME DB_PASSWORD REDIS_PASSWORD; do
+    file_var="${name}_FILE"
+    credential_file="${!file_var:-}"
+    if [[ -z "$credential_file" && -n "${CREDENTIALS_DIRECTORY:-}" && -e "$CREDENTIALS_DIRECTORY/$name" ]]; then
+      credential_file="$CREDENTIALS_DIRECTORY/$name"
+    fi
+    if [[ -n "$credential_file" ]]; then
+      [[ -r "$credential_file" ]] || fail "Cannot read credential file for $name"
+      export "$name=$(< "$credential_file")"
+      unset "$file_var"
+    fi
+  done
+  export NODE_ENV=production
+  export IMMICH_MEDIA_LOCATION="${IMMICH_MEDIA_LOCATION:-$OPENFRAME_STATE/media}"
+  export IMMICH_BUILD_DATA="${IMMICH_BUILD_DATA:-$OPENFRAME_STATE/build}"
+  export IMMICH_MACHINE_LEARNING_URL="${IMMICH_MACHINE_LEARNING_URL:-http://127.0.0.1:3003}"
+  export DB_HOSTNAME="${DB_HOSTNAME:-127.0.0.1}"
+  export REDIS_HOSTNAME="${REDIS_HOSTNAME:-127.0.0.1}"
+  export PATH="$ROOT/server/bin:$PATH"
+  if [[ "$action" == doctor || "$action" == start || "$action" == admin ]]; then
+    export OPENFRAME_CODECS="${OPENFRAME_CODECS:-${XDG_DATA_HOME:-$HOME/.local/share}/openframe/codecs}"
+    [[ "$OPENFRAME_CODECS" == /* && -f "$OPENFRAME_CODECS/sharp-native/package.json" && -f "$OPENFRAME_CODECS/prefix/etc/ImageMagick-7/policy.xml" ]] || fail 'OPENFRAME_CODECS must name an absolute, built codec directory; run openframe codecs after build.'
+    export LD_LIBRARY_PATH="$OPENFRAME_CODECS/prefix/lib:$OPENFRAME_CODECS/sysroot/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    export MAGICK_CONFIGURE_PATH="$OPENFRAME_CODECS/prefix/etc/ImageMagick-7"
+    export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--require $(NODE_OPTIONS= node -p 'JSON.stringify(process.argv[1])' "$ROOT/scripts/native/codecs.cjs")"
+  fi
+}
+action="${1:-help}"
+case "$action" in
+  init)
+    [[ ! -e "$OPENFRAME_CONFIG" ]] || fail "Configuration already exists: $OPENFRAME_CONFIG"
+    umask 077
+    mkdir -p "$(dirname "$OPENFRAME_CONFIG")" "$OPENFRAME_STATE/media" "$OPENFRAME_STATE/cache"
+    cat > "$OPENFRAME_CONFIG" <<'ENV'
+# Trusted Bash configuration. Keep this file private; quote shell-special characters.
+DB_USERNAME=immich
+DB_PASSWORD='replace-with-your-database-password'
+DB_DATABASE_NAME=immich
+DB_VECTOR_EXTENSION=pgvector
+IMMICH_HOST=127.0.0.1
+IMMICH_PORT=2283
+IMMICH_MACHINE_LEARNING_URL=http://127.0.0.1:3003
+ENV
+    echo "Created $OPENFRAME_CONFIG. Configure PostgreSQL and Redis before starting."
+    ;;
+  codecs)
+    load_env
+    need node; need python3
+    [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || fail 'Use Node 24.'
+    export OPENFRAME_CODECS="${OPENFRAME_CODECS:-${XDG_DATA_HOME:-$HOME/.local/share}/openframe/codecs}"
+    [[ "$OPENFRAME_CODECS" == /* ]] || fail 'OPENFRAME_CODECS must be absolute.'
+    export OPENFRAME_SOURCE="$ROOT"
+    recipe="$ROOT/server/test/benchmarks/native-ubuntu/codecs"
+    python3 "$recipe/prepare.py"
+    bash "$recipe/build.sh"
+    bash "$recipe/sharp.sh"
+    echo "Codec build complete. Set OPENFRAME_CODECS='$OPENFRAME_CODECS' in $OPENFRAME_CONFIG, then run doctor and sample parity checks."
+    ;;
+  build)
+    load_env
+    for cmd in node pnpm extism-js curl unzip uv; do need "$cmd"; done
+    [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || fail 'Use Node 24 (see .nvmrc).'
+    cd "$ROOT"
+    pnpm --filter immich... --filter immich-web... --filter @immich/plugin-core... install --frozen-lockfile
+    pnpm --filter @immich/sdk build
+    pnpm --filter @immich/plugin-sdk build
+    pnpm --filter @immich/plugin-core build
+    pnpm --filter immich build
+    pnpm --filter immich-web build
+    mkdir -p "$IMMICH_BUILD_DATA/www" "$IMMICH_BUILD_DATA/plugins/immich-plugin-core"
+    cp -a web/build/. "$IMMICH_BUILD_DATA/www/"
+    cp -a packages/plugin-core/dist "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/"
+    cp packages/plugin-core/manifest.json "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/"
+    cd "$ROOT/machine-learning"
+    uv sync --frozen --extra cpu --no-dev --python 3.13
+    echo "Build complete. Run $0 resources once, then $0 doctor."
+    ;;
+  resources)
+    load_env
+    need curl; need unzip
+    mkdir -p "$IMMICH_BUILD_DATA/geodata"
+    tmp="$(mktemp -d "$IMMICH_BUILD_DATA/geodata/.download.XXXXXXXX")"
+    trap 'rm -rf -- "$tmp"' EXIT
+    for name in admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.zip; do
+      curl --fail --location --retry 3 "https://download.geonames.org/export/dump/$name" -o "$tmp/$name"
+    done
+    unzip -q "$tmp/cities500.zip" -d "$tmp"
+    curl --fail --location --retry 3 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson' -o "$tmp/ne_10m_admin_0_countries.geojson"
+    date -u +%F > "$tmp/geodata-date.txt"
+    for name in admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.txt ne_10m_admin_0_countries.geojson geodata-date.txt; do
+      mv -- "$tmp/$name" "$IMMICH_BUILD_DATA/geodata/$name"
+    done
+    ;;
+  doctor)
+    load_env
+    for cmd in node ffmpeg ffprobe perl gzip; do need "$cmd"; done
+    for path in "$ROOT/server/dist/main.js" "$IMMICH_BUILD_DATA/www/index.html" "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/dist/plugin.wasm" "$ROOT/machine-learning/.venv/bin/python"; do
+      [[ -f "$path" ]] || fail "Missing $path; run build."
+    done
+    for name in admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.txt ne_10m_admin_0_countries.geojson geodata-date.txt; do
+      [[ -s "$IMMICH_BUILD_DATA/geodata/$name" ]] || fail "Missing geodata/$name; run resources."
+    done
+    [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || fail 'Use Node 24.'
+    mkdir -p "$IMMICH_MEDIA_LOCATION"
+    [[ -w "$IMMICH_MEDIA_LOCATION" ]] || fail 'Media directory is not writable.'
+    cd "$ROOT/server"
+    node "$ROOT/scripts/native/doctor.mjs"
+    ;;
+  start|admin)
+    action="$1"; shift
+    load_env
+    if [[ "$action" == start ]]; then "$ROOT/scripts/native/openframe" doctor; fi
+    cd "$ROOT/server"
+    if [[ "$action" == admin ]]; then set -- immich-admin "$@"; fi
+    exec bash "$ROOT/server/bin/start.sh" "$@"
+    ;;
+  ml)
+    load_env
+    cd "$ROOT/machine-learning"
+    export IMMICH_HOST=127.0.0.1 IMMICH_PORT=3003
+    export MACHINE_LEARNING_CACHE_FOLDER="$OPENFRAME_STATE/cache"
+    export HF_HOME="$OPENFRAME_STATE/cache/hf-cache"
+    export MACHINE_LEARNING_MODEL_ARENA="${MACHINE_LEARNING_MODEL_ARENA:-false}"
+    export PATH="$ROOT/machine-learning/.venv/bin:$PATH"
+    exec python -m immich_ml
+    ;;
+  help|--help|-h)
+    echo 'Usage: scripts/native/openframe {init|build|codecs|resources|doctor|start|ml|admin}'
+    echo 'Configuration: $OPENFRAME_CONFIG or ~/.config/openframe/env'
+    ;;
+  *) fail "Unknown command: $1" ;;
+esac
