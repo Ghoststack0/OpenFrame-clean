@@ -1,0 +1,46 @@
+{
+  "node": "v24.13.1",
+  "versions": {
+    "vips": "8.18.7",
+    "sharp": "0.35.5"
+  },
+  "results": [
+    {
+      "sample": "IMG_2682.heic",
+      "bytes": 880703,
+      "sha256": "2d9d8493696fc0054ecb4517699fec11e04bf507f1f529f6a4f293fcefdeb35e",
+      "metadata": {
+        "format": "heif",
+        "width": 4032,
+        "height": 3024,
+        "space": "srgb",
+        "depth": "uchar",
+        "hasProfile": true
+      },
+      "previewSha256": "5467f2267884d4dc422ef31fdabb7798be580ebf9a3e10bc9d385af5a756c36a",
+      "status": "identical-preview"
+    },
+    {
+      "sample": "EOS_30D.CR2",
+      "bytes": 7194877,
+      "sha256": "1b977b9b848433b0f73342ff2796eb3091efe9fec2f6e51b8d2573f93d2f8edd",
+      "status": "failed",
+      "error": "Input buffer contains unsupported image format"
+    },
+    {
+      "sample": "10bit-HDR-P3-nclx.avif",
+      "bytes": 993671,
+      "sha256": "af145f4853f47ad9a5ce744018fda8c94c39ba96deb779cec516d9353443a4e5",
+      "metadata": {
+        "format": "heif",
+        "width": 3681,
+        "height": 5594,
+        "space": "rgb16",
+        "depth": "ushort",
+        "hasProfile": false
+      },
+      "previewSha256": "f9918eb89b9eb0d8c77b19e918df04be16bec2b600ed6236e3c5b432bf7f99a1",
+      "status": "identical-preview"
+    }
+  ]
+}
