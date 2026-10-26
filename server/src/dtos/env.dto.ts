@@ -70,6 +70,7 @@ export const EnvSchema = z
     IMMICH_WORKERS_INCLUDE: z.string().optional(),
     IMMICH_WORKERS_EXCLUDE: z.string().optional(),
     DB_DATABASE_NAME: z.string().optional(),
+    DB_BIN_DIRECTORY: absolutePath,
     DB_HOSTNAME: z.string().optional(),
     DB_PASSWORD: z.string().optional(),
     DB_PORT: z.coerce.number().int().optional(),
