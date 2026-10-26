@@ -1,0 +1,41 @@
+RAW fixture
+1b977b9b848433b0f73342ff2796eb3091efe9fec2f6e51b8d2573f93d2f8edd  samples/EOS_30D.CR2
+Direct LibRaw RGB16 output under both stacks
+47d76becdda648eb92565ce90792a617aaea57faa53ffb373d0acba152960065  codec-build/raw-docker.rgb16
+47d76becdda648eb92565ce90792a617aaea57faa53ffb373d0acba152960065  codec-build/raw-native.rgb16
+Native buffer loader
+VipsForeignLoadMagick7Buffer
+Native filename loader
+samples/EOS_30D.CR2: 3522x2348 uchar, 3 bands, srgb, dcrawload
+Original extracted Ubuntu TIFF decoder dependency
+	libjpeg.so.8 => /home/yvm/openframe-native-validation-20261026/codec-build/sysroot/usr/lib/x86_64-linux-gnu/libjpeg.so.8 (0x0000705e43530000)
+Corrected source TIFF decoder dependency
+	libjpeg.so.62 => /home/yvm/openframe-native-validation-20261026/codec-build/prefix/lib/libjpeg.so.62 (0x0000728ccc3a8000)
+Docker TIFF decoder dependency
+	libtiff.so.6 => /lib/x86_64-linux-gnu/libtiff.so.6 (0x00007e1f31968000)
+	libjpeg.so.62 => /usr/local/lib/libjpeg.so.62 (0x00007e1f30e40000)
+Source TIFF package and patches
+e3106320d41790b741b0db9a7fccf72b6a8d425743b6407e9a9dd369d958be76  codec-build/sources/tiff-debian.tar.xz
+0e51bcf3a3ffa5fc76ea6aeb74a797f95c84544fcc8b6a1ec5def967a78e9e12  codec-build/sources/tiff.tar.xz
+no_smartquotes.patch
+CVE-2023-6277.patch
+CVE-2023-52355.patch
+CVE-2023-52356.patch
+CVE-2023-6228.patch
+CVE-2023-1916.patch
+CVE-2023-3164.patch
+CVE-2024-7006.patch
+CVE-2025-8176.patch
+CVE-2025-8534.patch
+CVE-2025-8851.patch
+CVE-2025-8961.patch
+CVE-2025-9165.patch
+CVE-2025-9900.patch
+CVE-2025-61143.patch
+CVE-2025-61144.patch
+Native buffer metadata
+VipsForeignLoadMagick7Buffer
+magick-format=TIFF
+Docker buffer metadata
+VipsForeignLoadMagick7Buffer
+magick-format=TIFF
