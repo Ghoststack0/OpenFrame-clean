@@ -69,6 +69,32 @@ describe(JobService.name, () => {
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
 
+    it('should not generate thumbnails when storage migration fails', async () => {
+      mocks.job.run.mockResolvedValue(JobStatus.Failed);
+
+      await sut.onJobRun(QueueName.StorageTemplateMigration, {
+        name: JobName.StorageTemplateMigrationSingle,
+        data: { id: 'asset-1', source: 'upload' },
+      });
+
+      expect(mocks.job.queue).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should generate copied-asset thumbnails after storage migration completes', async () => {
+      mocks.job.run.mockResolvedValue(JobStatus.Success);
+
+      await sut.onJobRun(QueueName.StorageTemplateMigration, {
+        name: JobName.StorageTemplateMigrationSingle,
+        data: { id: 'asset-1', source: 'copy' },
+      });
+
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: 'asset-1', source: 'copy' },
+      });
+    });
+
     const tests: Array<{ item: JobItem; jobs: JobName[]; stub?: any }> = [
       {
         item: { name: JobName.StorageTemplateMigrationSingle, data: { id: 'asset-1', source: 'upload' } },
