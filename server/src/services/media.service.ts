@@ -517,8 +517,10 @@ export class MediaService extends BaseService {
     const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
     const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
 
-    await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
-    await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
+    await this.mediaRepository.transcodeThumbnails(asset.originalPath, [
+      { path: previewFile.path, options: previewOptions },
+      { path: thumbnailFile.path, options: thumbnailOptions },
+    ]);
 
     const processInvalidImages = process.env.IMMICH_PROCESS_INVALID_IMAGES === 'true';
     const preview = await this.mediaRepository.decodeImage(previewFile.path, {
