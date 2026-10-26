@@ -1,0 +1,9 @@
+{
+  "applicationBackup": true,
+  "gzipBytes": 18918683,
+  "sqlBytes": 53248711,
+  "restoreSingleTransaction": true,
+  "assetCount": 9,
+  "allAssetIdsMatch": true,
+  "restoredVectorQuery": true
+}
