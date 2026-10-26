@@ -1,4 +1,4 @@
-import { mkdtempDisposableSync, statSync } from 'node:fs';
+import { mkdtempDisposableSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
@@ -318,6 +318,143 @@ describe(MediaRepository.name, () => {
       expect(await getPixelColor(buffer, 10, 10)).toEqual({ r: 255, g: 0, b: 0 });
       expect(await getPixelColor(buffer, 990, 10)).toEqual({ r: 0, g: 0, b: 255 });
     });
+  });
+
+  describe('transform', () => {
+    it.each([1, 2, 3, 4] as const)(
+      'matches the original transform for %i channels and both resize fits',
+      async (channels) => {
+        const data = Buffer.from(Array.from({ length: 48 * 32 * channels }, (_, index) => index % 256));
+        const image = await sharp(data, { raw: { width: 48, height: 32, channels } })
+          .raw()
+          .toBuffer({ resolveWithObject: true });
+        for (const fit of ['inside', 'outside'] as const) {
+          for (const size of [16, 32, 48, 100]) {
+            const expected = await sharp(image.data, { raw: image.info })
+              .pipelineColorspace('scrgb')
+              .resize(size, size, { fit, withoutEnlargement: true })
+              .raw()
+              .toBuffer({ resolveWithObject: true });
+            const actual = await sut['transform'](image, { size, fit });
+            expect(actual.info.width).toBe(expected.info.width);
+            expect(actual.info.height).toBe(expected.info.height);
+            expect(actual.info.channels).toBe(expected.info.channels);
+            expect(actual.data).toEqual(expected.data);
+          }
+        }
+      },
+    );
+  });
+
+  describe('decodeImage', () => {
+    it('supports the opt-out and keeps small JPEGs at their original dimensions', async () => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-jpeg-toggle-'));
+      const input = join(directory.path, 'input.jpg');
+      await sharp({ create: { width: 64, height: 48, channels: 3, background: '#376fa0' } })
+        .jpeg()
+        .toFile(input);
+      const options = { colorspace: Colorspace.Srgb, processInvalidImages: false };
+      const decoded = await sut['getImageDecodingPipeline'](input, options).raw().toBuffer({ resolveWithObject: true });
+      try {
+        for (const enabled of ['false', 'true']) {
+          vi.stubEnv('IMMICH_SRGB_JPEG_LINEAR_FUSION', enabled);
+          for (const size of [16, 1440]) {
+            const expected = await sut['transform'](decoded, { size });
+            const actual = await sut.decodeImage(input, { ...options, size });
+            expect(actual.info.width).toBe(expected.info.width);
+            expect(actual.info.height).toBe(expected.info.height);
+            expect(actual.data.equals(expected.data)).toBe(true);
+          }
+        }
+      } finally {
+        vi.unstubAllEnvs();
+      }
+    });
+
+    it.each([1, 2, 3, 4, 5, 6, 7, 8])(
+      'preserves SDR JPEG orientation %i and all derived output bytes',
+      async (orientation) => {
+        using directory = mkdtempDisposableSync(join(tmpdir(), 'media-jpeg-fusion-'));
+        const data = Buffer.from(Array.from({ length: 801 * 601 * 3 }, (_, index) => (index * 31) % 256));
+        const input = join(directory.path, 'input.jpg');
+        await sharp(data, { raw: { width: 801, height: 601, channels: 3 } })
+          .withExif({ IFD0: { Orientation: String(orientation) } })
+          .jpeg()
+          .toFile(input);
+        const options = { colorspace: Colorspace.Srgb, processInvalidImages: false, size: 256 };
+        const decoded = await sut['getImageDecodingPipeline'](input, options)
+          .raw()
+          .toBuffer({ resolveWithObject: true });
+        const expected = await sut['transform'](decoded, options);
+        const actual = await sut.decodeImage(input, options);
+        expect(actual.info.width).toBe(expected.info.width);
+        expect(actual.info.height).toBe(expected.info.height);
+        expect(actual.data.equals(expected.data)).toBe(true);
+        expect(await sut.generateThumbhash(actual, options)).toEqual(await sut.generateThumbhash(expected, options));
+        for (const format of [ImageFormat.Jpeg, ImageFormat.Webp]) {
+          for (const size of [256, 32]) {
+            const output = { ...options, format, size, quality: 80 };
+            const before = join(directory.path, `before.${format}`);
+            const after = join(directory.path, `after.${format}`);
+            await sut.generateThumbnail(expected, output, before);
+            await sut.generateThumbnail(actual, output, after);
+            expect(readFileSync(after).equals(readFileSync(before))).toBe(true);
+          }
+        }
+      },
+    );
+
+    it('preserves the current path for profiles, grayscale, CMYK, progressive JPEG, XMP and fullsize', async () => {
+      using directory = mkdtempDisposableSync(join(tmpdir(), 'media-jpeg-fallback-'));
+      const data = Buffer.from(Array.from({ length: 321 * 241 * 3 }, (_, index) => (index * 31) % 256));
+      const raw = { width: 321, height: 241, channels: 3 } as const;
+      const variants = [
+        await sharp(data, { raw }).withIccProfile('p3').jpeg().toBuffer(),
+        await sharp(data, { raw }).withIccProfile('srgb').jpeg().toBuffer(),
+        await sharp(data, { raw }).toColourspace('b-w').jpeg().toBuffer(),
+        await sharp(data, { raw }).toColourspace('cmyk').jpeg().toBuffer(),
+        await sharp(data, { raw }).jpeg({ progressive: true }).toBuffer(),
+        await sharp(data, { raw }).withXmp('<x:xmpmeta xmlns:x="adobe:ns:meta/">HDR</x:xmpmeta>').jpeg().toBuffer(),
+        await sharp(data, { raw }).ensureAlpha(0.5).png().toBuffer(),
+      ];
+      for (const [index, buffer] of variants.entries()) {
+        const input = join(directory.path, `${index}.jpg`);
+        writeFileSync(input, buffer);
+        const options = { colorspace: Colorspace.P3, processInvalidImages: false, size: 64 };
+        for (const colorspace of [Colorspace.Srgb, Colorspace.P3]) {
+          const decoded = await sut['getImageDecodingPipeline'](input, { ...options, colorspace })
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+          for (const transform of [{ size: 64 }, { size: undefined }]) {
+            const expected = await sut['transform'](decoded, transform);
+            const actual = await sut.decodeImage(input, { ...options, ...transform, colorspace });
+            expect(actual.info).toEqual(expected.info);
+            expect(actual.data.equals(expected.data)).toBe(true);
+          }
+        }
+      }
+    });
+
+    it.each([3, 4] as const)(
+      'preserves %i-channel pixels when resizing would not change dimensions',
+      async (channels) => {
+        const data = Buffer.from(Array.from({ length: 48 * 32 * channels }, (_, index) => index % 256));
+        const input = await sharp(data, { raw: { width: 48, height: 32, channels } })
+          .png()
+          .toBuffer();
+        const options = { colorspace: Colorspace.Srgb, processInvalidImages: false };
+        const decoded = await sut.decodeImage(input, options);
+        for (const size of [32, 100]) {
+          const result = await sut.decodeImage(input, { ...options, size });
+          expect(result.info.width).toBe(48);
+          expect(result.info.height).toBe(32);
+          expect(result.data).toEqual(decoded.data);
+        }
+        const resized = await sut.decodeImage(input, { ...options, size: 16 });
+        expect(resized.info.width).toBe(24);
+        expect(resized.info.height).toBe(16);
+      },
+    );
   });
 
   describe('generateThumbnail', () => {
