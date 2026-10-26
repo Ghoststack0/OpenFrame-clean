@@ -1,0 +1,12 @@
+{"round":0,"version":"baseline","milliseconds":1343.1116199999997,"cpu":{"user":1438628,"system":64461},"node":"v24.13.1"}
+{"round":0,"version":"candidate","milliseconds":1056.990440999999,"cpu":{"user":1351782,"system":38392},"node":"v24.13.1"}
+{"round":1,"version":"candidate","milliseconds":1151.073179000001,"cpu":{"user":1183006,"system":6955},"node":"v24.13.1"}
+{"round":1,"version":"baseline","milliseconds":1294.4107810000005,"cpu":{"user":1551780,"system":40547},"node":"v24.13.1"}
+{"round":2,"version":"baseline","milliseconds":1132.0134980000003,"cpu":{"user":1393499,"system":47841},"node":"v24.13.1"}
+{"round":2,"version":"candidate","milliseconds":981.4042890000001,"cpu":{"user":1092880,"system":10017},"node":"v24.13.1"}
+{"round":3,"version":"candidate","milliseconds":1083.2645580000008,"cpu":{"user":1207482,"system":4738},"node":"v24.13.1"}
+{"round":3,"version":"baseline","milliseconds":1072.4740829999992,"cpu":{"user":1100342,"system":6176},"node":"v24.13.1"}
+{"round":4,"version":"baseline","milliseconds":1076.7400009999983,"cpu":{"user":1331838,"system":43713},"node":"v24.13.1"}
+{"round":4,"version":"candidate","milliseconds":981.1401580000002,"cpu":{"user":984233,"system":29861},"node":"v24.13.1"}
+{"round":5,"version":"candidate","milliseconds":1183.4685549999995,"cpu":{"user":1461670,"system":40859},"node":"v24.13.1"}
+{"round":5,"version":"baseline","milliseconds":1206.3260609999998,"cpu":{"user":1244517,"system":4945},"node":"v24.13.1"}
