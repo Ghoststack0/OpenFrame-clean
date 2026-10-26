@@ -1,0 +1,28 @@
+{
+  "baseline": {
+    "version": 1,
+    "variant": "baseline",
+    "sourceCommit": "256eb55dbe92ac77e02794442f9487e88ffed2b1",
+    "node": "24.13.1",
+    "sourceTreeSha256": "b702c5a5d15b58139b2274fba4c41236a314cef98616af0a8e4325314a1f7b26",
+    "distSha256": "9a833a9b2196208491d51156e6bed162a58e471f8f0e3acce4d30ccbeb7ff8dc",
+    "runtimePackageSha256": "383baba1e0d2f181ca2c51e3fbc21b7c21f263b4415d4a77268dc6ba64d276ba",
+    "runtimeHelmetSha256": "7095864f8c5de2363c0d9feb8dacad40a8383986ce781d0b91faf512bf37bc94",
+    "lockSha256": "70c84248ede7e362afe4759c281390c763ba7be23a4062aa1789e31de8bf6627",
+    "upstreamArchiveSha256": "705052bd70ab8e676c378653c049f8c88e67190cb515a9636f2510caec567474",
+    "baselinePolicy": "Unmodified upstream server source, same locked dependencies, source codecs, native platform, normal workers and CPU ML. No optimization reverts or decoder-policy changes."
+  },
+  "candidate": {
+    "version": 1,
+    "variant": "candidate",
+    "sourceCommit": "a91408a6b9047abcf98b3a13f3e765b29f5e5ced",
+    "node": "24.13.1",
+    "sourceTreeSha256": "9472d8531c0e6b1a217e3b422d18b809ec69bd34e92d0846b9b4483554cef7a3",
+    "distSha256": "b15370e477294e02a5fc6549c8003f7e9abba0ca8cc03429ffc182c4b0310c69",
+    "runtimePackageSha256": "383baba1e0d2f181ca2c51e3fbc21b7c21f263b4415d4a77268dc6ba64d276ba",
+    "runtimeHelmetSha256": "7095864f8c5de2363c0d9feb8dacad40a8383986ce781d0b91faf512bf37bc94",
+    "lockSha256": "70c84248ede7e362afe4759c281390c763ba7be23a4062aa1789e31de8bf6627",
+    "upstreamArchiveSha256": "705052bd70ab8e676c378653c049f8c88e67190cb515a9636f2510caec567474",
+    "baselinePolicy": "Unmodified upstream server source, same locked dependencies, source codecs, native platform, normal workers and CPU ML. No optimization reverts or decoder-policy changes."
+  }
+}
