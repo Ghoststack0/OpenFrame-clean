@@ -74,18 +74,19 @@ Information on the current workers can be found [here](/administration/jobs-work
 
 ## Database
 
-| Variable                            | Description                                                                            |  Default   | Containers                     |
-| :---------------------------------- | :------------------------------------------------------------------------------------- | :--------: | :----------------------------- |
-| `DB_URL`                            | Database URL                                                                           |            | server                         |
-| `DB_HOSTNAME`                       | Database host                                                                          | `database` | server                         |
-| `DB_PORT`                           | Database port                                                                          |   `5432`   | server                         |
-| `DB_USERNAME`                       | Database user                                                                          | `postgres` | server, database<sup>\*1</sup> |
-| `DB_PASSWORD`                       | Database password                                                                      | `postgres` | server, database<sup>\*1</sup> |
-| `DB_DATABASE_NAME`                  | Database name                                                                          |  `immich`  | server, database<sup>\*1</sup> |
-| `DB_SSL_MODE`                       | Database SSL mode                                                                      |            | server                         |
-| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`])                         |            | server                         |
-| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])               |  `false`   | server                         |
-| `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup> |   `SSD`    | database                       |
+| Variable                            | Description                                                                                                           |  Default   | Containers                     |
+| :---------------------------------- | :-------------------------------------------------------------------------------------------------------------------- | :--------: | :----------------------------- |
+| `DB_URL`                            | Database URL                                                                                                          |            | server                         |
+| `DB_BIN_DIRECTORY`                  | Absolute directory containing matching PostgreSQL backup/restore tools; defaults to `/usr/lib/postgresql/<major>/bin` |            | server                         |
+| `DB_HOSTNAME`                       | Database host                                                                                                         | `database` | server                         |
+| `DB_PORT`                           | Database port                                                                                                         |   `5432`   | server                         |
+| `DB_USERNAME`                       | Database user                                                                                                         | `postgres` | server, database<sup>\*1</sup> |
+| `DB_PASSWORD`                       | Database password                                                                                                     | `postgres` | server, database<sup>\*1</sup> |
+| `DB_DATABASE_NAME`                  | Database name                                                                                                         |  `immich`  | server, database<sup>\*1</sup> |
+| `DB_SSL_MODE`                       | Database SSL mode                                                                                                     |            | server                         |
+| `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`])                                                        |            | server                         |
+| `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])                                              |  `false`   | server                         |
+| `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup>                                |   `SSD`    | database                       |
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 
