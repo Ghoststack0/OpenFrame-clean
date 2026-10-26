@@ -557,14 +557,18 @@ select
   "asset"."id",
   "originalFileName",
   "asset_file"."path" as "editedPath",
-  "originalPath"
+  "originalPath",
+  (
+    "asset"."ownerId" = $1
+    and "asset"."visibility" != $2
+  ) as "isOwner"
 from
   "asset"
   left join "asset_file" on "asset"."id" = "asset_file"."assetId"
-  and "asset_file"."isEdited" = $1
-  and "asset_file"."type" = $2
+  and "asset_file"."isEdited" = $3
+  and "asset_file"."type" = $4
 where
-  "asset"."id" in ($3)
+  "asset"."id" in ($5)
 
 -- AssetRepository.getForOriginals
 select
@@ -584,13 +588,17 @@ where
 select
   "asset"."originalPath",
   "asset"."originalFileName",
-  "asset_file"."path" as "path"
+  "asset_file"."path" as "path",
+  (
+    "asset"."ownerId" = $1
+    and "asset"."visibility" != $2
+  ) as "isOwner"
 from
   "asset"
   left join "asset_file" on "asset"."id" = "asset_file"."assetId"
-  and "asset_file"."type" = $1
+  and "asset_file"."type" = $3
 where
-  "asset"."id" = $2
+  "asset"."id" = $4
 order by
   "asset_file"."isEdited" desc
 
@@ -606,12 +614,16 @@ select
       "asset_file"."assetId" = "asset"."id"
       and "asset_file"."type" = 'encoded_video'
       and "asset_file"."isEdited" = false
-  ) as "encodedVideoPath"
+  ) as "encodedVideoPath",
+  (
+    "asset"."ownerId" = $1
+    and "asset"."visibility" != $2
+  ) as "isOwner"
 from
   "asset"
 where
-  "asset"."id" = $1
-  and "asset"."type" = $2
+  "asset"."id" = $3
+  and "asset"."type" = $4
 
 -- AssetRepository.getForOcr
 select
