@@ -1,0 +1,35 @@
+{
+  "method": "Three alternating pairs of the same native build, reverting only the three measured changes for baseline. Warm filesystem cache; normal workers and CPU ML. Timed photo readiness ends at preview response, not completion of ML jobs.",
+  "metrics": {
+    "uploadMs": {
+      "pairedSamples": 18,
+      "baselineMedianMs": 278.2020290000004,
+      "candidateMedianMs": 229.2934490000007,
+      "geometricMeanSpeedup": 1.2830781656376422,
+      "minimumPairedSpeedup": 0.828955474581195,
+      "maximumPairedSpeedup": 3.1399490304018562,
+      "slowerCandidateSamples": 3
+    },
+    "readyMs": {
+      "pairedSamples": 18,
+      "baselineMedianMs": 3749.3249889999997,
+      "candidateMedianMs": 3552.3673989999998,
+      "geometricMeanSpeedup": 1.0688443915456476,
+      "minimumPairedSpeedup": 0.7842642107923982,
+      "maximumPairedSpeedup": 1.2421652101406668,
+      "slowerCandidateSamples": 4
+    },
+    "milliseconds": {
+      "pairedSamples": 18,
+      "baselineMedianMs": 143.53670499999862,
+      "candidateMedianMs": 80.69724750000023,
+      "geometricMeanSpeedup": 1.5671941485918122,
+      "minimumPairedSpeedup": 0.37582313464083433,
+      "maximumPairedSpeedup": 6.74959773038858,
+      "slowerCandidateSamples": 5
+    }
+  },
+  "allPairedPreviewBytesIdentical": true,
+  "allPairedFixtureHashesIdentical": true,
+  "requested2to5xGainEstablished": false
+}
