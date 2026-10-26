@@ -1,0 +1,850 @@
+{
+  "baseImagesCommit": "ffeb230c5ade36f0e603aecfaef62e943309640b",
+  "sources": [
+    {
+      "name": "libraw",
+      "repository": "LibRaw/LibRaw",
+      "version": "0.22.2-1",
+      "revision": "e419de08001de28ae6988ecb22df47e52b9c5eaa",
+      "archive": "libraw.tar.gz",
+      "url": "https://codeload.github.com/LibRaw/LibRaw/tar.gz/e419de08001de28ae6988ecb22df47e52b9c5eaa",
+      "sha256": "f638d2f578d6cd2a9914dbba6547188c7664828f475e398939c408228b7635ab"
+    },
+    {
+      "name": "libheif",
+      "repository": "strukturag/libheif",
+      "version": "1.23.6",
+      "revision": "f81f28ac014b1c28dee483ac45b72c6b05bc421a",
+      "archive": "libheif.tar.gz",
+      "url": "https://codeload.github.com/strukturag/libheif/tar.gz/f81f28ac014b1c28dee483ac45b72c6b05bc421a",
+      "sha256": "1cb7a08267f111edb1854323e59ed63db4bf09ae0e6364729742d202012fdbec"
+    },
+    {
+      "name": "libvips",
+      "repository": "libvips/libvips",
+      "version": "8.18.7",
+      "revision": "24ad4d042940e6bf99a68871ba886ca8847c9c82",
+      "archive": "libvips.tar.gz",
+      "url": "https://codeload.github.com/libvips/libvips/tar.gz/24ad4d042940e6bf99a68871ba886ca8847c9c82",
+      "sha256": "e5f4d145da2d7c06863281d1dfe9dd2d43ce89458d1584e1d16cb520ebfc9e86"
+    },
+    {
+      "name": "jpegli",
+      "repository": "google/jpegli",
+      "branch": "main",
+      "revision": "031a0077f5799a6041004267fc12b956c1f52a20",
+      "archive": "jpegli.tar.gz",
+      "url": "https://codeload.github.com/google/jpegli/tar.gz/031a0077f5799a6041004267fc12b956c1f52a20",
+      "sha256": "269b3a75d6b2da2351f7fb2d642043f60f9b6d1bd5839f20c0d7c569be073367"
+    },
+    {
+      "name": "libde265",
+      "revision": "v1.1.3",
+      "archive": "libde265-1.1.3.tar.gz",
+      "url": "https://codeload.github.com/strukturag/libde265/tar.gz/v1.1.3",
+      "sha256": "189baa08fd6d2dd34db099de411bd6b2e6bd5eb88e81236a3d0fa3826b9715c4"
+    },
+    {
+      "name": "libjpeg-turbo",
+      "revision": "8ecba3647edb6dd940463fedf38ca33a8e2a73d1",
+      "archive": "libjpeg-turbo.tar.gz",
+      "url": "https://codeload.github.com/libjpeg-turbo/libjpeg-turbo/tar.gz/8ecba3647edb6dd940463fedf38ca33a8e2a73d1",
+      "sha256": "ed729127097af5000bfeddc6b3e679c4363bb1618ebfc07efb6b47f576471b4b"
+    },
+    {
+      "name": "highway",
+      "revision": "271a9a0ed9de1232d9117f1572c3fe28f8542ec1",
+      "archive": "highway.tar.gz",
+      "url": "https://codeload.github.com/google/highway/tar.gz/271a9a0ed9de1232d9117f1572c3fe28f8542ec1",
+      "sha256": "c42bcfe44d100223ea0043acb3da6de703103ca44bfb1d46b577c90939177f5f"
+    },
+    {
+      "name": "imagemagick",
+      "repository": "ImageMagick/ImageMagick",
+      "version": "7.1.2-21",
+      "revision": "c86de049cefb8dd739e16f0e2fdc1ef8d2006d59",
+      "archive": "imagemagick.tar.gz",
+      "url": "https://codeload.github.com/ImageMagick/ImageMagick/tar.gz/c86de049cefb8dd739e16f0e2fdc1ef8d2006d59",
+      "sha256": "893fa015148c879755a1e4e3c9217d4225d8adc7e7f60361a213cac4bd61c055"
+    },
+    {
+      "name": "highway-system",
+      "version": "1.2.0",
+      "revision": "1.2.0",
+      "archive": "highway-system.tar.gz",
+      "url": "https://codeload.github.com/google/highway/tar.gz/refs/tags/1.2.0",
+      "sha256": "7e0be78b8318e8bdbf6fa545d2ecb4c90f947df03f7aadc42c1967f019e63343"
+    },
+    {
+      "name": "tiff",
+      "archive": "tiff.tar.xz",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/t/tiff/tiff_4.5.1+git230720.orig.tar.xz",
+      "sha256": "0e51bcf3a3ffa5fc76ea6aeb74a797f95c84544fcc8b6a1ec5def967a78e9e12"
+    },
+    {
+      "name": "libjxl",
+      "revision": "a7a9c787341cf703dede03c2009fa460cae5e5df",
+      "archive": "libjxl.tar.gz",
+      "url": "https://codeload.github.com/libjxl/libjxl/tar.gz/a7a9c787341cf703dede03c2009fa460cae5e5df",
+      "sha256": "818398895831069902e3677d285054a7d1255b11b221e94c6aaa1cb83b0a3f29"
+    },
+    {
+      "name": "skcms",
+      "revision": "96d9171c94b937a1b5f0293de7309ac16311b722",
+      "archive": "skcms.tar.gz",
+      "url": "https://codeload.github.com/google/skcms/tar.gz/96d9171c94b937a1b5f0293de7309ac16311b722",
+      "sha256": "9bb4b5bba0b7c04f6c2bce9ff713d61e23c9a20c4945161ae16290498ad74627"
+    }
+  ],
+  "ubuntuPackages": [
+    {
+      "package": "autoconf-archive",
+      "version": "20220903-3",
+      "architecture": "all",
+      "file": "autoconf-archive_20220903-3_all.deb",
+      "sha256": "36b178ef82b4a7fe8c4b7c4992b569b6f61454f2d1ec7b17f28d2570174a95b7"
+    },
+    {
+      "package": "libaom-dev",
+      "version": "3.8.2-2ubuntu0.2",
+      "architecture": "amd64",
+      "file": "libaom-dev_3.8.2-2ubuntu0.2_amd64.deb",
+      "sha256": "50e62699e35c194ee011e3650b57258dc8b8c918365ec1f8fd3e3549b49a6e82"
+    },
+    {
+      "package": "libaom3",
+      "version": "3.8.2-2ubuntu0.2",
+      "architecture": "amd64",
+      "file": "libaom3_3.8.2-2ubuntu0.2_amd64.deb",
+      "sha256": "d1ada7141fc5eb4e3ffdcdd027da2afc1177b41c3acac40eb3a132959241cb1f"
+    },
+    {
+      "package": "libarchive-dev",
+      "version": "3.7.2-2ubuntu0.9",
+      "architecture": "amd64",
+      "file": "libarchive-dev_3.7.2-2ubuntu0.9_amd64.deb",
+      "sha256": "746d35b01c3901c42e3a440be3f34ef5c44c4dc20d544b0598e5828178d3fbea"
+    },
+    {
+      "package": "libarchive13t64",
+      "version": "3.7.2-2ubuntu0.9",
+      "architecture": "amd64",
+      "file": "libarchive13t64_3.7.2-2ubuntu0.9_amd64.deb",
+      "sha256": "b4e618d2237da9b00b88947113ebad8f93134f07f670a2df59cc5201c6c4307f"
+    },
+    {
+      "package": "libblkid-dev",
+      "version": "2.39.3-9ubuntu6.6",
+      "architecture": "amd64",
+      "file": "libblkid-dev_2.39.3-9ubuntu6.6_amd64.deb",
+      "sha256": "49ef9eb8716c4d7ec8921b87328052e75efecf89ab5975b5e43360e8cb7aa27c"
+    },
+    {
+      "package": "libblkid1",
+      "version": "2.39.3-9ubuntu6.6",
+      "architecture": "amd64",
+      "file": "libblkid1_2.39.3-9ubuntu6.6_amd64.deb",
+      "sha256": "3bcf169cd65e2539059b2287924090fc629f9bf90f595fc25465a7efe950ee82"
+    },
+    {
+      "package": "libbrotli-dev",
+      "version": "1.1.0-2build2",
+      "architecture": "amd64",
+      "file": "libbrotli-dev_1.1.0-2build2_amd64.deb",
+      "sha256": "2d56213247be7aca429c55c6136e371b670e2275c8d455ef3fe6a737f5b7da7b"
+    },
+    {
+      "package": "libbrotli1",
+      "version": "1.1.0-2build2",
+      "architecture": "amd64",
+      "file": "libbrotli1_1.1.0-2build2_amd64.deb",
+      "sha256": "74492419b8fda803774b8c9acef6afc5d2f9ff31782635aae212906adae7b277"
+    },
+    {
+      "package": "libcgif-dev",
+      "version": "0.3.2-1build1",
+      "architecture": "amd64",
+      "file": "libcgif-dev_0.3.2-1build1_amd64.deb",
+      "sha256": "25ffe3ef365ddb26f50bae8739984f1416cd733d97ffdf7e99da6e92601bdeec"
+    },
+    {
+      "package": "libcgif0",
+      "version": "0.3.2-1build1",
+      "architecture": "amd64",
+      "file": "libcgif0_0.3.2-1build1_amd64.deb",
+      "sha256": "fca6912555ab5dd20fe15dd78c98b8ee85f4485f0fdfedbaef4d5e688d2e4410"
+    },
+    {
+      "package": "libdav1d-dev",
+      "version": "1.4.1-1build1",
+      "architecture": "amd64",
+      "file": "libdav1d-dev_1.4.1-1build1_amd64.deb",
+      "sha256": "e3962759979328cd4b423bf9edf6f0492d7255de51228bd33987559e499262d9"
+    },
+    {
+      "package": "libdav1d7",
+      "version": "1.4.1-1build1",
+      "architecture": "amd64",
+      "file": "libdav1d7_1.4.1-1build1_amd64.deb",
+      "sha256": "7246303bd3ed4b99a2fb98e6199950ceb2520e7572265aefa0a6e44352adb3f0"
+    },
+    {
+      "package": "libde265-0",
+      "version": "1.0.15-1ubuntu0.2",
+      "architecture": "amd64",
+      "file": "libde265-0_1.0.15-1ubuntu0.2_amd64.deb",
+      "sha256": "f1e81e7218569d6f8d5b31e52aa94d7a86d64afe7d3297c3ee0afe67ca894b18"
+    },
+    {
+      "package": "libde265-dev",
+      "version": "1.0.15-1ubuntu0.2",
+      "architecture": "amd64",
+      "file": "libde265-dev_1.0.15-1ubuntu0.2_amd64.deb",
+      "sha256": "fe0cb47397307b6fc2ac255bbf87be3b3f394e8fb64cf0b629b5aaf973b2532f"
+    },
+    {
+      "package": "libdeflate-dev",
+      "version": "1.19-1build1.1",
+      "architecture": "amd64",
+      "file": "libdeflate-dev_1.19-1build1.1_amd64.deb",
+      "sha256": "78eed26d8875d0e5457d08c18d1ace9ba784f6cf84665cd2d4cba30530fb11c7"
+    },
+    {
+      "package": "libdeflate0",
+      "version": "1.19-1build1.1",
+      "architecture": "amd64",
+      "file": "libdeflate0_1.19-1build1.1_amd64.deb",
+      "sha256": "8e7dfa9e63a9b5058071b84da48bb2e30dea07de169e80fbc759fe0e68639269"
+    },
+    {
+      "package": "libexif-dev",
+      "version": "0.6.24-1ubuntu0.24.04.1",
+      "architecture": "amd64",
+      "file": "libexif-dev_0.6.24-1ubuntu0.24.04.1_amd64.deb",
+      "sha256": "d068907b75eec127bf1ddc0915f6493d52961196f2d35d8c80c6a79ce72f6f55"
+    },
+    {
+      "package": "libexif12",
+      "version": "0.6.24-1ubuntu0.24.04.1",
+      "architecture": "amd64",
+      "file": "libexif12_0.6.24-1ubuntu0.24.04.1_amd64.deb",
+      "sha256": "fd58a7c7e8841a51e6fc8c90bbf0dc9ec8159929e52f276a2176f14090ccf55a"
+    },
+    {
+      "package": "libexpat1-dev",
+      "version": "2.6.1-2ubuntu0.6",
+      "architecture": "amd64",
+      "file": "libexpat1-dev_2.6.1-2ubuntu0.6_amd64.deb",
+      "sha256": "87281ce46d74f261caff4ac404fe5af7b07f185d305246fef81797ddc20fa9f8"
+    },
+    {
+      "package": "libexpat1",
+      "version": "2.6.1-2ubuntu0.6",
+      "architecture": "amd64",
+      "file": "libexpat1_2.6.1-2ubuntu0.6_amd64.deb",
+      "sha256": "494b8e672f722130c6bca6a7bc4cc31a43ca891a31d60d868bfdd699a3c20b13"
+    },
+    {
+      "package": "libffi-dev",
+      "version": "3.4.6-1build1",
+      "architecture": "amd64",
+      "file": "libffi-dev_3.4.6-1build1_amd64.deb",
+      "sha256": "7009959b8a3b77206325026917fb45150ac81bf6139468abc0841d5a29c8619d"
+    },
+    {
+      "package": "libffi8",
+      "version": "3.4.6-1build1",
+      "architecture": "amd64",
+      "file": "libffi8_3.4.6-1build1_amd64.deb",
+      "sha256": "637e6a7744de08cd331a41f4efd0d24e6ea9064843dea9d1c6ca87bdb5f038a2"
+    },
+    {
+      "package": "libglib2.0-0t64",
+      "version": "2.80.0-6ubuntu3.10",
+      "architecture": "amd64",
+      "file": "libglib2.0-0t64_2.80.0-6ubuntu3.10_amd64.deb",
+      "sha256": "ff1b650f655b36dfe202fdbae6bb02b363c7257b6dd23e4f95ab61f716190df3"
+    },
+    {
+      "package": "libglib2.0-dev-bin",
+      "version": "2.80.0-6ubuntu3.10",
+      "architecture": "amd64",
+      "file": "libglib2.0-dev-bin_2.80.0-6ubuntu3.10_amd64.deb",
+      "sha256": "18c23eb263f0afdd9455dd52f9ef287f8203f1fe33ff4a97934ad636f8bbb522"
+    },
+    {
+      "package": "libglib2.0-dev",
+      "version": "2.80.0-6ubuntu3.10",
+      "architecture": "amd64",
+      "file": "libglib2.0-dev_2.80.0-6ubuntu3.10_amd64.deb",
+      "sha256": "6d1d88d68192256603c0de05d084b8ef06ed9b16753215ec2c1ef9ef5fa15014"
+    },
+    {
+      "package": "libhwy-dev",
+      "version": "1.0.7-8.1build1",
+      "architecture": "amd64",
+      "file": "libhwy-dev_1.0.7-8.1build1_amd64.deb",
+      "sha256": "ed1991764630cc1bec5926c4c0e00f111c6701d6a21a04d6ebf3740550a041ac"
+    },
+    {
+      "package": "libhwy1t64",
+      "version": "1.0.7-8.1build1",
+      "architecture": "amd64",
+      "file": "libhwy1t64_1.0.7-8.1build1_amd64.deb",
+      "sha256": "c092b1ea155d81a5985073f867e1479c48c5c6efe4adc1bfcdde27e5d2b8b89d"
+    },
+    {
+      "package": "libjbig-dev",
+      "version": "2.1-6.1ubuntu2",
+      "architecture": "amd64",
+      "file": "libjbig-dev_2.1-6.1ubuntu2_amd64.deb",
+      "sha256": "26af03872b4b8b5be15bedf9658f73d4c8540a8c97228c6e016bd8c0e4f64302"
+    },
+    {
+      "package": "libjbig0",
+      "version": "2.1-6.1ubuntu2",
+      "architecture": "amd64",
+      "file": "libjbig0_2.1-6.1ubuntu2_amd64.deb",
+      "sha256": "074a760a86213a1286ad60f56394c90885cf45af070626a88c480d90b78c175a"
+    },
+    {
+      "package": "libjpeg-turbo8-dev",
+      "version": "2.1.5-2ubuntu2",
+      "architecture": "amd64",
+      "file": "libjpeg-turbo8-dev_2.1.5-2ubuntu2_amd64.deb",
+      "sha256": "839aec481a9f365c5f1a9e444975f4cc9e944843ff54a849b18161f5be9a963d"
+    },
+    {
+      "package": "libjpeg-turbo8",
+      "version": "2.1.5-2ubuntu2",
+      "architecture": "amd64",
+      "file": "libjpeg-turbo8_2.1.5-2ubuntu2_amd64.deb",
+      "sha256": "f68b5b23bc8a1688fb787d2aed7e2cdf895a73022f6a5025e183162dac4500b2"
+    },
+    {
+      "package": "liblcms2-2",
+      "version": "2.14-2ubuntu0.1",
+      "architecture": "amd64",
+      "file": "liblcms2-2_2.14-2ubuntu0.1_amd64.deb",
+      "sha256": "f48368ce55ac35c4723a158c74f2c48f4398570d6f3207874e3a14e1cdada71d"
+    },
+    {
+      "package": "liblcms2-dev",
+      "version": "2.14-2ubuntu0.1",
+      "architecture": "amd64",
+      "file": "liblcms2-dev_2.14-2ubuntu0.1_amd64.deb",
+      "sha256": "309398dd1ccd2947b7ff623ae0826dcd6dcc5f251b86f358b45fed4acb06bd19"
+    },
+    {
+      "package": "liblerc-dev",
+      "version": "4.0.0+ds-4ubuntu2",
+      "architecture": "amd64",
+      "file": "liblerc-dev_4.0.0+ds-4ubuntu2_amd64.deb",
+      "sha256": "16d4c55707cbfbcb846640f4853e904501700e96fcdd7d8a5e58ad31a6993c50"
+    },
+    {
+      "package": "liblerc4",
+      "version": "4.0.0+ds-4ubuntu2",
+      "architecture": "amd64",
+      "file": "liblerc4_4.0.0+ds-4ubuntu2_amd64.deb",
+      "sha256": "f1b9dbfa28c56564f6b544f3757f5f3f4d549ce9962f39e897812c23b0a5d0e7"
+    },
+    {
+      "package": "liblzma-dev",
+      "version": "5.6.1+really5.4.5-1ubuntu0.4",
+      "architecture": "amd64",
+      "file": "liblzma-dev_5.6.1+really5.4.5-1ubuntu0.4_amd64.deb",
+      "sha256": "a6af1ee2bd2d5c532465734f474d03d8e08977c881f10898eda0c88b70ff2e5d"
+    },
+    {
+      "package": "liblzma5",
+      "version": "5.6.1+really5.4.5-1ubuntu0.4",
+      "architecture": "amd64",
+      "file": "liblzma5_5.6.1+really5.4.5-1ubuntu0.4_amd64.deb",
+      "sha256": "5bcf5da2339331e21d3f42a831e82c61c54c6b2f29804010e8d59abd0ae52167"
+    },
+    {
+      "package": "libmount-dev",
+      "version": "2.39.3-9ubuntu6.6",
+      "architecture": "amd64",
+      "file": "libmount-dev_2.39.3-9ubuntu6.6_amd64.deb",
+      "sha256": "87b7ed1fedfa79aedfb3772c539db2047857c4b0a3cf663161a657a752a3ca2e"
+    },
+    {
+      "package": "libmount1",
+      "version": "2.39.3-9ubuntu6.6",
+      "architecture": "amd64",
+      "file": "libmount1_2.39.3-9ubuntu6.6_amd64.deb",
+      "sha256": "8f2c25589f187dacfdc5bb6be2af0aee6c2ba7b4d2edd1ca4b26753469f07aae"
+    },
+    {
+      "package": "libopenjp2-7-dev",
+      "version": "2.5.0-2ubuntu0.5",
+      "architecture": "amd64",
+      "file": "libopenjp2-7-dev_2.5.0-2ubuntu0.5_amd64.deb",
+      "sha256": "817cf65fcce80a3ce9b44f0c870cf8e227f9b035c5aeb7e7c9f30a4f24b9756a"
+    },
+    {
+      "package": "libopenjp2-7",
+      "version": "2.5.0-2ubuntu0.5",
+      "architecture": "amd64",
+      "file": "libopenjp2-7_2.5.0-2ubuntu0.5_amd64.deb",
+      "sha256": "24b92ce9c4b306f5370e768024d35ec565792001678b510f0d40b6395b43524f"
+    },
+    {
+      "package": "libpcre2-16-0",
+      "version": "10.42-4ubuntu2.1",
+      "architecture": "amd64",
+      "file": "libpcre2-16-0_10.42-4ubuntu2.1_amd64.deb",
+      "sha256": "06bba768fd16e6ea6f744114a0c500d9f5d98ee82630edf0d8a54f2175d3921b"
+    },
+    {
+      "package": "libpcre2-32-0",
+      "version": "10.42-4ubuntu2.1",
+      "architecture": "amd64",
+      "file": "libpcre2-32-0_10.42-4ubuntu2.1_amd64.deb",
+      "sha256": "30f899441a422ae478426cc29871223cc9e37ef10b758acf807df52b417bfc5f"
+    },
+    {
+      "package": "libpcre2-8-0",
+      "version": "10.42-4ubuntu2.1",
+      "architecture": "amd64",
+      "file": "libpcre2-8-0_10.42-4ubuntu2.1_amd64.deb",
+      "sha256": "110a797a57673d3ee497a141cf988199258058c57525799c63194d81822529a0"
+    },
+    {
+      "package": "libpcre2-dev",
+      "version": "10.42-4ubuntu2.1",
+      "architecture": "amd64",
+      "file": "libpcre2-dev_10.42-4ubuntu2.1_amd64.deb",
+      "sha256": "933ac2723142126b6e01b588803dc6fa15a26205468524548e14af3cd48027e9"
+    },
+    {
+      "package": "libpcre2-posix3",
+      "version": "10.42-4ubuntu2.1",
+      "architecture": "amd64",
+      "file": "libpcre2-posix3_10.42-4ubuntu2.1_amd64.deb",
+      "sha256": "8660cea205a97cf6a97a5b7a0d601c2549f6d44d5083417eb2bbfcb9f137ee5f"
+    },
+    {
+      "package": "libpkgconf3",
+      "version": "1.8.1-2build1",
+      "architecture": "amd64",
+      "file": "libpkgconf3_1.8.1-2build1_amd64.deb",
+      "sha256": "fc3a57e8f931ec06cb7c51acc56878f1fec247ff02a7adcab26905c2faeb2792"
+    },
+    {
+      "package": "libpng-dev",
+      "version": "1.6.43-5ubuntu0.7",
+      "architecture": "amd64",
+      "file": "libpng-dev_1.6.43-5ubuntu0.7_amd64.deb",
+      "sha256": "db0d4bc0054ae0061524d009f75bd4409b10f596274f3a9aa07d5e3212812263"
+    },
+    {
+      "package": "libpng16-16t64",
+      "version": "1.6.43-5ubuntu0.7",
+      "architecture": "amd64",
+      "file": "libpng16-16t64_1.6.43-5ubuntu0.7_amd64.deb",
+      "sha256": "863d6abb089b2820ceba98e6b18f06eaacc55f9b05827001e7b4021a9a7b246c"
+    },
+    {
+      "package": "libselinux1-dev",
+      "version": "3.5-2ubuntu2.1",
+      "architecture": "amd64",
+      "file": "libselinux1-dev_3.5-2ubuntu2.1_amd64.deb",
+      "sha256": "2cc37cb9251f49a11f9c34bc8605c2aace8ded76f50b951ad28ded42d6ab3f68"
+    },
+    {
+      "package": "libselinux1",
+      "version": "3.5-2ubuntu2.1",
+      "architecture": "amd64",
+      "file": "libselinux1_3.5-2ubuntu2.1_amd64.deb",
+      "sha256": "6abaa6c26f46ef17764c4a753e0e84de1cdadde5634fd2987621fdc617988d19"
+    },
+    {
+      "package": "libsepol-dev",
+      "version": "3.5-2build1",
+      "architecture": "amd64",
+      "file": "libsepol-dev_3.5-2build1_amd64.deb",
+      "sha256": "85e47c1d7bcccbc059ea99d4c379659236f63b1716af8d796072875d418402bf"
+    },
+    {
+      "package": "libsepol2",
+      "version": "3.5-2build1",
+      "architecture": "amd64",
+      "file": "libsepol2_3.5-2build1_amd64.deb",
+      "sha256": "47272bab0c2fcc350431f9a8ae63afc49ce6d7e71e63c914639fbda6b1ca9f6a"
+    },
+    {
+      "package": "libsharpyuv-dev",
+      "version": "1.3.2-0.4build3",
+      "architecture": "amd64",
+      "file": "libsharpyuv-dev_1.3.2-0.4build3_amd64.deb",
+      "sha256": "50fd7a62a400cecd8fb69839eb4713361ac5d7ad6d6dfdcd8d0e922823151952"
+    },
+    {
+      "package": "libsharpyuv0",
+      "version": "1.3.2-0.4build3",
+      "architecture": "amd64",
+      "file": "libsharpyuv0_1.3.2-0.4build3_amd64.deb",
+      "sha256": "4e1763494e5b9d34192313aa88e38201fc67b3f13ea96ca268d26401a3002791"
+    },
+    {
+      "package": "libspng-dev",
+      "version": "0.7.4-1build1",
+      "architecture": "amd64",
+      "file": "libspng-dev_0.7.4-1build1_amd64.deb",
+      "sha256": "3d3dc225c34e7dfc96e00193aeb5a9bccbe3ed8c4ec990e7843a7080bf5afc42"
+    },
+    {
+      "package": "libspng0",
+      "version": "0.7.4-1build1",
+      "architecture": "amd64",
+      "file": "libspng0_0.7.4-1build1_amd64.deb",
+      "sha256": "95c4f0476e221cc3d12c4b6a97ff7bfe8657cd5a2f28084cc260f53291275eed"
+    },
+    {
+      "package": "libtiff-dev",
+      "version": "4.5.1+git230720-4ubuntu2.5",
+      "architecture": "amd64",
+      "file": "libtiff-dev_4.5.1+git230720-4ubuntu2.5_amd64.deb",
+      "sha256": "7cc755c486d8014f1a7ec2229f69c35af9e8f055328a6a2b7ec032b7e5e63804"
+    },
+    {
+      "package": "libtiff6",
+      "version": "4.5.1+git230720-4ubuntu2.5",
+      "architecture": "amd64",
+      "file": "libtiff6_4.5.1+git230720-4ubuntu2.5_amd64.deb",
+      "sha256": "564cdf59dda5e1a826c51b5868ee2785fffa26ee5a7bad95bc5e8c8224c931b8"
+    },
+    {
+      "package": "libtool-bin",
+      "version": "2.4.7-7build1",
+      "architecture": "amd64",
+      "file": "libtool-bin_2.4.7-7build1_amd64.deb",
+      "sha256": "23959c8be74b4433d635c76e61a6c4bb62f10d3899362598c53173e8e57c0f8a"
+    },
+    {
+      "package": "libuuid1",
+      "version": "2.39.3-9ubuntu6.6",
+      "architecture": "amd64",
+      "file": "libuuid1_2.39.3-9ubuntu6.6_amd64.deb",
+      "sha256": "7e2992d3a79fc05514dc5966558ee9c66a7214a47edf2a36017b9e2777528665"
+    },
+    {
+      "package": "libwebp-dev",
+      "version": "1.3.2-0.4build3",
+      "architecture": "amd64",
+      "file": "libwebp-dev_1.3.2-0.4build3_amd64.deb",
+      "sha256": "7ba3a6f29d2656b89d5600322c959d6bc7841f1a88e1fa2770c60d639379effe"
+    },
+    {
+      "package": "libwebp7",
+      "version": "1.3.2-0.4build3",
+      "architecture": "amd64",
+      "file": "libwebp7_1.3.2-0.4build3_amd64.deb",
+      "sha256": "c86f6439f0bbc531f7199794654231f3b29327d6585958511b958795d51c2484"
+    },
+    {
+      "package": "libwebpdemux2",
+      "version": "1.3.2-0.4build3",
+      "architecture": "amd64",
+      "file": "libwebpdemux2_1.3.2-0.4build3_amd64.deb",
+      "sha256": "15e98f127e1fdbf0889cf4b2f5604b60a6da0b988f20bf34731c9a2307d490d6"
+    },
+    {
+      "package": "libwebpmux3",
+      "version": "1.3.2-0.4build3",
+      "architecture": "amd64",
+      "file": "libwebpmux3_1.3.2-0.4build3_amd64.deb",
+      "sha256": "0dd0f2de0fbbda7239209332ddfe512f4383d0489dd3f9fb25398f58c1621724"
+    },
+    {
+      "package": "libzstd-dev",
+      "version": "1.5.5+dfsg2-2build1.1",
+      "architecture": "amd64",
+      "file": "libzstd-dev_1.5.5+dfsg2-2build1.1_amd64.deb",
+      "sha256": "6c9d2b5677a4677e9ead62f74723bb919113621a8028ed543a4d78952d54d165"
+    },
+    {
+      "package": "libzstd1",
+      "version": "1.5.5+dfsg2-2build1.1",
+      "architecture": "amd64",
+      "file": "libzstd1_1.5.5+dfsg2-2build1.1_amd64.deb",
+      "sha256": "dfcf25061e07aad7efd3f4f880ba5ad4d4d09ebe7fc8cc77ab6b8a161d6d4727"
+    },
+    {
+      "package": "meson",
+      "version": "1.3.2-1ubuntu1",
+      "architecture": "all",
+      "file": "meson_1.3.2-1ubuntu1_all.deb",
+      "sha256": "5a9ab497255cc51f97866c359fc5cc75a1be4890ad376e471ca45d76bbea4803"
+    },
+    {
+      "package": "ninja-build",
+      "version": "1.11.1-2",
+      "architecture": "amd64",
+      "file": "ninja-build_1.11.1-2_amd64.deb",
+      "sha256": "6a17f76a0f75586f1292f6c61a9b07fd0dec963baf6a102b17673f601c6b323a"
+    },
+    {
+      "package": "pkgconf-bin",
+      "version": "1.8.1-2build1",
+      "architecture": "amd64",
+      "file": "pkgconf-bin_1.8.1-2build1_amd64.deb",
+      "sha256": "7a812f05ee1610154b433e2ad54f6e4163fcbb306b9fb31afe959afb2e5e1545"
+    },
+    {
+      "package": "pkgconf",
+      "version": "1.8.1-2build1",
+      "architecture": "amd64",
+      "file": "pkgconf_1.8.1-2build1_amd64.deb",
+      "sha256": "834a58031069d97d7cfb8b2f5bfd5effc69cecf7f30cc362071875f1f8dc1828"
+    },
+    {
+      "package": "uuid-dev",
+      "version": "2.39.3-9ubuntu6.6",
+      "architecture": "amd64",
+      "file": "uuid-dev_2.39.3-9ubuntu6.6_amd64.deb",
+      "sha256": "266115cc3bcecef70b9f75c0cf8ca4daccd40958bf7872f8ccebec50502d2a13"
+    },
+    {
+      "package": "zlib1g-dev",
+      "version": "1:1.3.dfsg-3.1ubuntu2.3",
+      "architecture": "amd64",
+      "file": "zlib1g-dev_1%3a1.3.dfsg-3.1ubuntu2.3_amd64.deb",
+      "sha256": "419902a649e1078f24596cdf31ced9c839519828790f59888056fcdcd58e8a28"
+    },
+    {
+      "package": "zlib1g",
+      "version": "1:1.3.dfsg-3.1ubuntu2.3",
+      "architecture": "amd64",
+      "file": "zlib1g_1%3a1.3.dfsg-3.1ubuntu2.3_amd64.deb",
+      "sha256": "376249c8de139568221dbb242318cc8cb8f02299e3a62b7432948e1754fbddf9"
+    },
+    {
+      "package": "libcairo2-dev",
+      "version": "1.18.0-3build1",
+      "file": "libcairo2-dev_1.18.0-3build1_amd64.deb",
+      "sha256": "05d0ccb271a557d30a665d9f5f1420e9e60df02f49cfe4f8917674e218e5bb3c"
+    },
+    {
+      "package": "libcairo2",
+      "version": "1.18.0-3build1",
+      "file": "libcairo2_1.18.0-3build1_amd64.deb",
+      "sha256": "96950b306889ff6e4248bb937b0a3b56e72dacf643fe732214ce375f0f6bbb36"
+    },
+    {
+      "package": "libdatrie-dev",
+      "version": "0.2.13-3build1",
+      "file": "libdatrie-dev_0.2.13-3build1_amd64.deb",
+      "sha256": "74e7159ff83a99008dbc4c4545eed7dcb8b2a0844f08fe20439d531c86d6d3d8"
+    },
+    {
+      "package": "libfontconfig-dev",
+      "version": "2.15.0-1.1ubuntu2",
+      "file": "libfontconfig-dev_2.15.0-1.1ubuntu2_amd64.deb",
+      "sha256": "7948f3037b39d8bc751dc6104ff490c2d2f1b145d2969227ba591ceb917f9f05"
+    },
+    {
+      "package": "libfreetype-dev",
+      "version": "2.13.2+dfsg-1ubuntu0.2",
+      "file": "libfreetype-dev_2.13.2+dfsg-1ubuntu0.2_amd64.deb",
+      "sha256": "dd512109d33b182387be40cfe2b68b912b14f0753ba2a0769ca1950de0713a28"
+    },
+    {
+      "package": "libfribidi-dev",
+      "version": "1.0.13-3build1",
+      "file": "libfribidi-dev_1.0.13-3build1_amd64.deb",
+      "sha256": "c6d3e5f737f56d86d441ed466db4ec78bee319e685024a624629a14470d5f4f3"
+    },
+    {
+      "package": "libfribidi0",
+      "version": "1.0.13-3build1",
+      "file": "libfribidi0_1.0.13-3build1_amd64.deb",
+      "sha256": "6cd50259d39ce0dfafee2632c6268538e6a02590e77161a133e9683af346dd1d"
+    },
+    {
+      "package": "libgdk-pixbuf-2.0-0",
+      "version": "2.42.10+dfsg-3ubuntu3.3",
+      "file": "libgdk-pixbuf-2.0-0_2.42.10+dfsg-3ubuntu3.3_amd64.deb",
+      "sha256": "de84e0d777d9c9e39148d8491338e6b8c62bc2d066867266b1643a7a725a86ba"
+    },
+    {
+      "package": "libgdk-pixbuf-2.0-dev",
+      "version": "2.42.10+dfsg-3ubuntu3.3",
+      "file": "libgdk-pixbuf-2.0-dev_2.42.10+dfsg-3ubuntu3.3_amd64.deb",
+      "sha256": "77571a946a9dea59ffefdd65c239467f5574aa2e422c2125e8e9b88021dabebe"
+    },
+    {
+      "package": "libgraphite2-dev",
+      "version": "1.3.14-2ubuntu0.24.04.1",
+      "file": "libgraphite2-dev_1.3.14-2ubuntu0.24.04.1_amd64.deb",
+      "sha256": "17d04c426a5074aa189794a6a75b0059faefb496da53bed60b05536ea4023f7a"
+    },
+    {
+      "package": "libharfbuzz-dev",
+      "version": "8.3.0-2build2",
+      "file": "libharfbuzz-dev_8.3.0-2build2_amd64.deb",
+      "sha256": "fe2eaa5977d6208328357e289d3166e079b100ce80feb70d4d13b929f508a3e0"
+    },
+    {
+      "package": "libharfbuzz0b",
+      "version": "8.3.0-2build2",
+      "file": "libharfbuzz0b_8.3.0-2build2_amd64.deb",
+      "sha256": "d6f7eea2244f98aa0463a056680d4629476bf624767ede301560e24add686b5c"
+    },
+    {
+      "package": "libpango-1.0-0",
+      "version": "1.52.1+ds-1build1",
+      "file": "libpango-1.0-0_1.52.1+ds-1build1_amd64.deb",
+      "sha256": "09dfa5c881ab273ec6bc1830adcefdc407fcd619316e68fb26ca3a23d0fc9f54"
+    },
+    {
+      "package": "libpango1.0-dev",
+      "version": "1.52.1+ds-1build1",
+      "file": "libpango1.0-dev_1.52.1+ds-1build1_amd64.deb",
+      "sha256": "0ca59542b1b0d6bce9747f1f9c0c079c278c6bff971f3c4bb64734aacc72cc2f"
+    },
+    {
+      "package": "libpangocairo-1.0-0",
+      "version": "1.52.1+ds-1build1",
+      "file": "libpangocairo-1.0-0_1.52.1+ds-1build1_amd64.deb",
+      "sha256": "98cf5fc9076c2911fe20dfc1e41cd8f686a2bb5d539b1105fab18105b0db1376"
+    },
+    {
+      "package": "libpangoft2-1.0-0",
+      "version": "1.52.1+ds-1build1",
+      "file": "libpangoft2-1.0-0_1.52.1+ds-1build1_amd64.deb",
+      "sha256": "cc6bc9d86ef5f329edacaa4895232d8a9b8f95c5cbc77c3c460a3f64cecc213d"
+    },
+    {
+      "package": "libpixman-1-0",
+      "version": "0.42.2-1build1",
+      "file": "libpixman-1-0_0.42.2-1build1_amd64.deb",
+      "sha256": "d9c2931c4c424615eeab9dd5ae08bfc608b84e803c1d3ccddf319270db213421"
+    },
+    {
+      "package": "libpixman-1-dev",
+      "version": "0.42.2-1build1",
+      "file": "libpixman-1-dev_0.42.2-1build1_amd64.deb",
+      "sha256": "e2e8dca700dfa69f8b5f80df5ba5db2090b0cd5cd497a4351e82f5ada5dc94e8"
+    },
+    {
+      "package": "librsvg2-2",
+      "version": "2.58.0+dfsg-1ubuntu0.1",
+      "file": "librsvg2-2_2.58.0+dfsg-1ubuntu0.1_amd64.deb",
+      "sha256": "47aa51a12ecc102b6dc867fe34319fcf6fa590c44bd8a3e22a2c473f3b8dd875"
+    },
+    {
+      "package": "librsvg2-dev",
+      "version": "2.58.0+dfsg-1ubuntu0.1",
+      "file": "librsvg2-dev_2.58.0+dfsg-1ubuntu0.1_amd64.deb",
+      "sha256": "f43b8598d25457adeef204a1c7027fb9b33413bf9b8a7ddec10a35482fd8690e"
+    },
+    {
+      "package": "libthai-dev",
+      "version": "0.1.29-2build1",
+      "file": "libthai-dev_0.1.29-2build1_amd64.deb",
+      "sha256": "8d9a8c0fb6de5f7bdd798e2e6760c9768f1fbfbbc8f589e3fcfd5a1b0b8af05d"
+    },
+    {
+      "package": "libbsd-dev",
+      "version": "0.12.1-1build1.1",
+      "file": "libbsd-dev_0.12.1-1build1.1_amd64.deb",
+      "sha256": "d5de7e2205fc68167ecd07bc4fc0f65b53610ce48d514bf097cc076ceefa4b5b"
+    },
+    {
+      "package": "libmd-dev",
+      "version": "1.1.0-2build1.1",
+      "file": "libmd-dev_1.1.0-2build1.1_amd64.deb",
+      "sha256": "c0d71b72b480df106481a0fcb584f8d2ab0f1f165d91ff2d38781e9a28e29285"
+    },
+    {
+      "package": "libx11-dev",
+      "version": "2:1.8.7-1ubuntu0.1",
+      "file": "libx11-dev_2%3a1.8.7-1ubuntu0.1_amd64.deb",
+      "sha256": "467e28dafc2a51a59bf8615325e2e6bd42da63d3e346580a5baf14fdfde8a8e1"
+    },
+    {
+      "package": "libxau-dev",
+      "version": "1:1.0.9-1build6",
+      "file": "libxau-dev_1%3a1.0.9-1build6_amd64.deb",
+      "sha256": "46783c6af2d87c06394d55dfaa21dac07396f13cfc5ea6afbd9313ab49fc0e50"
+    },
+    {
+      "package": "libxcb-render0-dev",
+      "version": "1.15-1ubuntu2",
+      "file": "libxcb-render0-dev_1.15-1ubuntu2_amd64.deb",
+      "sha256": "73eebcba4a6366cd3b1088f7c1f36d136cfbb3d5f396a2955f3929c6f3a995cc"
+    },
+    {
+      "package": "libxcb-shm0-dev",
+      "version": "1.15-1ubuntu2",
+      "file": "libxcb-shm0-dev_1.15-1ubuntu2_amd64.deb",
+      "sha256": "e1417055e2b1c252180288f016b67470e33228c00cdc9f841eaca0fe21204c23"
+    },
+    {
+      "package": "libxcb1-dev",
+      "version": "1.15-1ubuntu2",
+      "file": "libxcb1-dev_1.15-1ubuntu2_amd64.deb",
+      "sha256": "1bafe3432feafc9e57f858721da524dfb3ee1f6fc4ef6b0c73023e79eadb9c28"
+    },
+    {
+      "package": "libxdmcp-dev",
+      "version": "1:1.1.3-0ubuntu6",
+      "file": "libxdmcp-dev_1%3a1.1.3-0ubuntu6_amd64.deb",
+      "sha256": "ba2f2230b391c292f5f399d6e04d48181be6b3100556f7870591ca95c9d00667"
+    },
+    {
+      "package": "libxext-dev",
+      "version": "2:1.3.4-1build2",
+      "file": "libxext-dev_2%3a1.3.4-1build2_amd64.deb",
+      "sha256": "b5bdb6724f228cb8eee8cf39cbbe1289dd3f8f06dd022748312df7844c94dcf2"
+    },
+    {
+      "package": "libxrender-dev",
+      "version": "1:0.9.10-1.1build1",
+      "file": "libxrender-dev_1%3a0.9.10-1.1build1_amd64.deb",
+      "sha256": "839558c9de049636e13e22e409c04f3226614abf176c4a3b7088058576d74848"
+    },
+    {
+      "package": "x11proto-dev",
+      "version": "2023.2-1",
+      "file": "x11proto-dev_2023.2-1_all.deb",
+      "sha256": "3bf13a2ffb79ecd4014d438936014e5863f79eb59ebf76e8f43356271c90e7ce"
+    },
+    {
+      "package": "xtrans-dev",
+      "version": "1.4.0-1",
+      "file": "xtrans-dev_1.4.0-1_all.deb",
+      "sha256": "45277c51d5d83db351b61859314b59595c9626ac372fbb2fc0d5542e169d9086"
+    }
+  ],
+  "patches": [
+    {
+      "path": "jpegli-patches/jpegli-empty-dht-marker.patch",
+      "sha256": "c7466c180896f61af82a15ff4c93ed53dec583f0b519f64538e6fb8b3533f007"
+    },
+    {
+      "path": "jpegli-patches/jpegli-icc-warning.patch",
+      "sha256": "d5b5187fddfc7c609c44adec70bfa90a1e1e78ff6002709773ac73c329933b9e"
+    },
+    {
+      "path": "libvips-patches/0001-put-other-loaders-ahead-of-dcrawload.patch",
+      "sha256": "a0eaf6d7d0b05a932f1c1cab2bc1c2d24d387239a26f94782289f1b9bcaedad3"
+    }
+  ],
+  "extraFiles": [
+    {
+      "path": "policy.xml",
+      "url": "https://raw.githubusercontent.com/immich-app/base-images/ffeb230c5ade36f0e603aecfaef62e943309640b/server/policy.xml",
+      "sha256": "c6d937dd7bdeeb1cad8f4b9e7e3eb12d61d4c73468f02509d251025fe96f7ec3"
+    },
+    {
+      "path": "sources/tiff-debian.tar.xz",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/t/tiff/tiff_4.5.1+git230720-4ubuntu2.5.debian.tar.xz",
+      "sha256": "e3106320d41790b741b0db9a7fccf72b6a8d425743b6407e9a9dd369d958be76"
+    }
+  ]
+}
