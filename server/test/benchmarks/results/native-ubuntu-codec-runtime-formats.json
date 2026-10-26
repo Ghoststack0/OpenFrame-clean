@@ -1,0 +1,349 @@
+{
+  "jpeg": {
+    "id": "jpeg",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".jpg",
+        ".jpeg",
+        ".jpe",
+        ".jfif"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "alias": [
+        "jpe",
+        "jpg"
+      ]
+    }
+  },
+  "png": {
+    "id": "png",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".png"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true
+    }
+  },
+  "webp": {
+    "id": "webp",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".webp"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true
+    }
+  },
+  "tiff": {
+    "id": "tiff",
+    "input": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    },
+    "output": {
+      "file": false,
+      "buffer": false,
+      "stream": false,
+      "alias": [
+        "tif"
+      ]
+    }
+  },
+  "magick": {
+    "id": "magick",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true
+    }
+  },
+  "openslide": {
+    "id": "openslide",
+    "input": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    },
+    "output": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "dz": {
+    "id": "dz",
+    "input": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true
+    }
+  },
+  "ppm": {
+    "id": "ppm",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".pbm",
+        ".pgm",
+        ".ppm",
+        ".pfm",
+        ".pnm"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "fits": {
+    "id": "fits",
+    "input": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    },
+    "output": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "gif": {
+    "id": "gif",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".gif"
+      ]
+    },
+    "output": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "svg": {
+    "id": "svg",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".svg",
+        ".svgz",
+        ".svg.gz"
+      ]
+    },
+    "output": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "heif": {
+    "id": "heif",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".heic",
+        ".heif",
+        ".avif"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "alias": [
+        "avif",
+        "heic"
+      ]
+    }
+  },
+  "pdf": {
+    "id": "pdf",
+    "input": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    },
+    "output": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "vips": {
+    "id": "vips",
+    "input": {
+      "file": true,
+      "buffer": false,
+      "stream": false,
+      "fileSuffix": [
+        ".v",
+        ".vips"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "jp2": {
+    "id": "jp2",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".j2k",
+        ".jp2",
+        ".jpt",
+        ".j2c",
+        ".jpc"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "alias": [
+        "j2c",
+        "j2k",
+        "jp2",
+        "jpx"
+      ]
+    }
+  },
+  "jxl": {
+    "id": "jxl",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".jxl"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true
+    }
+  },
+  "rad": {
+    "id": "rad",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".hdr"
+      ]
+    },
+    "output": {
+      "file": true,
+      "buffer": true,
+      "stream": true
+    }
+  },
+  "dcraw": {
+    "id": "dcraw",
+    "input": {
+      "file": true,
+      "buffer": true,
+      "stream": true,
+      "fileSuffix": [
+        ".3fr",
+        ".ari",
+        ".arw",
+        ".cap",
+        ".cin",
+        ".cr2",
+        ".cr3",
+        ".crw",
+        ".dcr",
+        ".dng",
+        ".erf",
+        ".fff",
+        ".iiq",
+        ".k25",
+        ".kdc",
+        ".mdc",
+        ".mos",
+        ".mrw",
+        ".nef",
+        ".nrw",
+        ".orf",
+        ".ori",
+        ".pef",
+        ".pxn",
+        ".raf",
+        ".raw",
+        ".rw2",
+        ".rwl",
+        ".sr2",
+        ".srf",
+        ".srw",
+        ".x3f"
+      ]
+    },
+    "output": {
+      "file": false,
+      "buffer": false,
+      "stream": false
+    }
+  },
+  "raw": {
+    "id": "raw",
+    "input": {
+      "file": false,
+      "buffer": true,
+      "stream": true
+    },
+    "output": {
+      "file": false,
+      "buffer": true,
+      "stream": true
+    }
+  }
+}
