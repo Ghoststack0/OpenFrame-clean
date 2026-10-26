@@ -80,7 +80,8 @@ export class StorageRepository {
   }
 
   createWriteStream(filepath: string): Writable {
-    return createWriteStream(filepath, { flags: 'w', flush: true });
+    // Batch incoming upload chunks into writev calls while retaining durable close.
+    return createWriteStream(filepath, { flags: 'w', flush: true, highWaterMark: 1024 * 1024 });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
