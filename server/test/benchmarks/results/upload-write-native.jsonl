@@ -1,0 +1,12 @@
+{"round":0,"version":"baseline","bytes":268435456,"milliseconds":1238.973727,"cpu":{"user":854009,"system":418784},"node":"v24.13.1","platform":"linux","writeHighWaterMark":65536}
+{"round":0,"version":"candidate","bytes":268435456,"milliseconds":732.7226229999997,"cpu":{"user":645837,"system":271732},"node":"v24.13.1","platform":"linux","writeHighWaterMark":1048576}
+{"round":1,"version":"candidate","bytes":268435456,"milliseconds":769.8553069999998,"cpu":{"user":465737,"system":283322},"node":"v24.13.1","platform":"linux","writeHighWaterMark":1048576}
+{"round":1,"version":"baseline","bytes":268435456,"milliseconds":1113.6873100000003,"cpu":{"user":824755,"system":428204},"node":"v24.13.1","platform":"linux","writeHighWaterMark":65536}
+{"round":2,"version":"baseline","bytes":268435456,"milliseconds":1027.1840229999998,"cpu":{"user":767867,"system":413000},"node":"v24.13.1","platform":"linux","writeHighWaterMark":65536}
+{"round":2,"version":"candidate","bytes":268435456,"milliseconds":838.9918840000009,"cpu":{"user":641987,"system":319819},"node":"v24.13.1","platform":"linux","writeHighWaterMark":1048576}
+{"round":3,"version":"candidate","bytes":268435456,"milliseconds":819.3221420000009,"cpu":{"user":659981,"system":304251},"node":"v24.13.1","platform":"linux","writeHighWaterMark":1048576}
+{"round":3,"version":"baseline","bytes":268435456,"milliseconds":817.2304370000002,"cpu":{"user":570476,"system":299173},"node":"v24.13.1","platform":"linux","writeHighWaterMark":65536}
+{"round":4,"version":"baseline","bytes":268435456,"milliseconds":928.9776199999997,"cpu":{"user":604767,"system":339480},"node":"v24.13.1","platform":"linux","writeHighWaterMark":65536}
+{"round":4,"version":"candidate","bytes":268435456,"milliseconds":472.5490170000012,"cpu":{"user":409812,"system":153919},"node":"v24.13.1","platform":"linux","writeHighWaterMark":1048576}
+{"round":5,"version":"candidate","bytes":268435456,"milliseconds":504.3231029999988,"cpu":{"user":421569,"system":169988},"node":"v24.13.1","platform":"linux","writeHighWaterMark":1048576}
+{"round":5,"version":"baseline","bytes":268435456,"milliseconds":785.7286639999984,"cpu":{"user":552856,"system":280104},"node":"v24.13.1","platform":"linux","writeHighWaterMark":65536}
