@@ -317,6 +317,16 @@ describe(DatabaseBackupService.name, () => {
   });
 
   describe('buildPostgresLaunchArguments', () => {
+    it.each(['pg_dump', 'pg_dumpall', 'psql'] as const)('should use the configured directory for %s', async (bin) => {
+      const env = mocks.config.getEnv();
+      vi.spyOn(mocks.config, 'getEnv').mockReturnValue({
+        ...env,
+        database: { ...env.database, binDirectory: '/home/test/postgresql/bin' },
+      });
+      const launch = await sut.buildPostgresLaunchArguments(bin);
+      expect(launch.bin).toBe(`/home/test/postgresql/bin/${bin}`);
+    });
+
     describe('default config', () => {
       it('should generate pg_dump arguments', async () => {
         await expect(sut.buildPostgresLaunchArguments('pg_dump')).resolves.toMatchInlineSnapshot(`
