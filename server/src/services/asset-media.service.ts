@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { SqlBool } from 'kysely';
 import sanitize from 'sanitize-filename';
 import type { UploadFile, UploadRequest } from 'src/types.js';
 import { StorageCore } from 'src/cores/storage.core.js';
@@ -29,6 +30,7 @@ import {
   StorageFolder,
 } from 'src/enum.js';
 import { AuthRequest } from 'src/middleware/auth.guard.js';
+import { OwnerAccess } from 'src/repositories/asset.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { requireUploadAccess } from 'src/utils/access.js';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util.js';
@@ -40,6 +42,10 @@ import { fromChecksum } from 'src/utils/request.js';
 export interface AssetMediaRedirectResponse {
   targetSize: AssetMediaSize | 'original';
 }
+
+// Shared links resolve to the link owner's user, so they must always use the full access check.
+const ownerAccess = (auth: AuthDto): OwnerAccess | undefined =>
+  auth.sharedLink ? undefined : { userId: auth.user.id, hasElevatedPermission: auth.session?.hasElevatedPermission };
 
 @Injectable()
 export class AssetMediaService extends BaseService {
@@ -229,13 +235,13 @@ export class AssetMediaService extends BaseService {
   }
 
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
-    await this.requireAccess({ auth, permission: Permission.AssetDownload, ids: [id] });
+    const asset = await this.assetRepository.getForOriginal(id, isEditedOnly(auth, dto.edited), ownerAccess(auth));
+    await this.requireMediaAccess(auth, Permission.AssetDownload, id, asset);
+    if (!asset) {
+      throw new NotFoundException('Asset not found');
+    }
 
-    const { originalPath, originalFileName, editedPath } = await this.assetRepository.getForOriginal(
-      id,
-      isEditedOnly(auth, dto.edited),
-    );
-
+    const { originalPath, originalFileName, editedPath } = asset;
     const path = editedPath ?? originalPath!;
 
     return new ImmichFileResponse({
@@ -251,15 +257,20 @@ export class AssetMediaService extends BaseService {
     id: string,
     dto: AssetMediaOptionsDto,
   ): Promise<ImmichFileResponse | AssetMediaRedirectResponse> {
-    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
+    const edited = isEditedOnly(auth, dto.edited);
+    const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
+    const asset = await this.assetRepository.getForThumbnail(id, size, edited, ownerAccess(auth));
+    await this.requireMediaAccess(auth, Permission.AssetView, id, asset);
 
     if (dto.size === AssetMediaSize.Original) {
       throw new BadRequestException('May not request original file');
     }
 
-    const edited = isEditedOnly(auth, dto.edited);
-    const size = (dto.size ?? AssetMediaSize.THUMBNAIL) as unknown as AssetFileType;
-    const { originalPath, originalFileName, path } = await this.assetRepository.getForThumbnail(id, size, edited);
+    if (!asset) {
+      throw new NotFoundException('Asset media not found');
+    }
+
+    const { originalPath, originalFileName, path } = asset;
 
     if (size === AssetFileType.FullSize && mimeTypes.isWebSupportedImage(originalPath) && !edited) {
       // use original file for web supported images
@@ -288,9 +299,8 @@ export class AssetMediaService extends BaseService {
   }
 
   async playbackVideo(auth: AuthDto, id: string): Promise<ImmichFileResponse> {
-    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
-
-    const asset = await this.assetRepository.getForVideo(id);
+    const asset = await this.assetRepository.getForVideo(id, ownerAccess(auth));
+    await this.requireMediaAccess(auth, Permission.AssetView, id, asset);
 
     if (!asset) {
       throw new NotFoundException('Asset not found or asset is not a video');
@@ -303,6 +313,13 @@ export class AssetMediaService extends BaseService {
       contentType: mimeTypes.lookup(filepath),
       cacheControl: CacheControl.PrivateWithCache,
     });
+  }
+
+  /** Skips the separate access queries when the media lookup already confirmed owner access. */
+  private async requireMediaAccess(auth: AuthDto, permission: Permission, id: string, asset?: { isOwner: SqlBool }) {
+    if (!asset?.isOwner) {
+      await this.requireAccess({ auth, permission, ids: [id] });
+    }
   }
 
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
