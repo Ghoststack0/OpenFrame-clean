@@ -1,0 +1,81 @@
+{
+  "node": "v24.13.1",
+  "versions": {
+    "aom": "3.15.1",
+    "archive": "3.8.9",
+    "cairo": "1.18.6",
+    "cgif": "0.5.4",
+    "exif": "0.6.26",
+    "expat": "2.8.5",
+    "ffi": "3.8.0",
+    "fontconfig": "2.18.3",
+    "freetype": "2.14.3",
+    "fribidi": "1.0.17",
+    "glib": "2.90.0",
+    "harfbuzz": "14.5.0",
+    "heif": "1.23.5",
+    "highway": "1.4.0",
+    "imagequant": "2.4.1",
+    "lcms": "2.19.1",
+    "mozjpeg": "0826579",
+    "pango": "1.58.2",
+    "pixman": "0.46.4",
+    "png": "1.6.58",
+    "proxy-libintl": "0.5",
+    "rsvg": "2.63.2",
+    "tiff": "4.7.2",
+    "uhdr": "2.0.2",
+    "vips": "8.18.7",
+    "webp": "1.6.0",
+    "xml2": "2.15.4",
+    "zlib-ng": "2.3.3",
+    "sharp": "0.35.5"
+  },
+  "results": [
+    {
+      "sample": "IMG_2682.heic",
+      "bytes": 880703,
+      "sha256": "2d9d8493696fc0054ecb4517699fec11e04bf507f1f529f6a4f293fcefdeb35e",
+      "metadata": {
+        "format": "heif",
+        "width": 4032,
+        "height": 3024,
+        "space": "srgb",
+        "depth": "uchar",
+        "hasProfile": true
+      },
+      "status": "failed",
+      "error": "source: bad seek to 880735\nsource: bad seek to 880708\nsource: bad seek to 880704\nheif: Error while loading plugin: Support for this compression format has not been built in: HEVC (a suitable decoder plugin is libde265) (11.6003)"
+    },
+    {
+      "sample": "EOS_30D.CR2",
+      "bytes": 7194877,
+      "sha256": "1b977b9b848433b0f73342ff2796eb3091efe9fec2f6e51b8d2573f93d2f8edd",
+      "metadata": {
+        "format": "tiff",
+        "width": 1728,
+        "height": 1152,
+        "space": "srgb",
+        "depth": "uchar",
+        "hasProfile": false
+      },
+      "status": "failed",
+      "error": "tiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: TIFF directory is missing required \"ImageLength\" field\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: source input: Unknown pseudo-tag 65538\ntiff2vips: source input: Unknown pseudo-tag 65538\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: TIFF directory is missing required \"ImageLength\" field\ntiff2vips: Old-style JPEG compression support is not configured\ntiff2vips: source input: Unknown pseudo-tag 65538\ntiff2vips: source input: Unknown pseudo-tag 65538\ntiff2vips: Sorry, requested compression method is not configured"
+    },
+    {
+      "sample": "10bit-HDR-P3-nclx.avif",
+      "bytes": 993671,
+      "sha256": "af145f4853f47ad9a5ce744018fda8c94c39ba96deb779cec516d9353443a4e5",
+      "metadata": {
+        "format": "heif",
+        "width": 3681,
+        "height": 5594,
+        "space": "rgb16",
+        "depth": "ushort",
+        "hasProfile": false
+      },
+      "previewSha256": "2e5c4eb22c91e8e10dd72d5d6a247f40e12415bb3442731d027aa8f5a9d59313",
+      "status": "identical-preview"
+    }
+  ]
+}
