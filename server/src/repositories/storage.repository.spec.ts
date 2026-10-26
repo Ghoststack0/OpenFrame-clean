@@ -1,8 +1,10 @@
 import mockfs, { symlink } from 'mock-fs';
 import { R_OK } from 'node:constants';
-import { mkdtempDisposable, writeFile } from 'node:fs/promises';
+import { mkdtempDisposable, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { Readable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { vitest } from 'vitest';
 import { CrawlOptionsDto } from 'src/dtos/library.dto.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -218,6 +220,28 @@ describe(StorageRepository.name, () => {
   afterEach(() => {
     // eslint-disable-next-line import-x/no-named-as-default-member
     mockfs.restore();
+  });
+
+  describe('createWriteStream', () => {
+    it('should preserve bytes across buffered writes and close before completing', async () => {
+      await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-write-'));
+      const path = join(tempDir.path, 'upload');
+      const chunks = [Buffer.alloc(700_000, 17), Buffer.alloc(700_000, 29), Buffer.from('last chunk')];
+      const output = sut.createWriteStream(path);
+
+      await pipeline(Readable.from(chunks), output);
+
+      const stored = await readFile(path);
+      expect(stored.equals(Buffer.concat(chunks))).toBe(true);
+      expect(output.closed).toBe(true);
+    });
+
+    it('should reject a failed write', async () => {
+      await using tempDir = await mkdtempDisposable(join(tmpdir(), 'immich-storage-write-'));
+      const output = sut.createWriteStream(join(tempDir.path, 'missing', 'upload'));
+
+      await expect(pipeline(Readable.from([Buffer.from('upload')]), output)).rejects.toMatchObject({ code: 'ENOENT' });
+    });
   });
 
   it.each(['crawl', 'walk'] as const)('%s should skip symbolic links to files and directories', async (method) => {
