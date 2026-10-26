@@ -62,6 +62,8 @@ export type ExtractResult = {
   format: RawExtractedFormat;
 };
 
+type ThumbnailOutput = { path: string; options: TranscodeCommand };
+
 @Injectable()
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
@@ -151,7 +153,36 @@ export class MediaRepository {
   }
 
   async decodeImage(input: string | Buffer, options: DecodeToBufferOptions): Promise<Bitmap> {
-    const decoded = await this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+    const pipeline = this.getImageDecodingPipeline(input, options);
+    if (
+      typeof input === 'string' &&
+      options.size !== undefined &&
+      options.size > 0 &&
+      options.colorspace === Colorspace.Srgb &&
+      process.env.IMMICH_SRGB_JPEG_LINEAR_FUSION !== 'false'
+    ) {
+      const metadata = await pipeline.metadata();
+      if (
+        metadata.format === 'jpeg' &&
+        metadata.space === 'srgb' &&
+        metadata.depth === 'uchar' &&
+        metadata.channels === 3 &&
+        !metadata.isProgressive &&
+        !metadata.hasProfile &&
+        !metadata.gainMap &&
+        !metadata.xmp &&
+        Math.min(metadata.width, metadata.height) > options.size
+      ) {
+        // Retain linear-light sampling; materialising full-resolution RGB pixels adds a copy for unprofiled SDR JPEGs.
+        return pipeline
+          .pipelineColorspace('scrgb')
+          .resize(options.size, options.size, { fit: 'outside', withoutEnlargement: true })
+          .raw()
+          .toBuffer({ resolveWithObject: true });
+      }
+    }
+
+    const decoded = await pipeline.raw().toBuffer({ resolveWithObject: true });
     return await this.transform(decoded, options);
   }
 
@@ -216,7 +247,11 @@ export class MediaRepository {
   /* Resamples in linear light; averaging gamma-encoded values darkens the result and loses detail. `colorspace`
    * always has a sRGB transfer function and scRGB applies no primaries matrix, so linearising as sRGB is exact. */
   private transform(image: Bitmap, { size, fit = 'outside', edits = [] }: TransformOptions): Promise<Bitmap> {
-    if (!size && edits.length === 0) {
+    const dimension =
+      fit === 'inside' ? Math.max(image.info.width, image.info.height) : Math.min(image.info.width, image.info.height);
+    // Preview generation often receives an image already decoded at the requested size.
+    const isUnchangedSize = size !== undefined && dimension <= size && image.info.channels >= 3;
+    if (edits.length === 0 && (!size || isUnchangedSize)) {
       return Promise.resolve(image);
     }
 
@@ -392,6 +427,21 @@ export class MediaRepository {
         });
       });
     });
+  }
+
+  transcodeThumbnails(input: string, [first, ...rest]: [ThumbnailOutput, ...ThumbnailOutput[]]): Promise<void> {
+    const command = this.configureFfmpegCall(input, first.path, first.options);
+    // Keep each output's filters and automatic stream selection, but decode the input only once.
+    for (const { path, options } of rest) {
+      command.output(path).outputOptions(options.outputOptions);
+    }
+
+    return new Promise((resolve, reject) =>
+      command
+        .on('error', reject)
+        .on('end', () => resolve())
+        .run(),
+    );
   }
 
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
