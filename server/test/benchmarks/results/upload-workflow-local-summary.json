@@ -1,0 +1,3427 @@
+{
+  "environment": {
+    "node": "24.13.1",
+    "postgres": "16.6",
+    "redis": "7.4.2",
+    "host": "Linux development host, Intel Core i5-13420H, 12 logical CPUs",
+    "filesystem": "home filesystem /dev/mapper/root; fsync unchanged",
+    "machineLearningEnabled": false,
+    "concurrency": "normal defaults, thumbnails=3 metadata=5",
+    "fixtures": "20 distinct generated 4000x3000 JPEGs, quality=90; not representative camera-library coverage",
+    "method": "three alternating baseline/candidate process starts, one warmup and one single plus 20-photo batch at 1/4/8 clients per start; same diagnostic preload in both variants",
+    "excluded": "earlier tmpfs timing runs are excluded because they caused memory pressure"
+  },
+  "comparison": [
+    {
+      "workload": "single/1",
+      "baselineMs": [
+        604.53,
+        596.08,
+        705.73
+      ],
+      "candidateMs": [
+        586.46,
+        588.69,
+        589.72
+      ],
+      "baselineMedianMs": 604.53,
+      "candidateMedianMs": 588.69,
+      "pairedGeometricMeanRatio": 1.0769528551981322,
+      "slowerCandidatePairs": 0
+    },
+    {
+      "workload": "batch/1",
+      "baselineMs": [
+        4580.65,
+        4508.06,
+        5643.58
+      ],
+      "candidateMs": [
+        4644.61,
+        4814.61,
+        4758.12
+      ],
+      "baselineMedianMs": 4580.65,
+      "candidateMedianMs": 4758.12,
+      "pairedGeometricMeanRatio": 1.0308019746430932,
+      "slowerCandidatePairs": 2
+    },
+    {
+      "workload": "batch/4",
+      "baselineMs": [
+        4158.92,
+        4686.68,
+        5232.95
+      ],
+      "candidateMs": [
+        4300.35,
+        4935.53,
+        4198.3
+      ],
+      "baselineMedianMs": 4686.68,
+      "candidateMedianMs": 4300.35,
+      "pairedGeometricMeanRatio": 1.046069311671772,
+      "slowerCandidatePairs": 2
+    },
+    {
+      "workload": "batch/8",
+      "baselineMs": [
+        4547.63,
+        4426.01,
+        5281.45
+      ],
+      "candidateMs": [
+        4990.86,
+        4478.89,
+        4371.99
+      ],
+      "baselineMedianMs": 4547.63,
+      "candidateMedianMs": 4478.89,
+      "pairedGeometricMeanRatio": 1.0284312092041452,
+      "slowerCandidatePairs": 2
+    }
+  ],
+  "stageSummary": {
+    "baseline": {
+      "AssetExtractMetadata": {
+        "count": 183,
+        "medianQueueWaitMs": 1,
+        "medianWorkWallMs": 66.01
+      },
+      "StorageTemplateMigrationSingle": {
+        "count": 183,
+        "medianQueueWaitMs": 1,
+        "medianWorkWallMs": 2.18
+      },
+      "AssetGenerateThumbnails": {
+        "count": 183,
+        "medianQueueWaitMs": 1482,
+        "medianWorkWallMs": 622.51
+      },
+      "metadataSplit": {
+        "exiftoolWallMs": 21.27,
+        "databaseWallMs": 33.02,
+        "databaseWriteWallMs": 24.15
+      }
+    },
+    "candidate": {
+      "AssetExtractMetadata": {
+        "count": 183,
+        "medianQueueWaitMs": 1,
+        "medianWorkWallMs": 51
+      },
+      "StorageTemplateMigrationSingle": null,
+      "AssetGenerateThumbnails": {
+        "count": 183,
+        "medianQueueWaitMs": 1525,
+        "medianWorkWallMs": 591.21
+      },
+      "metadataSplit": {
+        "exiftoolWallMs": 18.31,
+        "databaseWallMs": 25.79,
+        "databaseWriteWallMs": 19.59
+      }
+    }
+  },
+  "parity": {
+    "matchedOriginalAndPreviewPairs": 183,
+    "allTimedCandidateMigrationHopsAbsent": true,
+    "allTimedBaselineMigrationHopsPresent": true,
+    "httpIntegrityRangesDuplicatesAndConcurrentMultipartErrors": true,
+    "enabledTemplateCheck": {
+      "assetId": "fb55420a-8601-4d60-a7d9-3d1813cd9d5c",
+      "orientation": 6,
+      "sidecarMetadata": true,
+      "originalBytes": true,
+      "checksumHeaderDuplicate": true,
+      "migrationBeforeThumbnails": true,
+      "movedIntoLibrary": true,
+      "previewWidth": 1440,
+      "previewHeight": 1920
+    },
+    "laterEnabledFullWorkflowIncludingChecksumHeader": true,
+    "mixedPhotoVideoImportsAt1_4_8": true
+  },
+  "sampleTimelines": {
+    "baseline": [
+      {
+        "id": "3044225e-217a-4e45-b168-bf72025897da",
+        "round": 0,
+        "workload": "single",
+        "concurrency": 1,
+        "fixture": 0,
+        "fixtureSha256": "d2ace2ec0b07c921bfd412e8b45d4cf25fe65f13d72e3d8de0cb665464ed90f8",
+        "previewSha256": "7385f9b61cf5cabc11921611b9df946953af68394655223d600ed54c21445bcb",
+        "requestEndAtMs": 1793023582654.2336,
+        "requestEndMs": 0,
+        "responseMs": 42.88,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 36.77,
+            "startedMs": 39.04,
+            "finishedMs": 59.11,
+            "queueWaitMs": 1,
+            "workWallMs": 20.07
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 54.77,
+            "startedMs": 56.61,
+            "finishedMs": 57.41,
+            "queueWaitMs": 1,
+            "workWallMs": 0.8
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 56.77,
+            "startedMs": 57.78,
+            "finishedMs": 496.75,
+            "queueWaitMs": 0,
+            "workWallMs": 438.97
+          }
+        },
+        "metadata": {
+          "startedMs": 39.27,
+          "finishedMs": 59.06,
+          "exiftoolWallMs": 8.23,
+          "databaseWallMs": 10.45,
+          "databaseWriteWallMs": 6.41,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 39.3,
+              "finishedMs": 40.52
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 49.5,
+              "finishedMs": 52.6
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 52.68,
+              "finishedMs": 53.07
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 53.13,
+              "finishedMs": 53.54
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 49.11,
+              "finishedMs": 53.66
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 53.68,
+              "finishedMs": 55.55
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 56.18,
+              "finishedMs": 59
+            }
+          ]
+        },
+        "firstPreviewMs": 575.72,
+        "readyMs": 602.93
+      },
+      {
+        "id": "41017025-77e2-4a52-afd6-7acc93f8ede1",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 2,
+        "fixtureSha256": "0f623fdc82a3d5b9bc715fccea5348534216741c62558a8c0da30bbfe092132b",
+        "previewSha256": "0430abec224779bb21016bf016c19040dc69acb9b3b19e8a7cc1917fb33e3fcc",
+        "requestEndAtMs": 1793023588803.352,
+        "requestEndMs": 0,
+        "responseMs": 43.13,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 34.65,
+            "startedMs": 54.59,
+            "finishedMs": 142.78,
+            "queueWaitMs": 0,
+            "workWallMs": 88.19
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 135.65,
+            "startedMs": 139.89,
+            "finishedMs": 143.23,
+            "queueWaitMs": 1,
+            "workWallMs": 3.34
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 139.65,
+            "startedMs": 766.92,
+            "finishedMs": 1357.19,
+            "queueWaitMs": 624,
+            "workWallMs": 590.26
+          }
+        },
+        "metadata": {
+          "startedMs": 54.95,
+          "finishedMs": 142.71,
+          "exiftoolWallMs": 43.06,
+          "databaseWallMs": 43.2,
+          "databaseWriteWallMs": 36.02,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 54.96,
+              "finishedMs": 56.48
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 100.65,
+              "finishedMs": 105.85
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 105.98,
+              "finishedMs": 114.53
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 114.6,
+              "finishedMs": 115.16
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 99.98,
+              "finishedMs": 132.71
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 132.81,
+              "finishedMs": 136.1
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 136.94,
+              "finishedMs": 142.6
+            }
+          ]
+        },
+        "firstPreviewMs": 1365.37,
+        "readyMs": 1424.87
+      },
+      {
+        "id": "8d7c3189-d55c-47c1-89d1-7dbef020a286",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 1,
+        "fixtureSha256": "91c517be0fb4b4c28343ca71e1b35e945503f5c1aeb0e4edeeb1075fe486088a",
+        "previewSha256": "3aa5653ac9b42496acf6de4dbcf5a1a173760a74829a7877f8670dd56489fa48",
+        "requestEndAtMs": 1793023588804.269,
+        "requestEndMs": 0,
+        "responseMs": 35.84,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 29.73,
+            "startedMs": 31.2,
+            "finishedMs": 101.65,
+            "queueWaitMs": 1,
+            "workWallMs": 70.45
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 86.73,
+            "startedMs": 93.51,
+            "finishedMs": 100.86,
+            "queueWaitMs": 2,
+            "workWallMs": 7.35
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 93.73,
+            "startedMs": 103.27,
+            "finishedMs": 762.96,
+            "queueWaitMs": 7,
+            "workWallMs": 659.69
+          }
+        },
+        "metadata": {
+          "startedMs": 31.3,
+          "finishedMs": 101.6,
+          "exiftoolWallMs": 32.75,
+          "databaseWallMs": 34.14,
+          "databaseWriteWallMs": 18.08,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 31.31,
+              "finishedMs": 33.55
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 66.6,
+              "finishedMs": 72.01
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 66.91,
+              "finishedMs": 74.01
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 74.12,
+              "finishedMs": 76.21
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 76.32,
+              "finishedMs": 80.7
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 80.82,
+              "finishedMs": 87.11
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 89.8,
+              "finishedMs": 101.54
+            }
+          ]
+        },
+        "firstPreviewMs": 866.86,
+        "readyMs": 928.6
+      },
+      {
+        "id": "84c96c70-e9d4-4c69-9065-93dd43a83fb2",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 3,
+        "fixtureSha256": "a7698199cd0457c673edd7831eb8802802c5c364ca30ef9f7300410bac883790",
+        "previewSha256": "05b289fb010ea223c3e39f74d4f6c48824d28b07bd191276db63889778ab3648",
+        "requestEndAtMs": 1793023588803.9897,
+        "requestEndMs": 0,
+        "responseMs": 41.34,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 31.01,
+            "startedMs": 32.32,
+            "finishedMs": 142.96,
+            "queueWaitMs": 0,
+            "workWallMs": 110.64
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 133.01,
+            "startedMs": 134.82,
+            "finishedMs": 136.03,
+            "queueWaitMs": 0,
+            "workWallMs": 1.21
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 135.01,
+            "startedMs": 137.05,
+            "finishedMs": 872.39,
+            "queueWaitMs": 0,
+            "workWallMs": 735.34
+          }
+        },
+        "metadata": {
+          "startedMs": 32.56,
+          "finishedMs": 142.93,
+          "exiftoolWallMs": 44.05,
+          "databaseWallMs": 64.66,
+          "databaseWriteWallMs": 52.12,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 32.57,
+              "finishedMs": 34.26
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 78.51,
+              "finishedMs": 86.95
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 78.76,
+              "finishedMs": 93.39
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 93.46,
+              "finishedMs": 95.52
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 95.67,
+              "finishedMs": 110.53
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 110.71,
+              "finishedMs": 133.08
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 134.08,
+              "finishedMs": 142.87
+            }
+          ]
+        },
+        "firstPreviewMs": 906.44,
+        "readyMs": 966.95
+      },
+      {
+        "id": "01e82c7d-5ea0-4e7c-a89a-1f814c804d92",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 0,
+        "fixtureSha256": "d2ace2ec0b07c921bfd412e8b45d4cf25fe65f13d72e3d8de0cb665464ed90f8",
+        "previewSha256": "7385f9b61cf5cabc11921611b9df946953af68394655223d600ed54c21445bcb",
+        "requestEndAtMs": 1793023588804.8767,
+        "requestEndMs": 0,
+        "responseMs": 34.55,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 27.12,
+            "startedMs": 28.81,
+            "finishedMs": 84.15,
+            "queueWaitMs": 1,
+            "workWallMs": 55.35
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 78.12,
+            "startedMs": 85.06,
+            "finishedMs": 88.76,
+            "queueWaitMs": 3,
+            "workWallMs": 3.71
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 85.12,
+            "startedMs": 91.51,
+            "finishedMs": 796.46,
+            "queueWaitMs": 3,
+            "workWallMs": 704.95
+          }
+        },
+        "metadata": {
+          "startedMs": 28.94,
+          "finishedMs": 84.11,
+          "exiftoolWallMs": 27.15,
+          "databaseWallMs": 24.16,
+          "databaseWriteWallMs": 21.03,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 28.96,
+              "finishedMs": 29.52
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 57.35,
+              "finishedMs": 68.77
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 57.1,
+              "finishedMs": 70.42
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 69.05,
+              "finishedMs": 71
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 71.06,
+              "finishedMs": 76.36
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 76.42,
+              "finishedMs": 78.83
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 82.02,
+              "finishedMs": 84.01
+            }
+          ]
+        },
+        "firstPreviewMs": 865.37,
+        "readyMs": 927.46
+      },
+      {
+        "id": "61bd6a11-f27f-4e76-af3f-b615a6d633be",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 7,
+        "fixtureSha256": "4f707298366b7be72c5b2d91f9c999d1aacb918338a59bb1e96dac1ee93f34bc",
+        "previewSha256": "3c64f52a5f1329c67cc030981f2a6dce5dfed2f4ab596f5d94f04b361bf8a884",
+        "requestEndAtMs": 1793023588908.6282,
+        "requestEndMs": 0,
+        "responseMs": 63.4,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 45.37,
+            "startedMs": 48.55,
+            "finishedMs": 130.55,
+            "queueWaitMs": 1,
+            "workWallMs": 82
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 127.37,
+            "startedMs": 129.4,
+            "finishedMs": 131.2,
+            "queueWaitMs": 1,
+            "workWallMs": 1.8
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 129.37,
+            "startedMs": 1291.33,
+            "finishedMs": 1821.71,
+            "queueWaitMs": 1160,
+            "workWallMs": 530.38
+          }
+        },
+        "metadata": {
+          "startedMs": 48.81,
+          "finishedMs": 130.42,
+          "exiftoolWallMs": 58.28,
+          "databaseWallMs": 21.64,
+          "databaseWriteWallMs": 17.63,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 48.81,
+              "finishedMs": 49.95
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 108.56,
+              "finishedMs": 116.2
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 109.63,
+              "finishedMs": 117.41
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 117.55,
+              "finishedMs": 118.88
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 118.98,
+              "finishedMs": 120.69
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 120.8,
+              "finishedMs": 127.86
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 128.8,
+              "finishedMs": 130.34
+            }
+          ]
+        },
+        "firstPreviewMs": 1907.57,
+        "readyMs": 1970.59
+      },
+      {
+        "id": "80e35a2f-5632-453d-8750-7a0ec7755133",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 4,
+        "fixtureSha256": "27fc35b475a6559e55c425e50e6c1efbb8e30ae65a00b91570d2159d930c8d83",
+        "previewSha256": "a0977302f82c52bcc6ad87bb9849007243238e8656b3457c2c42f37cdeee7955",
+        "requestEndAtMs": 1793023588909.2795,
+        "requestEndMs": 0,
+        "responseMs": 50.02,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 44.72,
+            "startedMs": 48.12,
+            "finishedMs": 104.45,
+            "queueWaitMs": 2,
+            "workWallMs": 56.33
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 94.72,
+            "startedMs": 97.56,
+            "finishedMs": 105.4,
+            "queueWaitMs": 1,
+            "workWallMs": 7.85
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 97.72,
+            "startedMs": 769.75,
+            "finishedMs": 1336.34,
+            "queueWaitMs": 669,
+            "workWallMs": 566.59
+          }
+        },
+        "metadata": {
+          "startedMs": 48.24,
+          "finishedMs": 104.35,
+          "exiftoolWallMs": 31.29,
+          "databaseWallMs": 22.75,
+          "databaseWriteWallMs": 13.92,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 48.24,
+              "finishedMs": 49.15
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 81.86,
+              "finishedMs": 90.52
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 81.09,
+              "finishedMs": 91.57
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 90.58,
+              "finishedMs": 91.64
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 91.67,
+              "finishedMs": 92.98
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 93.05,
+              "finishedMs": 95.19
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 96.38,
+              "finishedMs": 104.23
+            }
+          ]
+        },
+        "firstPreviewMs": 1399.49,
+        "readyMs": 1470.32
+      },
+      {
+        "id": "6cf32321-3caf-4ef5-abd6-86076ffb7047",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 5,
+        "fixtureSha256": "229d2181b350cc9e5d0475ef77418efbd8fd553720dbb0fbeff11451d1b51a1b",
+        "previewSha256": "0e1f77be3715246d95e4006377a963c60452164e7d43c04142ef33116902c230",
+        "requestEndAtMs": 1793023588906.225,
+        "requestEndMs": 0,
+        "responseMs": 54.62,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 46.77,
+            "startedMs": 48.32,
+            "finishedMs": 95.47,
+            "queueWaitMs": 1,
+            "workWallMs": 47.14
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 85.77,
+            "startedMs": 91.74,
+            "finishedMs": 94.2,
+            "queueWaitMs": 2,
+            "workWallMs": 2.46
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 91.77,
+            "startedMs": 697.91,
+            "finishedMs": 1292.21,
+            "queueWaitMs": 603,
+            "workWallMs": 594.3
+          }
+        },
+        "metadata": {
+          "startedMs": 48.65,
+          "finishedMs": 95.42,
+          "exiftoolWallMs": 9.92,
+          "databaseWallMs": 34.6,
+          "databaseWriteWallMs": 24.22,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 48.67,
+              "finishedMs": 51.92
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 62.91,
+              "finishedMs": 69.81
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 69.88,
+              "finishedMs": 71.08
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 71.19,
+              "finishedMs": 72.04
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 62.24,
+              "finishedMs": 79.11
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 79.25,
+              "finishedMs": 86.6
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 88.24,
+              "finishedMs": 95.37
+            }
+          ]
+        },
+        "firstPreviewMs": 1366.7,
+        "readyMs": 1432.39
+      },
+      {
+        "id": "907be1cb-c4f3-43bb-946a-975750d68cea",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 6,
+        "fixtureSha256": "20c831a037306f94f80675bb0e01c058a405d1b4c7e28f975d962e429ea14a2e",
+        "previewSha256": "90caefacbf8c3f42db633b34678f03be25c0df75e8b0fd336389273836953a2e",
+        "requestEndAtMs": 1793023588907.334,
+        "requestEndMs": 0,
+        "responseMs": 68.32,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 46.67,
+            "startedMs": 49.74,
+            "finishedMs": 126.74,
+            "queueWaitMs": 0,
+            "workWallMs": 77
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 120.67,
+            "startedMs": 124.44,
+            "finishedMs": 127.13,
+            "queueWaitMs": 2,
+            "workWallMs": 2.68
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 124.67,
+            "startedMs": 1258.74,
+            "finishedMs": 1803.61,
+            "queueWaitMs": 1128,
+            "workWallMs": 544.87
+          }
+        },
+        "metadata": {
+          "startedMs": 49.86,
+          "finishedMs": 126.68,
+          "exiftoolWallMs": 50.51,
+          "databaseWallMs": 22.82,
+          "databaseWriteWallMs": 16.88,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 49.87,
+              "finishedMs": 51.61
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 104.36,
+              "finishedMs": 112.88
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 102.58,
+              "finishedMs": 113.71
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 112.99,
+              "finishedMs": 114.81
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 114.91,
+              "finishedMs": 116.15
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 116.24,
+              "finishedMs": 120.74
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 123.45,
+              "finishedMs": 126.55
+            }
+          ]
+        },
+        "firstPreviewMs": 1801.89,
+        "readyMs": 1864.23
+      },
+      {
+        "id": "e18e141d-8767-43dc-b140-850447c8710d",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 8,
+        "fixtureSha256": "048121b5572f042de7299248645f6736ec1d51e6c1b496956bc9f8d2b135e08d",
+        "previewSha256": "23cbbfab6fbac5b9c42ee079b81f4a52bf25c3406e18562109e2363eb67a1d39",
+        "requestEndAtMs": 1793023589038.8,
+        "requestEndMs": 0,
+        "responseMs": 37.92,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 31.2,
+            "startedMs": 32.63,
+            "finishedMs": 72.42,
+            "queueWaitMs": 0,
+            "workWallMs": 39.79
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 67.2,
+            "startedMs": 70.9,
+            "finishedMs": 72.99,
+            "queueWaitMs": 1,
+            "workWallMs": 2.09
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 70.2,
+            "startedMs": 1208.71,
+            "finishedMs": 1758.57,
+            "queueWaitMs": 1136,
+            "workWallMs": 549.86
+          }
+        },
+        "metadata": {
+          "startedMs": 32.86,
+          "finishedMs": 72.37,
+          "exiftoolWallMs": 9.54,
+          "databaseWallMs": 28.11,
+          "databaseWriteWallMs": 22.16,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 32.88,
+              "finishedMs": 35.8
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 45.94,
+              "finishedMs": 48.83
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 48.94,
+              "finishedMs": 51.79
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 51.87,
+              "finishedMs": 53.59
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 45.66,
+              "finishedMs": 59.15
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 59.21,
+              "finishedMs": 67.88
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 69.28,
+              "finishedMs": 72.31
+            }
+          ]
+        },
+        "firstPreviewMs": 1795.21,
+        "readyMs": 1875.02
+      },
+      {
+        "id": "25413d6b-04f5-4df6-92c8-e282d641b6b5",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 11,
+        "fixtureSha256": "07f2b957d8cb5570f7fb2fc08154d8ad9f07bab5534e19187dec2daaf036805a",
+        "previewSha256": "0d6c254fdf9eb1c27753d23935725bf588f727ab77e37cd7a6a2b56253511651",
+        "requestEndAtMs": 1793023589047.9497,
+        "requestEndMs": 0,
+        "responseMs": 31.12,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 25.05,
+            "startedMs": 27.67,
+            "finishedMs": 73.12,
+            "queueWaitMs": 2,
+            "workWallMs": 45.45
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 66.05,
+            "startedMs": 72.13,
+            "finishedMs": 74.11,
+            "queueWaitMs": 2,
+            "workWallMs": 1.98
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 72.05,
+            "startedMs": 1683.31,
+            "finishedMs": 2239.49,
+            "queueWaitMs": 1610,
+            "workWallMs": 556.18
+          }
+        },
+        "metadata": {
+          "startedMs": 27.84,
+          "finishedMs": 73.08,
+          "exiftoolWallMs": 17.52,
+          "databaseWallMs": 24.61,
+          "databaseWriteWallMs": 18.05,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 27.85,
+              "finishedMs": 28.65
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 46.57,
+              "finishedMs": 53.8
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 47.29,
+              "finishedMs": 56.32
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 57.03,
+              "finishedMs": 58.03
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 58.14,
+              "finishedMs": 64.07
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 64.1,
+              "finishedMs": 66.49
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 68.25,
+              "finishedMs": 73
+            }
+          ]
+        },
+        "firstPreviewMs": 2267.83,
+        "readyMs": 2342.24
+      },
+      {
+        "id": "b6345c3b-8b4c-41a2-8ca0-fba7bd6a5130",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 9,
+        "fixtureSha256": "720573d5b7192bbdf42ce271e770f0c688295d2c2c4ff7fb3ce11808c1f5ed85",
+        "previewSha256": "2699de51ab9b8a50e11a5f4a959b771f6f58711a2134433ca509712f093714fa",
+        "requestEndAtMs": 1793023589042.3352,
+        "requestEndMs": 0,
+        "responseMs": 34.74,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 28.66,
+            "startedMs": 30.74,
+            "finishedMs": 71.09,
+            "queueWaitMs": 1,
+            "workWallMs": 40.36
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 66.66,
+            "startedMs": 70.47,
+            "finishedMs": 71.66,
+            "queueWaitMs": 2,
+            "workWallMs": 1.19
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 69.66,
+            "startedMs": 1671.97,
+            "finishedMs": 2202.9,
+            "queueWaitMs": 1599,
+            "workWallMs": 530.94
+          }
+        },
+        "metadata": {
+          "startedMs": 31.06,
+          "finishedMs": 71.05,
+          "exiftoolWallMs": 13.88,
+          "databaseWallMs": 23.37,
+          "databaseWriteWallMs": 19.89,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 31.07,
+              "finishedMs": 32.68
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 47.25,
+              "finishedMs": 50.62
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 50.67,
+              "finishedMs": 54.54
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 46.84,
+              "finishedMs": 55.43
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 54.67,
+              "finishedMs": 61.43
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 61.52,
+              "finishedMs": 66.82
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 69.14,
+              "finishedMs": 71.01
+            }
+          ]
+        },
+        "firstPreviewMs": 2274.26,
+        "readyMs": 2358.83
+      },
+      {
+        "id": "f83bee76-a6d6-4652-a64b-ffefb5ca3e3c",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 10,
+        "fixtureSha256": "f368ea5b4c35413ef1f97c2e4e22eb167d7b129c31f99035d733c347693277e3",
+        "previewSha256": "2829c72bc00c44c32fcd78cf02c097f573ef2eb8094111e0e59afe5db588b56c",
+        "requestEndAtMs": 1793023589046.353,
+        "requestEndMs": 0,
+        "responseMs": 51.47,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 28.65,
+            "startedMs": 30.5,
+            "finishedMs": 78.56,
+            "queueWaitMs": 0,
+            "workWallMs": 48.06
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 74.65,
+            "startedMs": 77.27,
+            "finishedMs": 79.36,
+            "queueWaitMs": 1,
+            "workWallMs": 2.09
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 76.65,
+            "startedMs": 1752.13,
+            "finishedMs": 2293.08,
+            "queueWaitMs": 1674,
+            "workWallMs": 540.95
+          }
+        },
+        "metadata": {
+          "startedMs": 30.56,
+          "finishedMs": 78.5,
+          "exiftoolWallMs": 21.34,
+          "databaseWallMs": 24.61,
+          "databaseWriteWallMs": 19.68,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 30.57,
+              "finishedMs": 31.81
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 53.51,
+              "finishedMs": 60.16
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 54.06,
+              "finishedMs": 64.37
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 64.44,
+              "finishedMs": 66.02
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 66.06,
+              "finishedMs": 68.92
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 69.04,
+              "finishedMs": 74.99
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 76.3,
+              "finishedMs": 78.42
+            }
+          ]
+        },
+        "firstPreviewMs": 2301.07,
+        "readyMs": 2375.57
+      },
+      {
+        "id": "77e9330e-7f8b-467f-a2bb-b2ee47222391",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 12,
+        "fixtureSha256": "47d93720b3875111efbda16e4a92509cbd549a9435592b849acedca4b6b516fe",
+        "previewSha256": "98754712d4a530887606ec5727e2c5076151129a8c46acc58f76e543e6d1aa1c",
+        "requestEndAtMs": 1793023589260.4578,
+        "requestEndMs": 0,
+        "responseMs": 196.18,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 182.54,
+            "startedMs": 184.44,
+            "finishedMs": 320.78,
+            "queueWaitMs": 1,
+            "workWallMs": 136.34
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 306.54,
+            "startedMs": 314.96,
+            "finishedMs": 320.04,
+            "queueWaitMs": 4,
+            "workWallMs": 5.08
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 314.54,
+            "startedMs": 2028.63,
+            "finishedMs": 2578.36,
+            "queueWaitMs": 1712,
+            "workWallMs": 549.72
+          }
+        },
+        "metadata": {
+          "startedMs": 184.66,
+          "finishedMs": 320.74,
+          "exiftoolWallMs": 18.77,
+          "databaseWallMs": 80.52,
+          "databaseWriteWallMs": 59.66,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 184.68,
+              "finishedMs": 189.55
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 241.43,
+              "finishedMs": 273.57
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 241.76,
+              "finishedMs": 273.67
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 273.7,
+              "finishedMs": 279.37
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 279.52,
+              "finishedMs": 289.56
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 289.65,
+              "finishedMs": 307.02
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 310.36,
+              "finishedMs": 320.68
+            }
+          ]
+        },
+        "firstPreviewMs": 2646.44,
+        "readyMs": 2833.27
+      },
+      {
+        "id": "6c13970a-8aef-43dc-aa09-a320271bcfda",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 14,
+        "fixtureSha256": "e0e847988ad8c2fd248f09cd8ede22965e08fe92dc08d613eb01312c2ef8bbf3",
+        "previewSha256": "f3d722ee4f2785964cc1a0e9236a189995133851bdeb7e0f399bf4edc07013bd",
+        "requestEndAtMs": 1793023589253.8708,
+        "requestEndMs": 0,
+        "responseMs": 199.39,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 190.13,
+            "startedMs": 192.11,
+            "finishedMs": 314.48,
+            "queueWaitMs": 1,
+            "workWallMs": 122.37
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 306.13,
+            "startedMs": 313.98,
+            "finishedMs": 318.09,
+            "queueWaitMs": 4,
+            "workWallMs": 4.12
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 313.13,
+            "startedMs": 1994.49,
+            "finishedMs": 2545.22,
+            "queueWaitMs": 1678,
+            "workWallMs": 550.72
+          }
+        },
+        "metadata": {
+          "startedMs": 192.27,
+          "finishedMs": 314.46,
+          "exiftoolWallMs": 15.95,
+          "databaseWallMs": 65.15,
+          "databaseWriteWallMs": 55.16,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 192.28,
+              "finishedMs": 195.66
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 246.51,
+              "finishedMs": 275.19
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 245.59,
+              "finishedMs": 279.86
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 275.42,
+              "finishedMs": 283.16
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 285.03,
+              "finishedMs": 294.4
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 294.49,
+              "finishedMs": 306
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 311.12,
+              "finishedMs": 314.43
+            }
+          ]
+        },
+        "firstPreviewMs": 2612.46,
+        "readyMs": 2785.77
+      },
+      {
+        "id": "40f52931-8679-4d3a-87ff-addf0374d6af",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 15,
+        "fixtureSha256": "fe6e0ac42462f7c82275f50e9357d4ab835f91b8fe232159874c257c5a59f180",
+        "previewSha256": "57efc1afbc0dbc01dab06cd57b6a38b6a6b6cc7be91594e9a91fd8bd59727c78",
+        "requestEndAtMs": 1793023589316.8337,
+        "requestEndMs": 0,
+        "responseMs": 149.56,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 129.17,
+            "startedMs": 130.12,
+            "finishedMs": 257.29,
+            "queueWaitMs": 0,
+            "workWallMs": 127.16
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 252.17,
+            "startedMs": 268.29,
+            "finishedMs": 269.88,
+            "queueWaitMs": 11,
+            "workWallMs": 1.59
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 268.17,
+            "startedMs": 2025.32,
+            "finishedMs": 2550.57,
+            "queueWaitMs": 1754,
+            "workWallMs": 525.25
+          }
+        },
+        "metadata": {
+          "startedMs": 130.36,
+          "finishedMs": 257.24,
+          "exiftoolWallMs": 22.4,
+          "databaseWallMs": 68.34,
+          "databaseWriteWallMs": 54.16,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 130.38,
+              "finishedMs": 136.03
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 193.54,
+              "finishedMs": 217.75
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 193.25,
+              "finishedMs": 218.07
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 217.8,
+              "finishedMs": 223.54
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 223.6,
+              "finishedMs": 239.9
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 240.01,
+              "finishedMs": 253.04
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 254.1,
+              "finishedMs": 257.16
+            }
+          ]
+        },
+        "firstPreviewMs": 2590.81,
+        "readyMs": 2813.56
+      },
+      {
+        "id": "f152dda1-1374-4a47-af8d-abde80963686",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 13,
+        "fixtureSha256": "6829861e5810aa43a56bf034337c87ed5fd609b98012a11a24697f85fa818675",
+        "previewSha256": "376eab7e08c165cbfad62ccee1d58e983b5ca7d2a95302be5218dda3fc0703ae",
+        "requestEndAtMs": 1793023589271.8499,
+        "requestEndMs": 0,
+        "responseMs": 198.28,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 179.15,
+            "startedMs": 181.49,
+            "finishedMs": 314.55,
+            "queueWaitMs": 1,
+            "workWallMs": 133.06
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 307.15,
+            "startedMs": 315.52,
+            "finishedMs": 317.98,
+            "queueWaitMs": 7,
+            "workWallMs": 2.46
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 315.15,
+            "startedMs": 2530.33,
+            "finishedMs": 3054.53,
+            "queueWaitMs": 2212,
+            "workWallMs": 524.2
+          }
+        },
+        "metadata": {
+          "startedMs": 181.7,
+          "finishedMs": 314.52,
+          "exiftoolWallMs": 29.18,
+          "databaseWallMs": 74.97,
+          "databaseWriteWallMs": 67.92,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 181.71,
+              "finishedMs": 184.92
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 240.13,
+              "finishedMs": 270.86
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 271.05,
+              "finishedMs": 275.14
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 239.55,
+              "finishedMs": 278.78
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 275.23,
+              "finishedMs": 293.7
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 293.79,
+              "finishedMs": 307.56
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 310.63,
+              "finishedMs": 314.47
+            }
+          ]
+        },
+        "firstPreviewMs": 3145.51,
+        "readyMs": 3339.25
+      },
+      {
+        "id": "e8a29dd2-12f3-4fd1-882b-a383bd6a9eae",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 18,
+        "fixtureSha256": "5cc58a72e39f0b928601546c07c7555068709460f17a8253d05cc3cd50983e92",
+        "previewSha256": "dc5f36644480b43c2a3c42f3c43fded7b5f08add1a69c7ab82ba5a4f281fa1f0",
+        "requestEndAtMs": 1793023589645.3127,
+        "requestEndMs": 0,
+        "responseMs": 40.24,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 29.69,
+            "startedMs": 37.07,
+            "finishedMs": 80.09,
+            "queueWaitMs": 6,
+            "workWallMs": 43.02
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 76.69,
+            "startedMs": 78.47,
+            "finishedMs": 79.02,
+            "queueWaitMs": 1,
+            "workWallMs": 0.55
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 77.69,
+            "startedMs": 2223.67,
+            "finishedMs": 2741.22,
+            "queueWaitMs": 2144,
+            "workWallMs": 517.55
+          }
+        },
+        "metadata": {
+          "startedMs": 37.18,
+          "finishedMs": 80.01,
+          "exiftoolWallMs": 12.83,
+          "databaseWallMs": 27.88,
+          "databaseWriteWallMs": 19.32,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 37.19,
+              "finishedMs": 41.91
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 55.12,
+              "finishedMs": 58.5
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 55.47,
+              "finishedMs": 61.61
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 61.66,
+              "finishedMs": 63.65
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 63.71,
+              "finishedMs": 72.17
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 72.27,
+              "finishedMs": 76.66
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 78.04,
+              "finishedMs": 79.89
+            }
+          ]
+        },
+        "firstPreviewMs": 2737.58,
+        "readyMs": 2917.72
+      },
+      {
+        "id": "ff2c4815-0ed6-4087-80f8-8d5f7e54e3e4",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 17,
+        "fixtureSha256": "4111fa99f92e6e05203053add6c9008cefd9faa79f9a6e18042f824f50307c36",
+        "previewSha256": "823637bfd42deda8abadf90840a2b876b202815cf7456ab8c85bd880c53f2b9b",
+        "requestEndAtMs": 1793023589641.653,
+        "requestEndMs": 0,
+        "responseMs": 43.47,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 36.35,
+            "startedMs": 43.84,
+            "finishedMs": 87.12,
+            "queueWaitMs": 4,
+            "workWallMs": 43.29
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 83.35,
+            "startedMs": 85.12,
+            "finishedMs": 85.77,
+            "queueWaitMs": 1,
+            "workWallMs": 0.65
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 84.35,
+            "startedMs": 2687.24,
+            "finishedMs": 3159.11,
+            "queueWaitMs": 2600,
+            "workWallMs": 471.87
+          }
+        },
+        "metadata": {
+          "startedMs": 43.97,
+          "finishedMs": 87.11,
+          "exiftoolWallMs": 20.43,
+          "databaseWallMs": 21.74,
+          "databaseWriteWallMs": 14.91,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 43.99,
+              "finishedMs": 48.36
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 69.6,
+              "finishedMs": 77.18
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 77.35,
+              "finishedMs": 79.34
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 69.15,
+              "finishedMs": 80.86
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 79.42,
+              "finishedMs": 81.32
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 81.34,
+              "finishedMs": 84.09
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 84.63,
+              "finishedMs": 87.08
+            }
+          ]
+        },
+        "firstPreviewMs": 3207.11,
+        "readyMs": 3391.88
+      },
+      {
+        "id": "80fa5dd1-7b3e-4e44-99a3-d960ac5bfa44",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 16,
+        "fixtureSha256": "efa950dc6ed0c6874f6b6c59dad1180fe90c48bf760bdb72c66efbe19c3a2ac7",
+        "previewSha256": "12eefc719f0e418f7ffd43d62175ab13260c1fefa42e1a0604175013919363c9",
+        "requestEndAtMs": 1793023589638.6807,
+        "requestEndMs": 0,
+        "responseMs": 50.61,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 39.32,
+            "startedMs": 46.9,
+            "finishedMs": 89.74,
+            "queueWaitMs": 4,
+            "workWallMs": 42.83
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 88.32,
+            "startedMs": 89.35,
+            "finishedMs": 89.91,
+            "queueWaitMs": 0,
+            "workWallMs": 0.56
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 89.32,
+            "startedMs": 2730.9,
+            "finishedMs": 3207.65,
+            "queueWaitMs": 2639,
+            "workWallMs": 476.76
+          }
+        },
+        "metadata": {
+          "startedMs": 47.41,
+          "finishedMs": 89.72,
+          "exiftoolWallMs": 25.18,
+          "databaseWallMs": 16.14,
+          "databaseWriteWallMs": 12.62,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 47.42,
+              "finishedMs": 49.52
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 75.44,
+              "finishedMs": 83.98
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 75.06,
+              "finishedMs": 84.21
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 84.02,
+              "finishedMs": 84.92
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 84.94,
+              "finishedMs": 85.88
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 85.95,
+              "finishedMs": 88.48
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 88.98,
+              "finishedMs": 89.68
+            }
+          ]
+        },
+        "firstPreviewMs": 3264.12,
+        "readyMs": 3448.21
+      },
+      {
+        "id": "721e4dd6-3a91-490f-bbdc-c26c71fb20c4",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 19,
+        "fixtureSha256": "26e1f44376f6cbe801d519a0608627ae748d8aeccbe823cea4e0e45c852a0f3e",
+        "previewSha256": "8a7b73a9d0aa6f061040991f362fa09b6efa9eb3d2725932c079c5b45121ca13",
+        "requestEndAtMs": 1793023589647.1165,
+        "requestEndMs": 0,
+        "responseMs": 42.47,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 31.88,
+            "startedMs": 38.89,
+            "finishedMs": 61,
+            "queueWaitMs": 4,
+            "workWallMs": 22.11
+          },
+          "StorageTemplateMigrationSingle": {
+            "queuedMs": 57.88,
+            "startedMs": 60.19,
+            "finishedMs": 61.4,
+            "queueWaitMs": 1,
+            "workWallMs": 1.21
+          },
+          "AssetGenerateThumbnails": {
+            "queuedMs": 59.88,
+            "startedMs": 2193.23,
+            "finishedMs": 2720.72,
+            "queueWaitMs": 2131,
+            "workWallMs": 527.49
+          }
+        },
+        "metadata": {
+          "startedMs": 39.17,
+          "finishedMs": 60.95,
+          "exiftoolWallMs": 8.95,
+          "databaseWallMs": 11.01,
+          "databaseWriteWallMs": 8,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 39.17,
+              "finishedMs": 40.65
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 50.33,
+              "finishedMs": 54.34
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 54.4,
+              "finishedMs": 54.72
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 49.91,
+              "finishedMs": 55.07
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 54.77,
+              "finishedMs": 55.51
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 55.56,
+              "finishedMs": 57.95
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 59.36,
+              "finishedMs": 60.89
+            }
+          ]
+        },
+        "firstPreviewMs": 2736.01,
+        "readyMs": 2915.35
+      }
+    ],
+    "candidate": [
+      {
+        "id": "269e2ea5-8180-42e8-a19a-0fa312788ffe",
+        "round": 0,
+        "workload": "single",
+        "concurrency": 1,
+        "fixture": 0,
+        "fixtureSha256": "d2ace2ec0b07c921bfd412e8b45d4cf25fe65f13d72e3d8de0cb665464ed90f8",
+        "previewSha256": "7385f9b61cf5cabc11921611b9df946953af68394655223d600ed54c21445bcb",
+        "requestEndAtMs": 1793023603660.0796,
+        "requestEndMs": 0,
+        "responseMs": 22.17,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 16.92,
+            "startedMs": 18.42,
+            "finishedMs": 36.38,
+            "queueWaitMs": 1,
+            "workWallMs": 17.96
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 33.92,
+            "startedMs": 35.62,
+            "finishedMs": 496.73,
+            "queueWaitMs": 1,
+            "workWallMs": 461.11
+          }
+        },
+        "metadata": {
+          "startedMs": 18.6,
+          "finishedMs": 36.34,
+          "exiftoolWallMs": 7.72,
+          "databaseWallMs": 8.67,
+          "databaseWriteWallMs": 6.74,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 18.63,
+              "finishedMs": 19.45
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 27.79,
+              "finishedMs": 30.35
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 30.45,
+              "finishedMs": 31.25
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 27.46,
+              "finishedMs": 31.68
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 31.35,
+              "finishedMs": 32.23
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 32.28,
+              "finishedMs": 34.25
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 35.19,
+              "finishedMs": 36.3
+            }
+          ]
+        },
+        "firstPreviewMs": 558.98,
+        "readyMs": 585.15
+      },
+      {
+        "id": "1f7d9212-3d81-4989-9735-91b9f94cf57d",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 0,
+        "fixtureSha256": "d2ace2ec0b07c921bfd412e8b45d4cf25fe65f13d72e3d8de0cb665464ed90f8",
+        "previewSha256": "7385f9b61cf5cabc11921611b9df946953af68394655223d600ed54c21445bcb",
+        "requestEndAtMs": 1793023609942.5273,
+        "requestEndMs": 0,
+        "responseMs": 48.66,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 45.47,
+            "startedMs": 46.56,
+            "finishedMs": 96.17,
+            "queueWaitMs": 0,
+            "workWallMs": 49.61
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 92.47,
+            "startedMs": 95.16,
+            "finishedMs": 810.43,
+            "queueWaitMs": 1,
+            "workWallMs": 715.27
+          }
+        },
+        "metadata": {
+          "startedMs": 46.72,
+          "finishedMs": 96.11,
+          "exiftoolWallMs": 26.7,
+          "databaseWallMs": 20.53,
+          "databaseWriteWallMs": 18.29,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 46.74,
+              "finishedMs": 47.32
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 75.08,
+              "finishedMs": 84.54
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 84.65,
+              "finishedMs": 85.53
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 74.66,
+              "finishedMs": 88.81
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 85.66,
+              "finishedMs": 89.75
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 89.82,
+              "finishedMs": 93.02
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 94.38,
+              "finishedMs": 96.03
+            }
+          ]
+        },
+        "firstPreviewMs": 833.79,
+        "readyMs": 894.7
+      },
+      {
+        "id": "7cdcfbad-fee9-4b61-8d93-78e64adc10ae",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 1,
+        "fixtureSha256": "91c517be0fb4b4c28343ca71e1b35e945503f5c1aeb0e4edeeb1075fe486088a",
+        "previewSha256": "3aa5653ac9b42496acf6de4dbcf5a1a173760a74829a7877f8670dd56489fa48",
+        "requestEndAtMs": 1793023609942.3938,
+        "requestEndMs": 0,
+        "responseMs": 60.55,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 46.61,
+            "startedMs": 48.65,
+            "finishedMs": 116.95,
+            "queueWaitMs": 1,
+            "workWallMs": 68.31
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 111.61,
+            "startedMs": 116.2,
+            "finishedMs": 849.57,
+            "queueWaitMs": 0,
+            "workWallMs": 733.36
+          }
+        },
+        "metadata": {
+          "startedMs": 48.71,
+          "finishedMs": 116.92,
+          "exiftoolWallMs": 49.49,
+          "databaseWallMs": 16.58,
+          "databaseWriteWallMs": 10.35,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 48.72,
+              "finishedMs": 50.64
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 100.91,
+              "finishedMs": 104.68
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 100.55,
+              "finishedMs": 107.05
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 104.73,
+              "finishedMs": 107.38
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 107.45,
+              "finishedMs": 108.96
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 109.08,
+              "finishedMs": 111.42
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 112.89,
+              "finishedMs": 116.86
+            }
+          ]
+        },
+        "firstPreviewMs": 940.9,
+        "readyMs": 999.19
+      },
+      {
+        "id": "49443261-5d3e-42a2-a0a7-7a555e79d837",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 2,
+        "fixtureSha256": "0f623fdc82a3d5b9bc715fccea5348534216741c62558a8c0da30bbfe092132b",
+        "previewSha256": "0430abec224779bb21016bf016c19040dc69acb9b3b19e8a7cc1917fb33e3fcc",
+        "requestEndAtMs": 1793023609942.7024,
+        "requestEndMs": 0,
+        "responseMs": 50.77,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 46.3,
+            "startedMs": 47.46,
+            "finishedMs": 104.14,
+            "queueWaitMs": 0,
+            "workWallMs": 56.67
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 101.3,
+            "startedMs": 103.17,
+            "finishedMs": 810.19,
+            "queueWaitMs": 0,
+            "workWallMs": 707.02
+          }
+        },
+        "metadata": {
+          "startedMs": 47.56,
+          "finishedMs": 104.1,
+          "exiftoolWallMs": 37.59,
+          "databaseWallMs": 17.33,
+          "databaseWriteWallMs": 13.23,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 47.57,
+              "finishedMs": 48.84
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 87.15,
+              "finishedMs": 91.46
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 86.73,
+              "finishedMs": 92.16
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 91.58,
+              "finishedMs": 93.55
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 93.63,
+              "finishedMs": 97.1
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 97.17,
+              "finishedMs": 101.49
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 102.6,
+              "finishedMs": 104.04
+            }
+          ]
+        },
+        "firstPreviewMs": 834.78,
+        "readyMs": 895.18
+      },
+      {
+        "id": "9bea55fb-aa02-439f-9db2-71553cdf36d2",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 3,
+        "fixtureSha256": "a7698199cd0457c673edd7831eb8802802c5c364ca30ef9f7300410bac883790",
+        "previewSha256": "05b289fb010ea223c3e39f74d4f6c48824d28b07bd191276db63889778ab3648",
+        "requestEndAtMs": 1793023609942.1348,
+        "requestEndMs": 0,
+        "responseMs": 63.16,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 46.87,
+            "startedMs": 48.95,
+            "finishedMs": 152.25,
+            "queueWaitMs": 1,
+            "workWallMs": 103.3
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 148.87,
+            "startedMs": 815.7,
+            "finishedMs": 1399.41,
+            "queueWaitMs": 662,
+            "workWallMs": 583.71
+          }
+        },
+        "metadata": {
+          "startedMs": 49.12,
+          "finishedMs": 152.19,
+          "exiftoolWallMs": 63.29,
+          "databaseWallMs": 37.63,
+          "databaseWriteWallMs": 34.26,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 49.12,
+              "finishedMs": 51.35
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 115.37,
+              "finishedMs": 119.78
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 119.93,
+              "finishedMs": 121.34
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 114.94,
+              "finishedMs": 124.77
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 121.56,
+              "finishedMs": 124.93
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 124.97,
+              "finishedMs": 149.24
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 150.94,
+              "finishedMs": 152.09
+            }
+          ]
+        },
+        "firstPreviewMs": 1481.09,
+        "readyMs": 1541.51
+      },
+      {
+        "id": "32c8a71d-81ca-4650-aa60-4ee9e5dd370d",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 5,
+        "fixtureSha256": "229d2181b350cc9e5d0475ef77418efbd8fd553720dbb0fbeff11451d1b51a1b",
+        "previewSha256": "0e1f77be3715246d95e4006377a963c60452164e7d43c04142ef33116902c230",
+        "requestEndAtMs": 1793023610074.0647,
+        "requestEndMs": 0,
+        "responseMs": 67.28,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 25.94,
+            "startedMs": 28.26,
+            "finishedMs": 77.32,
+            "queueWaitMs": 1,
+            "workWallMs": 49.07
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 69.94,
+            "startedMs": 683.83,
+            "finishedMs": 1259.13,
+            "queueWaitMs": 609,
+            "workWallMs": 575.3
+          }
+        },
+        "metadata": {
+          "startedMs": 30.85,
+          "finishedMs": 77.26,
+          "exiftoolWallMs": 24.67,
+          "databaseWallMs": 19.4,
+          "databaseWriteWallMs": 10.99,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 30.89,
+              "finishedMs": 34.23
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 59.6,
+              "finishedMs": 62.68
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 62.77,
+              "finishedMs": 63.3
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 59.29,
+              "finishedMs": 64.87
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 63.39,
+              "finishedMs": 65.25
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 65.31,
+              "finishedMs": 70.35
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 72.06,
+              "finishedMs": 77.14
+            }
+          ]
+        },
+        "firstPreviewMs": 1287.86,
+        "readyMs": 1367.95
+      },
+      {
+        "id": "140f49d0-6743-47cd-9059-37165b8ea8c8",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 4,
+        "fixtureSha256": "27fc35b475a6559e55c425e50e6c1efbb8e30ae65a00b91570d2159d930c8d83",
+        "previewSha256": "a0977302f82c52bcc6ad87bb9849007243238e8656b3457c2c42f37cdeee7955",
+        "requestEndAtMs": 1793023610060.4668,
+        "requestEndMs": 0,
+        "responseMs": 103.15,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 57.53,
+            "startedMs": 66.58,
+            "finishedMs": 129.11,
+            "queueWaitMs": 5,
+            "workWallMs": 62.53
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 126.53,
+            "startedMs": 1283.05,
+            "finishedMs": 1882.16,
+            "queueWaitMs": 1154,
+            "workWallMs": 599.11
+          }
+        },
+        "metadata": {
+          "startedMs": 66.71,
+          "finishedMs": 129.04,
+          "exiftoolWallMs": 37.93,
+          "databaseWallMs": 22.69,
+          "databaseWriteWallMs": 19.43,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 66.72,
+              "finishedMs": 68.57
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 107.43,
+              "finishedMs": 112.48
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 112.59,
+              "finishedMs": 113.22
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 106.86,
+              "finishedMs": 114.04
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 113.32,
+              "finishedMs": 114.46
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 114.54,
+              "finishedMs": 126.38
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 127.52,
+              "finishedMs": 128.94
+            }
+          ]
+        },
+        "firstPreviewMs": 1901.99,
+        "readyMs": 1973.19
+      },
+      {
+        "id": "6ba69805-d67d-4f9f-9cd7-7ddfb0dfa8fd",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 6,
+        "fixtureSha256": "20c831a037306f94f80675bb0e01c058a405d1b4c7e28f975d962e429ea14a2e",
+        "previewSha256": "90caefacbf8c3f42db633b34678f03be25c0df75e8b0fd336389273836953a2e",
+        "requestEndAtMs": 1793023610070.7192,
+        "requestEndMs": 0,
+        "responseMs": 56.28,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 30.28,
+            "startedMs": 36.35,
+            "finishedMs": 101.14,
+            "queueWaitMs": 1,
+            "workWallMs": 64.79
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 98.28,
+            "startedMs": 1264.41,
+            "finishedMs": 1823.01,
+            "queueWaitMs": 1164,
+            "workWallMs": 558.6
+          }
+        },
+        "metadata": {
+          "startedMs": 36.86,
+          "finishedMs": 101.05,
+          "exiftoolWallMs": 42.77,
+          "databaseWallMs": 18.97,
+          "databaseWriteWallMs": 13.78,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 36.88,
+              "finishedMs": 41.26
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 85.08,
+              "finishedMs": 88.96
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 89.06,
+              "finishedMs": 89.72
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 84.49,
+              "finishedMs": 90.28
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 89.81,
+              "finishedMs": 91.2
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 91.33,
+              "finishedMs": 98.39
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 100.15,
+              "finishedMs": 100.96
+            }
+          ]
+        },
+        "firstPreviewMs": 1845.75,
+        "readyMs": 1914.56
+      },
+      {
+        "id": "b3fa8dfa-10ab-4530-bd42-7ccc06ba976d",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 7,
+        "fixtureSha256": "4f707298366b7be72c5b2d91f9c999d1aacb918338a59bb1e96dac1ee93f34bc",
+        "previewSha256": "3c64f52a5f1329c67cc030981f2a6dce5dfed2f4ab596f5d94f04b361bf8a884",
+        "requestEndAtMs": 1793023610068.1716,
+        "requestEndMs": 0,
+        "responseMs": 91.31,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 46.83,
+            "startedMs": 54.76,
+            "finishedMs": 96.96,
+            "queueWaitMs": 4,
+            "workWallMs": 42.2
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 93.83,
+            "startedMs": 726.29,
+            "finishedMs": 1289.29,
+            "queueWaitMs": 630,
+            "workWallMs": 563
+          }
+        },
+        "metadata": {
+          "startedMs": 55.14,
+          "finishedMs": 96.9,
+          "exiftoolWallMs": 21.23,
+          "databaseWallMs": 18.63,
+          "databaseWriteWallMs": 12.25,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 55.16,
+              "finishedMs": 60.06
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 82.07,
+              "finishedMs": 88.38
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 81.67,
+              "finishedMs": 88.97
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 88.46,
+              "finishedMs": 89.19
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 89.23,
+              "finishedMs": 90.28
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 90.4,
+              "finishedMs": 94.29
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 95.54,
+              "finishedMs": 96.81
+            }
+          ]
+        },
+        "firstPreviewMs": 1354.58,
+        "readyMs": 1422.09
+      },
+      {
+        "id": "88a40318-a863-4a85-b80b-d75751a33ff2",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 11,
+        "fixtureSha256": "07f2b957d8cb5570f7fb2fc08154d8ad9f07bab5534e19187dec2daaf036805a",
+        "previewSha256": "0d6c254fdf9eb1c27753d23935725bf588f727ab77e37cd7a6a2b56253511651",
+        "requestEndAtMs": 1793023610269.982,
+        "requestEndMs": 0,
+        "responseMs": 109.48,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 81.02,
+            "startedMs": 88.75,
+            "finishedMs": 123.83,
+            "queueWaitMs": 5,
+            "workWallMs": 35.08
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 122.02,
+            "startedMs": 1674.71,
+            "finishedMs": 2231.82,
+            "queueWaitMs": 1550,
+            "workWallMs": 557.11
+          }
+        },
+        "metadata": {
+          "startedMs": 89.14,
+          "finishedMs": 123.77,
+          "exiftoolWallMs": 14.34,
+          "databaseWallMs": 18.06,
+          "databaseWriteWallMs": 10.98,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 89.15,
+              "finishedMs": 93.72
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 108.53,
+              "finishedMs": 112.99
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 109.04,
+              "finishedMs": 115.08
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 115.29,
+              "finishedMs": 117.1
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 117.22,
+              "finishedMs": 118.8
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 119,
+              "finishedMs": 121.85
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 122.96,
+              "finishedMs": 123.67
+            }
+          ]
+        },
+        "firstPreviewMs": 2299.75,
+        "readyMs": 2406.6
+      },
+      {
+        "id": "3cb2789a-f64e-4087-8a79-112da015fd68",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 9,
+        "fixtureSha256": "720573d5b7192bbdf42ce271e770f0c688295d2c2c4ff7fb3ce11808c1f5ed85",
+        "previewSha256": "2699de51ab9b8a50e11a5f4a959b771f6f58711a2134433ca509712f093714fa",
+        "requestEndAtMs": 1793023610263.0398,
+        "requestEndMs": 0,
+        "responseMs": 103.1,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 64.96,
+            "startedMs": 73.94,
+            "finishedMs": 118.79,
+            "queueWaitMs": 8,
+            "workWallMs": 44.85
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 116.96,
+            "startedMs": 1660.3,
+            "finishedMs": 2232.64,
+            "queueWaitMs": 1539,
+            "workWallMs": 572.34
+          }
+        },
+        "metadata": {
+          "startedMs": 74.21,
+          "finishedMs": 118.71,
+          "exiftoolWallMs": 24.22,
+          "databaseWallMs": 18.72,
+          "databaseWriteWallMs": 14.25,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 74.23,
+              "finishedMs": 77.81
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 102.89,
+              "finishedMs": 109.91
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 109.97,
+              "finishedMs": 110.66
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 110.79,
+              "finishedMs": 112.17
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 102.56,
+              "finishedMs": 112.38
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 112.42,
+              "finishedMs": 116.85
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 117.71,
+              "finishedMs": 118.6
+            }
+          ]
+        },
+        "firstPreviewMs": 2254.09,
+        "readyMs": 2375.04
+      },
+      {
+        "id": "d9d2b447-2d7c-4187-860b-185f6ceca5d3",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 10,
+        "fixtureSha256": "f368ea5b4c35413ef1f97c2e4e22eb167d7b129c31f99035d733c347693277e3",
+        "previewSha256": "2829c72bc00c44c32fcd78cf02c097f573ef2eb8094111e0e59afe5db588b56c",
+        "requestEndAtMs": 1793023610261.0654,
+        "requestEndMs": 0,
+        "responseMs": 84.68,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 36.93,
+            "startedMs": 41.88,
+            "finishedMs": 111.36,
+            "queueWaitMs": 4,
+            "workWallMs": 69.48
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 106.93,
+            "startedMs": 1652.42,
+            "finishedMs": 2234.65,
+            "queueWaitMs": 1525,
+            "workWallMs": 582.23
+          }
+        },
+        "metadata": {
+          "startedMs": 42.18,
+          "finishedMs": 111.3,
+          "exiftoolWallMs": 31.54,
+          "databaseWallMs": 34.48,
+          "databaseWriteWallMs": 26.3,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 42.19,
+              "finishedMs": 45.54
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 77.89,
+              "finishedMs": 88.27
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 77.48,
+              "finishedMs": 89.78
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 88.41,
+              "finishedMs": 93.26
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 93.44,
+              "finishedMs": 100.82
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 101.04,
+              "finishedMs": 107.65
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 109.83,
+              "finishedMs": 111.18
+            }
+          ]
+        },
+        "firstPreviewMs": 2337.14,
+        "readyMs": 2439.63
+      },
+      {
+        "id": "16e61428-03e0-494f-b5e5-541694c73440",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 8,
+        "fixtureSha256": "048121b5572f042de7299248645f6736ec1d51e6c1b496956bc9f8d2b135e08d",
+        "previewSha256": "23cbbfab6fbac5b9c42ee079b81f4a52bf25c3406e18562109e2363eb67a1d39",
+        "requestEndAtMs": 1793023610231.918,
+        "requestEndMs": 0,
+        "responseMs": 95.94,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 50.08,
+            "startedMs": 59.67,
+            "finishedMs": 145.26,
+            "queueWaitMs": 1,
+            "workWallMs": 85.59
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 135.08,
+            "startedMs": 1127.82,
+            "finishedMs": 1687.99,
+            "queueWaitMs": 990,
+            "workWallMs": 560.16
+          }
+        },
+        "metadata": {
+          "startedMs": 60.1,
+          "finishedMs": 145.22,
+          "exiftoolWallMs": 21.97,
+          "databaseWallMs": 57.23,
+          "databaseWriteWallMs": 40.82,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 60.12,
+              "finishedMs": 64.59
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 88.52,
+              "finishedMs": 115.26
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 89.39,
+              "finishedMs": 115.9
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 115.99,
+              "finishedMs": 121.38
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 121.64,
+              "finishedMs": 128.71
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 129.02,
+              "finishedMs": 135.39
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 138.61,
+              "finishedMs": 145.14
+            }
+          ]
+        },
+        "firstPreviewMs": 1731.19,
+        "readyMs": 1838.42
+      },
+      {
+        "id": "72e7143c-6f59-4618-82f2-a91405022a90",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 15,
+        "fixtureSha256": "fe6e0ac42462f7c82275f50e9357d4ab835f91b8fe232159874c257c5a59f180",
+        "previewSha256": "57efc1afbc0dbc01dab06cd57b6a38b6a6b6cc7be91594e9a91fd8bd59727c78",
+        "requestEndAtMs": 1793023610486.7615,
+        "requestEndMs": 0,
+        "responseMs": 50.37,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 45.24,
+            "startedMs": 47.37,
+            "finishedMs": 125.59,
+            "queueWaitMs": 1,
+            "workWallMs": 78.22
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 121.24,
+            "startedMs": 2575.07,
+            "finishedMs": 3132.02,
+            "queueWaitMs": 2431,
+            "workWallMs": 556.94
+          }
+        },
+        "metadata": {
+          "startedMs": 47.97,
+          "finishedMs": 125.51,
+          "exiftoolWallMs": 29.01,
+          "databaseWallMs": 44.16,
+          "databaseWriteWallMs": 29.03,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 47.99,
+              "finishedMs": 57.32
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 86.78,
+              "finishedMs": 93.71
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 87.15,
+              "finishedMs": 94.98
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 95.09,
+              "finishedMs": 99.86
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 100.14,
+              "finishedMs": 112.47
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 112.6,
+              "finishedMs": 121.1
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 124.34,
+              "finishedMs": 125.37
+            }
+          ]
+        },
+        "firstPreviewMs": 3141.69,
+        "readyMs": 3248.93
+      },
+      {
+        "id": "7af951d7-9282-4397-a7ad-2cfdb56d1fd7",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 12,
+        "fixtureSha256": "47d93720b3875111efbda16e4a92509cbd549a9435592b849acedca4b6b516fe",
+        "previewSha256": "98754712d4a530887606ec5727e2c5076151129a8c46acc58f76e543e6d1aa1c",
+        "requestEndAtMs": 1793023610478.7412,
+        "requestEndMs": 0,
+        "responseMs": 61.85,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 55.26,
+            "startedMs": 59.73,
+            "finishedMs": 114.47,
+            "queueWaitMs": 0,
+            "workWallMs": 54.74
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 104.26,
+            "startedMs": 2023.85,
+            "finishedMs": 2608.33,
+            "queueWaitMs": 1918,
+            "workWallMs": 584.48
+          }
+        },
+        "metadata": {
+          "startedMs": 59.85,
+          "finishedMs": 114.38,
+          "exiftoolWallMs": 17.35,
+          "databaseWallMs": 32.42,
+          "databaseWriteWallMs": 26.05,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 59.86,
+              "finishedMs": 60.84
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 79.26,
+              "finishedMs": 82.38
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 82.52,
+              "finishedMs": 89.65
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 89.74,
+              "finishedMs": 92.29
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 78.66,
+              "finishedMs": 97.1
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 97.22,
+              "finishedMs": 104.83
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 108.82,
+              "finishedMs": 114.22
+            }
+          ]
+        },
+        "firstPreviewMs": 2667.8,
+        "readyMs": 2820.65
+      },
+      {
+        "id": "1a51c2b5-9eac-4014-8622-4fb8c74887ec",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 13,
+        "fixtureSha256": "6829861e5810aa43a56bf034337c87ed5fd609b98012a11a24697f85fa818675",
+        "previewSha256": "376eab7e08c165cbfad62ccee1d58e983b5ca7d2a95302be5218dda3fc0703ae",
+        "requestEndAtMs": 1793023610472.9104,
+        "requestEndMs": 0,
+        "responseMs": 63.9,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 50.09,
+            "startedMs": 51.66,
+            "finishedMs": 75.71,
+            "queueWaitMs": 0,
+            "workWallMs": 24.06
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 72.09,
+            "startedMs": 2023.99,
+            "finishedMs": 2566.43,
+            "queueWaitMs": 1950,
+            "workWallMs": 542.44
+          }
+        },
+        "metadata": {
+          "startedMs": 51.85,
+          "finishedMs": 75.59,
+          "exiftoolWallMs": 10.3,
+          "databaseWallMs": 10.88,
+          "databaseWriteWallMs": 8.12,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 51.85,
+              "finishedMs": 53.07
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 63.8,
+              "finishedMs": 68.37
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 64.11,
+              "finishedMs": 68.51
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 68.53,
+              "finishedMs": 68.99
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 69.09,
+              "finishedMs": 69.99
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 70.12,
+              "finishedMs": 72.63
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 73.79,
+              "finishedMs": 74.89
+            }
+          ]
+        },
+        "firstPreviewMs": 2575.12,
+        "readyMs": 2700.38
+      },
+      {
+        "id": "9f7babab-521a-4712-b6ed-e8b909b60e4f",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 14,
+        "fixtureSha256": "e0e847988ad8c2fd248f09cd8ede22965e08fe92dc08d613eb01312c2ef8bbf3",
+        "previewSha256": "f3d722ee4f2785964cc1a0e9236a189995133851bdeb7e0f399bf4edc07013bd",
+        "requestEndAtMs": 1793023610487.7498,
+        "requestEndMs": 0,
+        "responseMs": 67.35,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 47.25,
+            "startedMs": 50.82,
+            "finishedMs": 92.97,
+            "queueWaitMs": 2,
+            "workWallMs": 42.15
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 88.25,
+            "startedMs": 2009.18,
+            "finishedMs": 2598.6,
+            "queueWaitMs": 1919,
+            "workWallMs": 589.42
+          }
+        },
+        "metadata": {
+          "startedMs": 51.1,
+          "finishedMs": 92.93,
+          "exiftoolWallMs": 12.34,
+          "databaseWallMs": 26.34,
+          "databaseWriteWallMs": 22.3,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 51.11,
+              "finishedMs": 52.52
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 65.66,
+              "finishedMs": 77.23
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 65.29,
+              "finishedMs": 80.31
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 77.35,
+              "finishedMs": 81.13
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 81.26,
+              "finishedMs": 83.98
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 84.07,
+              "finishedMs": 88.62
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 91.09,
+              "finishedMs": 92.89
+            }
+          ]
+        },
+        "firstPreviewMs": 2612.53,
+        "readyMs": 2734.94
+      },
+      {
+        "id": "e6c13563-b4da-4238-bb69-b19134941f27",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 18,
+        "fixtureSha256": "5cc58a72e39f0b928601546c07c7555068709460f17a8253d05cc3cd50983e92",
+        "previewSha256": "dc5f36644480b43c2a3c42f3c43fded7b5f08add1a69c7ab82ba5a4f281fa1f0",
+        "requestEndAtMs": 1793023610697.2727,
+        "requestEndMs": 0,
+        "responseMs": 60.68,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 49.73,
+            "startedMs": 62.71,
+            "finishedMs": 105.64,
+            "queueWaitMs": 6,
+            "workWallMs": 42.93
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 103.73,
+            "startedMs": 2926.64,
+            "finishedMs": 3452.39,
+            "queueWaitMs": 2821,
+            "workWallMs": 525.76
+          }
+        },
+        "metadata": {
+          "startedMs": 62.94,
+          "finishedMs": 105.58,
+          "exiftoolWallMs": 21.39,
+          "databaseWallMs": 19.66,
+          "databaseWriteWallMs": 11.02,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 62.95,
+              "finishedMs": 67.2
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 89.14,
+              "finishedMs": 95.49
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 88.88,
+              "finishedMs": 95.73
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 95.53,
+              "finishedMs": 99.44
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 99.49,
+              "finishedMs": 101.42
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 101.57,
+              "finishedMs": 103.8
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 104.82,
+              "finishedMs": 105.5
+            }
+          ]
+        },
+        "firstPreviewMs": 3486.49,
+        "readyMs": 3642.38
+      },
+      {
+        "id": "690046a0-3a09-47fc-9df4-9a69bee35c96",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 19,
+        "fixtureSha256": "26e1f44376f6cbe801d519a0608627ae748d8aeccbe823cea4e0e45c852a0f3e",
+        "previewSha256": "8a7b73a9d0aa6f061040991f362fa09b6efa9eb3d2725932c079c5b45121ca13",
+        "requestEndAtMs": 1793023610703.8164,
+        "requestEndMs": 0,
+        "responseMs": 55.68,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 43.18,
+            "startedMs": 56.12,
+            "finishedMs": 93.1,
+            "queueWaitMs": 2,
+            "workWallMs": 36.98
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 91.18,
+            "startedMs": 2917.21,
+            "finishedMs": 3435.12,
+            "queueWaitMs": 2823,
+            "workWallMs": 517.91
+          }
+        },
+        "metadata": {
+          "startedMs": 56.2,
+          "finishedMs": 93.07,
+          "exiftoolWallMs": 15.58,
+          "databaseWallMs": 20.1,
+          "databaseWriteWallMs": 14.99,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 56.2,
+              "finishedMs": 60.23
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 76.39,
+              "finishedMs": 79.62
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 79.71,
+              "finishedMs": 80.54
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 80.62,
+              "finishedMs": 84.57
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 76.11,
+              "finishedMs": 85.48
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 85.51,
+              "finishedMs": 91.13
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 91.96,
+              "finishedMs": 93.05
+            }
+          ]
+        },
+        "firstPreviewMs": 3448.13,
+        "readyMs": 3596.49
+      },
+      {
+        "id": "0393af17-3382-4c44-8f73-db71ac4ad56b",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 17,
+        "fixtureSha256": "4111fa99f92e6e05203053add6c9008cefd9faa79f9a6e18042f824f50307c36",
+        "previewSha256": "823637bfd42deda8abadf90840a2b876b202815cf7456ab8c85bd880c53f2b9b",
+        "requestEndAtMs": 1793023610693.7126,
+        "requestEndMs": 0,
+        "responseMs": 66.02,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 54.29,
+            "startedMs": 66.47,
+            "finishedMs": 96.83,
+            "queueWaitMs": 7,
+            "workWallMs": 30.36
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 93.29,
+            "startedMs": 2394.02,
+            "finishedMs": 2949.44,
+            "queueWaitMs": 2300,
+            "workWallMs": 555.42
+          }
+        },
+        "metadata": {
+          "startedMs": 66.6,
+          "finishedMs": 96.78,
+          "exiftoolWallMs": 14.33,
+          "databaseWallMs": 14.08,
+          "databaseWriteWallMs": 11.05,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 66.6,
+              "finishedMs": 67.83
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 83.16,
+              "finishedMs": 87.46
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 87.51,
+              "finishedMs": 87.83
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 82.51,
+              "finishedMs": 88.67
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 87.89,
+              "finishedMs": 88.93
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 88.97,
+              "finishedMs": 93.6
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 94.89,
+              "finishedMs": 96.7
+            }
+          ]
+        },
+        "firstPreviewMs": 2986.36,
+        "readyMs": 3141.63
+      },
+      {
+        "id": "f6673d13-fd8a-4e21-a3f1-a0bec692a39a",
+        "round": 0,
+        "workload": "batch",
+        "concurrency": 4,
+        "fixture": 16,
+        "fixtureSha256": "efa950dc6ed0c6874f6b6c59dad1180fe90c48bf760bdb72c66efbe19c3a2ac7",
+        "previewSha256": "12eefc719f0e418f7ffd43d62175ab13260c1fefa42e1a0604175013919363c9",
+        "requestEndAtMs": 1793023610691.746,
+        "requestEndMs": 0,
+        "responseMs": 60.42,
+        "stages": {
+          "AssetExtractMetadata": {
+            "queuedMs": 53.25,
+            "startedMs": 57.23,
+            "finishedMs": 97.21,
+            "queueWaitMs": 2,
+            "workWallMs": 39.98
+          },
+          "StorageTemplateMigrationSingle": null,
+          "AssetGenerateThumbnails": {
+            "queuedMs": 92.25,
+            "startedMs": 2395.97,
+            "finishedMs": 2930.86,
+            "queueWaitMs": 2302,
+            "workWallMs": 534.89
+          }
+        },
+        "metadata": {
+          "startedMs": 57.53,
+          "finishedMs": 97.18,
+          "exiftoolWallMs": 11.71,
+          "databaseWallMs": 24.9,
+          "databaseWriteWallMs": 15.22,
+          "database": [
+            {
+              "stage": "db.getForMetadataExtraction",
+              "startedMs": 57.55,
+              "finishedMs": 61.9
+            },
+            {
+              "stage": "db.update",
+              "startedMs": 73.98,
+              "finishedMs": 81.6
+            },
+            {
+              "stage": "db.upsertExif",
+              "startedMs": 74.32,
+              "finishedMs": 82.88
+            },
+            {
+              "stage": "db.getForMetadataExtractionTags",
+              "startedMs": 82.98,
+              "finishedMs": 86.52
+            },
+            {
+              "stage": "db.tags.replaceAssetTags",
+              "startedMs": 86.62,
+              "finishedMs": 90.06
+            },
+            {
+              "stage": "db.upsertJobStatus",
+              "startedMs": 90.11,
+              "finishedMs": 92.99
+            },
+            {
+              "stage": "db.workflow.search",
+              "startedMs": 95.36,
+              "finishedMs": 97.15
+            }
+          ]
+        },
+        "firstPreviewMs": 2951.22,
+        "readyMs": 3107.03
+      }
+    ]
+  }
+}
