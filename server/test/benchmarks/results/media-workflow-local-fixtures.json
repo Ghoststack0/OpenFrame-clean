@@ -1,0 +1,47 @@
+[
+  {
+    "file": "lumix12.jpg",
+    "url": "https://img.photographyblog.com/reviews/panasonic_lumix_dmc_lx100/photos/panasonic_lumix_dmc_lx100_01.jpg",
+    "bytes": 5956096,
+    "sha256": "1cd2211a636a7748a8c11ea71b2a5f08a917de865b837cdda0227c60d4126167"
+  },
+  {
+    "file": "sony24.jpg",
+    "url": "https://img.photographyblog.com/reviews/sony_a6000/photos/sony_a6000_01.jpg",
+    "bytes": 4685824,
+    "sha256": "681a20c2bb49a0f029a2b848998cffd2166379f80d717dd21f02a9a49f70889d"
+  },
+  {
+    "file": "nikon24.jpg",
+    "url": "https://img.photographyblog.com/reviews/nikon_d600/photos/nikon_d600_01.jpg",
+    "bytes": 7446676,
+    "sha256": "997c91f919c85f916dd31a5f7e7dc3c91efc57691f7e88890870783ea37983c0"
+  },
+  {
+    "file": "4k.mp4",
+    "sha256": "a9a748282d3a620a4b8d74fde8d1415a3bb07cf8ca097a480860bd6543e0e73e",
+    "generation": [
+      "ffmpeg",
+      "-y",
+      "-v",
+      "error",
+      "-f",
+      "lavfi",
+      "-i",
+      "testsrc2=size=3840x2160:rate=24",
+      "-t",
+      "8",
+      "-c:v",
+      "libx264",
+      "-preset",
+      "ultrafast",
+      "-crf",
+      "22",
+      "-g",
+      "48",
+      "-threads",
+      "2",
+      "4k.mp4"
+    ]
+  }
+]
