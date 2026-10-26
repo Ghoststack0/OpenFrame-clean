@@ -1,6 +1,6 @@
 import { Stats } from 'node:fs';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
-import { AssetPathType, AssetType, JobStatus } from 'src/enum.js';
+import { AssetPathType, AssetType, JobName, JobStatus } from 'src/enum.js';
 import { StorageTemplateService } from 'src/services/storage-template.service.js';
 import { AlbumFactory } from 'test/factories/album.factory.js';
 import { AssetFactory } from 'test/factories/asset.factory.js';
@@ -90,6 +90,43 @@ describe(StorageTemplateService.name, () => {
         secondOptions: ['s', 'ss', 'SSS'],
         weekOptions: ['W', 'WW'],
         yearOptions: ['y', 'yy'],
+      });
+    });
+  });
+
+  describe('onAssetMetadataExtracted', () => {
+    it.each(['upload', 'copy'] as const)(
+      'should generate thumbnails directly for %s when the template is disabled',
+      async (source) => {
+        mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: false } });
+
+        await sut.onAssetMetadataExtracted({ assetId: stillAsset.id, userId: stillAsset.ownerId, source });
+
+        expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+          name: JobName.AssetGenerateThumbnails,
+          data: { id: stillAsset.id, source },
+        });
+        expect(mocks.assetJob.getForStorageTemplateJob).not.toHaveBeenCalled();
+      },
+    );
+
+    it.each([undefined, 'sidecar-write', 'edit'] as const)(
+      'should not generate thumbnails for %s metadata refreshes when the template is disabled',
+      async (source) => {
+        mocks.systemMetadata.get.mockResolvedValue({ storageTemplate: { enabled: false } });
+
+        await sut.onAssetMetadataExtracted({ assetId: stillAsset.id, userId: stillAsset.ownerId, source });
+
+        expect(mocks.job.queue).not.toHaveBeenCalled();
+      },
+    );
+
+    it('should keep migration ahead of thumbnails when the template is enabled', async () => {
+      await sut.onAssetMetadataExtracted({ assetId: stillAsset.id, userId: stillAsset.ownerId, source: 'upload' });
+
+      expect(mocks.job.queue).toHaveBeenCalledExactlyOnceWith({
+        name: JobName.StorageTemplateMigrationSingle,
+        data: { id: stillAsset.id, source: 'upload' },
       });
     });
   });
