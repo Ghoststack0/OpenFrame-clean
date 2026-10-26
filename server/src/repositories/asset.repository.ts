@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import {
   type ExpressionBuilder,
+  type ExpressionWrapper,
   type Insertable,
   type Kysely,
   type NotNull,
   type SelectQueryBuilder,
   type Selectable,
   type ShallowDehydrateObject,
+  type SqlBool,
   UpdateResult,
   type Updateable,
   sql,
@@ -173,6 +175,20 @@ const withBoundingBox = <T>(qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', T
     eb.or([eb('asset_exif.longitude', '>=', west), eb('asset_exif.longitude', '<=', east)]),
   );
 };
+
+export type OwnerAccess = { userId: string; hasElevatedPermission?: boolean };
+
+/** The predicate of `AccessRepository.checkOwnerAccess`, so a media lookup can confirm owner access without another query. */
+const isOwnerAccessible = (
+  eb: ExpressionBuilder<DB, 'asset'>,
+  owner?: OwnerAccess,
+): ExpressionWrapper<DB, 'asset', SqlBool> =>
+  owner
+    ? eb.and([
+        eb('asset.ownerId', '=', owner.userId),
+        ...(owner.hasElevatedPermission ? [] : [eb('asset.visibility', '!=', AssetVisibility.Locked)]),
+      ])
+    : eb.lit(false);
 
 @Injectable()
 export class AssetRepository {
@@ -1165,9 +1181,11 @@ export class AssetRepository {
       .select('originalPath');
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, true] })
-  getForOriginal(id: string, isEdited: boolean) {
-    return this.buildGetForOriginal([id], isEdited).executeTakeFirstOrThrow();
+  @GenerateSql({ params: [DummyValue.UUID, true, { userId: DummyValue.UUID }] })
+  getForOriginal(id: string, isEdited: boolean, owner?: OwnerAccess) {
+    return this.buildGetForOriginal([id], isEdited)
+      .select((eb) => isOwnerAccessible(eb, owner).as('isOwner'))
+      .executeTakeFirst();
   }
 
   @GenerateSql({ params: [[DummyValue.UUID], true] })
@@ -1175,8 +1193,8 @@ export class AssetRepository {
     return this.buildGetForOriginal(ids, isEdited).execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true] })
-  async getForThumbnail(id: string, type: AssetFileType, isEdited: boolean) {
+  @GenerateSql({ params: [DummyValue.UUID, AssetFileType.Preview, true, { userId: DummyValue.UUID }] })
+  async getForThumbnail(id: string, type: AssetFileType, isEdited: boolean, owner?: OwnerAccess) {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', id)
@@ -1184,16 +1202,18 @@ export class AssetRepository {
         join.onRef('asset.id', '=', 'asset_file.assetId').on('asset_file.type', '=', type),
       )
       .select(['asset.originalPath', 'asset.originalFileName', 'asset_file.path as path'])
+      .select((eb) => isOwnerAccessible(eb, owner).as('isOwner'))
       .orderBy('asset_file.isEdited', isEdited ? 'desc' : 'asc')
-      .executeTakeFirstOrThrow();
+      .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getForVideo(id: string) {
+  @GenerateSql({ params: [DummyValue.UUID, { userId: DummyValue.UUID }] })
+  async getForVideo(id: string, owner?: OwnerAccess) {
     return this.db
       .selectFrom('asset')
       .select(['asset.originalPath'])
       .select((eb) => withFilePath(eb, AssetFileType.EncodedVideo).as('encodedVideoPath'))
+      .select((eb) => isOwnerAccessible(eb, owner).as('isOwner'))
       .where('asset.id', '=', id)
       .where('asset.type', '=', AssetType.Video)
       .executeTakeFirst();
