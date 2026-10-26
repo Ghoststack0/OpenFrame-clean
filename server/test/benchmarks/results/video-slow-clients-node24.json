@@ -1,0 +1,90 @@
+{
+  "node": "v24.13.1",
+  "method": "16 simultaneous 8 MiB HTTP clients pausing 2ms per received chunk; SHA256 checked; then 16 early-aborted clients. Two alternating paired rounds. Candidate uses the actual built sendFile helper. Memory includes server and clients, GC is uncontrolled; this is a cleanup/integrity stress check, not a production memory bound or throughput claim.",
+  "samples": [
+    {
+      "round": 0,
+      "variant": "baseline",
+      "ms": 658.01696,
+      "initial": {
+        "rss": 118063104,
+        "heapTotal": 35725312,
+        "heapUsed": 16205432,
+        "external": 12134206,
+        "arrayBuffers": 8419967
+      },
+      "peakRss": 200900608,
+      "peakArrayBuffers": 88501359,
+      "final": {
+        "rss": 191492096,
+        "heapTotal": 37036032,
+        "heapUsed": 17398328,
+        "external": 23668896,
+        "arrayBuffers": 19945775
+      }
+    },
+    {
+      "round": 0,
+      "variant": "candidate",
+      "ms": 669.668367,
+      "initial": {
+        "rss": 191492096,
+        "heapTotal": 37036032,
+        "heapUsed": 17400992,
+        "external": 23668896,
+        "arrayBuffers": 19945775
+      },
+      "peakRss": 192262144,
+      "peakArrayBuffers": 64419951,
+      "final": {
+        "rss": 192262144,
+        "heapTotal": 54337536,
+        "heapUsed": 16451152,
+        "external": 38532702,
+        "arrayBuffers": 22829359
+      }
+    },
+    {
+      "round": 1,
+      "variant": "candidate",
+      "ms": 599.3520669999998,
+      "initial": {
+        "rss": 192262144,
+        "heapTotal": 54337536,
+        "heapUsed": 16452424,
+        "external": 38532702,
+        "arrayBuffers": 22829359
+      },
+      "peakRss": 201830400,
+      "peakArrayBuffers": 83276911,
+      "final": {
+        "rss": 191922176,
+        "heapTotal": 54599680,
+        "heapUsed": 16486552,
+        "external": 37208980,
+        "arrayBuffers": 22042927
+      }
+    },
+    {
+      "round": 1,
+      "variant": "baseline",
+      "ms": 532.5291110000003,
+      "initial": {
+        "rss": 191922176,
+        "heapTotal": 54599680,
+        "heapUsed": 16487496,
+        "external": 37208980,
+        "arrayBuffers": 22042927
+      },
+      "peakRss": 208175104,
+      "peakArrayBuffers": 91384943,
+      "final": {
+        "rss": 192143360,
+        "heapTotal": 54337536,
+        "heapUsed": 17642848,
+        "external": 28911776,
+        "arrayBuffers": 25188655
+      }
+    }
+  ]
+}
