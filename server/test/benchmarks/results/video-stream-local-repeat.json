@@ -1,0 +1,108 @@
+{
+  "generatedAt": "2026-10-26T07:38:51.322Z",
+  "platform": {
+    "node": "v26.10.0",
+    "os": "linux",
+    "release": "7.2.8-9-omarchy",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H"
+  },
+  "method": "Real Express sendFile, default 64 KiB versus 256 KiB reads, six alternating paired rounds, eight sequential 32 MiB transfers per sample, warmed filesystem cache, SHA256 verification of every response. CPU includes both HTTP server and client. No authentication, database, TLS, network shaping, or power measurement.",
+  "summary": [
+    {
+      "variant": "baseline",
+      "medianMs": 940.2964670000008,
+      "medianCpuMs": 1692.4470000000001
+    },
+    {
+      "variant": "candidate",
+      "medianMs": 884.4925065000007,
+      "medianCpuMs": 1584.779
+    }
+  ],
+  "samples": [
+    {
+      "round": 0,
+      "variant": "baseline",
+      "bytes": 268435456,
+      "ms": 1175.862857,
+      "cpuMs": 2298.647
+    },
+    {
+      "round": 0,
+      "variant": "candidate",
+      "bytes": 268435456,
+      "ms": 954.6462529999999,
+      "cpuMs": 1857.673
+    },
+    {
+      "round": 1,
+      "variant": "candidate",
+      "bytes": 268435456,
+      "ms": 841.41005,
+      "cpuMs": 1485.017
+    },
+    {
+      "round": 1,
+      "variant": "baseline",
+      "bytes": 268435456,
+      "ms": 930.3454660000002,
+      "cpuMs": 1699.74
+    },
+    {
+      "round": 2,
+      "variant": "baseline",
+      "bytes": 268435456,
+      "ms": 866.4340620000003,
+      "cpuMs": 1585.299
+    },
+    {
+      "round": 2,
+      "variant": "candidate",
+      "bytes": 268435456,
+      "ms": 821.3957220000002,
+      "cpuMs": 1431.901
+    },
+    {
+      "round": 3,
+      "variant": "candidate",
+      "bytes": 268435456,
+      "ms": 864.0892530000001,
+      "cpuMs": 1611.756
+    },
+    {
+      "round": 3,
+      "variant": "baseline",
+      "bytes": 268435456,
+      "ms": 1323.9271870000002,
+      "cpuMs": 2340.923
+    },
+    {
+      "round": 4,
+      "variant": "baseline",
+      "bytes": 268435456,
+      "ms": 950.2474680000014,
+      "cpuMs": 1685.154
+    },
+    {
+      "round": 4,
+      "variant": "candidate",
+      "bytes": 268435456,
+      "ms": 904.8957600000012,
+      "cpuMs": 1557.802
+    },
+    {
+      "round": 5,
+      "variant": "candidate",
+      "bytes": 268435456,
+      "ms": 946.0077180000008,
+      "cpuMs": 1643.725
+    },
+    {
+      "round": 5,
+      "variant": "baseline",
+      "bytes": 268435456,
+      "ms": 901.1274750000011,
+      "cpuMs": 1548.314
+    }
+  ]
+}
