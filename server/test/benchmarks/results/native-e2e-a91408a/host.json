@@ -1,0 +1,8 @@
+{
+  "kernel": "7.0.0-38-generic",
+  "architecture": "x86_64",
+  "cpu": "AMD A4-9125 RADEON R3, 4 COMPUTE CORES 2C+2G",
+  "logicalCpus": 2,
+  "memory": "MemTotal:        6981580 kB",
+  "os": "Ubuntu 24.04.5 LTS"
+}
