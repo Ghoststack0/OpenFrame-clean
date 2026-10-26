@@ -28,7 +28,7 @@ import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
 import { HumanReadableSize } from 'src/utils/bytes.js';
 import { generateProfileImage } from 'src/utils/profile-image.js';
-import { getUserAgentDetails } from 'src/utils/request.js';
+import { getAppVersionFromUA, getUserAgentDetails } from 'src/utils/request.js';
 
 export interface LoginDetails {
   isSecure: boolean;
@@ -62,6 +62,9 @@ export type ValidateRequest = {
     uri: string;
   };
 };
+
+const ONE_HOUR_MS = 60 * 60 * 1000;
+const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
 @Injectable()
 export class AuthService extends BaseService {
@@ -550,11 +553,11 @@ export class AuthService extends BaseService {
     const hashed = this.cryptoRepository.hashSha256(token);
     const session = await this.sessionRepository.getByToken(hashed);
     if (session?.user) {
-      const { appVersion, deviceOS, deviceType } = getUserAgentDetails(headers);
-      const now = DateTime.now();
-      const updatedAt = DateTime.fromJSDate(session.updatedAt);
-      const diff = now.diff(updatedAt, ['hours']);
-      if (diff.hours > 1 || appVersion !== session.appVersion) {
+      // Full user agent parsing is only needed for the occasional session update, not on every request.
+      const appVersion = getAppVersionFromUA(headers['user-agent'] ?? '');
+      const now = Date.now();
+      if (now - session.updatedAt.getTime() > ONE_HOUR_MS || appVersion !== session.appVersion) {
+        const { deviceOS, deviceType } = getUserAgentDetails(headers);
         await this.sessionRepository.update(session.id, {
           id: session.id,
           updatedAt: new Date(),
@@ -568,12 +571,12 @@ export class AuthService extends BaseService {
       let hasElevatedPermission = false;
 
       if (session.pinExpiresAt) {
-        const pinExpiresAt = DateTime.fromJSDate(session.pinExpiresAt);
+        const pinExpiresAt = session.pinExpiresAt.getTime();
         hasElevatedPermission = pinExpiresAt > now;
 
-        if (hasElevatedPermission && now.plus({ minutes: 5 }) > pinExpiresAt) {
+        if (hasElevatedPermission && now + FIVE_MINUTES_MS > pinExpiresAt) {
           await this.sessionRepository.update(session.id, {
-            pinExpiresAt: DateTime.now().plus({ minutes: 5 }).toJSDate(),
+            pinExpiresAt: new Date(Date.now() + FIVE_MINUTES_MS),
           });
         }
       }
