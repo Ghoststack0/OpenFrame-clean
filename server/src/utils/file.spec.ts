@@ -1,4 +1,5 @@
 import { HttpException } from '@nestjs/common';
+import compression from 'compression';
 import express, { type ErrorRequestHandler } from 'express';
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs/promises';
@@ -38,7 +39,7 @@ describe('sendFile', () => {
   let directory: string;
   let path: string;
 
-  const createApp = (handler = sendFile, filename = path) => {
+  const createApp = (handler = sendFile, filename = path, contentType = 'image/jpeg') => {
     const app = express();
     app.set('etag', 'strong');
     app.get('/', (req, res, next) => {
@@ -48,7 +49,7 @@ describe('sendFile', () => {
         () =>
           new ImmichFileResponse({
             path: filename,
-            contentType: 'image/jpeg',
+            contentType,
             cacheControl: CacheControl.PrivateWithCache,
             fileName: 'test image.jpg',
           }),
@@ -98,6 +99,51 @@ describe('sendFile', () => {
     expect(partial.body).toEqual(Buffer.from('2345'));
     expect(partial.headers['content-range']).toBe('bytes 2-5/10');
   });
+
+  it('streams video with byte ranges, conditional requests, and HEAD intact', async () => {
+    const videoPath = join(directory, 'video.mp4');
+    const video = Buffer.alloc(1024 * 1024, 37);
+    await fs.writeFile(videoPath, video);
+    const app = createApp(sendFile, videoPath, 'video/mp4');
+    const full = await request(app).get('/').responseType('blob').expect(200);
+    expect(Buffer.isBuffer(full.body)).toBe(true);
+    expect(full.body.equals(video)).toBe(true);
+    expect(full.headers['content-length']).toBe(String(video.length));
+    const partial = await request(app).get('/').responseType('blob').set('Range', 'bytes=262140-262150').expect(206);
+    expect(partial.body).toEqual(video.subarray(262_140, 262_151));
+    expect(partial.headers['content-range']).toBe(`bytes 262140-262150/${video.length}`);
+    await request(app).get('/').set('If-None-Match', full.headers.etag).expect(304);
+    const head = await request(app).head('/').expect(200);
+    expect(head.text).toBeUndefined();
+    expect(head.headers['content-length']).toBe(String(video.length));
+  });
+
+  it.each(['image/jpeg', 'image/webp', 'video/mp4', 'image/svg+xml', 'image/bmp', 'application/octet-stream'])(
+    'never gzips %s behind the global compression middleware',
+    async (contentType) => {
+      // Highly compressible and above the middleware threshold, so only no-transform prevents encoding.
+      const media = Buffer.alloc(64 * 1024, 'a');
+      const mediaPath = join(directory, `compressible-${contentType.replace('/', '-')}`);
+      await fs.writeFile(mediaPath, media);
+      const app = express();
+      app.use(compression());
+      app.use(createApp(sendFile, mediaPath, contentType));
+
+      const full = await request(app).get('/').set('Accept-Encoding', 'gzip').responseType('blob').expect(200);
+      expect(full.headers['content-encoding']).toBeUndefined();
+      expect(full.headers['content-length']).toBe(String(media.length));
+      expect(full.body.equals(media)).toBe(true);
+
+      const partial = await request(app)
+        .get('/')
+        .set('Accept-Encoding', 'gzip')
+        .set('Range', 'bytes=100-199')
+        .responseType('blob')
+        .expect(206);
+      expect(partial.headers['content-encoding']).toBeUndefined();
+      expect(partial.body.equals(media.subarray(100, 200))).toBe(true);
+    },
+  );
 
   it('preserves the existing not-found mapping for unsatisfiable ranges', async () => {
     expectNotFound(await request(createApp()).get('/').set('Range', 'bytes=20-30'));
