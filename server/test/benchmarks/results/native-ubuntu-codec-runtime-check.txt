@@ -1,0 +1,12 @@
+IMG_2682.heic: identical-preview
+EOS_30D.CR2: identical-preview
+10bit-HDR-P3-nclx.avif: identical-preview
+8bit-sRGB.jxl: identical-preview
+16bit-HDR-P3-nclx.jxl: identical-preview
+openframe-icon.svg: identical-preview
+Sharp/libvips 8.18.7: JPEG, PNG, WebP and JPEG XL encode/decode, SVG decode and pinned policy passed.
+Codec parity UNVERIFIED: HEIC input=true. The HEIF flag does not prove HEVC decoding. Camera RAW and HDR compatibility require sample tests. Validate representative library files before migration; retain Docker.
+FFmpeg/ffprobe: H.264 encode and probe passed; other codecs and hardware acceleration remain unverified.
+PostgreSQL 16.6: authenticated; vector operation and extensions checked.
+Redis 7.4.2: authenticated PING passed.
+Source-codec normal startup and full HTTP/ML smoke check passed.
