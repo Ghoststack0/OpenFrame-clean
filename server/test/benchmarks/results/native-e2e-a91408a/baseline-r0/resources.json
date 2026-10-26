@@ -1,0 +1,24 @@
+{
+  "backendCpuSeconds": 432.946086,
+  "hostIdleDuringRun": true,
+  "hostBusyCpuSeconds": 1593.82,
+  "unattributedCpuSecondsUpperBound": 25.3169600000001,
+  "clientCpuSeconds": 20.005195999999998,
+  "samplerCpuSeconds": 44.461757999999996,
+  "ancillaryCpuSecondsLowerBound": 1071.09,
+  "peakRssBytes": 1882361856,
+  "peakStackRssBytes": 3853537280,
+  "backendCgroupMemoryPeakBytes": 1958666240,
+  "rssSamplingIntervalMs": 100,
+  "scope": "Backend CPU is exact cgroup accounting including exited children. RSS is sampled aggregate process RSS, shared pages counted per process. Stack adds existing ML/PostgreSQL/Redis descendants. Ancillary CPU is a sampled lower bound; short-lived DB children may be missed. Includes untimed fixture uploads, warmup and queue drain, excludes source/fixture generation and service startup. Cgroup memory.peak includes startup and file cache. Unattributed CPU includes sampling gaps; reject runs above max(5 CPU seconds, 5% of host busy CPU).",
+  "hostIdleBeforeRun": {
+    "sampleSeconds": 3,
+    "cpuBusyFraction": 0.026936026936026924,
+    "loadAverage": [
+      0.080078125,
+      0.484375,
+      1.9775390625
+    ]
+  },
+  "wallSecondsIncludingStartup": 828.4575336800044
+}
