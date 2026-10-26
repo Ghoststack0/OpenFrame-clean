@@ -8,6 +8,18 @@ import { getKyselyConfig } from 'src/utils/database.js';
 
 const globalSetup = async () => {
   const templateName = 'mich';
+  // Docker-free hosts can supply their own server; the URL must name the template database, e.g. .../mich.
+  const postgresUrl = process.env.IMMICH_TEST_POSTGRES_URL ?? (await startContainer(templateName));
+  const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }));
+
+  const configRepository = new ConfigRepository();
+  const logger = LoggingRepository.create();
+  await new DatabaseRepository(db, logger, configRepository).runMigrations();
+
+  await db.destroy();
+};
+
+const startContainer = async (templateName: string) => {
   const postgresContainer = await new GenericContainer('ghcr.io/immich-app/postgres:14-vectorchord0.4.3')
     .withExposedPorts(5432)
     .withEnvironment({
@@ -39,14 +51,7 @@ const globalSetup = async () => {
   const postgresUrl = `postgres://postgres:postgres@${postgresContainer.getHost()}:${postgresPort}/${templateName}`;
 
   process.env.IMMICH_TEST_POSTGRES_URL = postgresUrl;
-
-  const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }));
-
-  const configRepository = new ConfigRepository();
-  const logger = LoggingRepository.create();
-  await new DatabaseRepository(db, logger, configRepository).runMigrations();
-
-  await db.destroy();
+  return postgresUrl;
 };
 
 export default globalSetup;
