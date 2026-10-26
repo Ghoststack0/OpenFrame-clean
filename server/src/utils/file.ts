@@ -67,7 +67,12 @@ export const sendFile = async (
       res.header('Content-Disposition', `inline; filename*=UTF-8''${encodeURIComponent(file.fileName)}`);
     }
 
-    return await _sendFile(file.path, { dotfiles: 'allow' });
+    const options: SendFileOptions & { highWaterMark?: number } = { dotfiles: 'allow' };
+    if (file.contentType.startsWith('video/')) {
+      // Larger reads reduce filesystem work during sustained video transfers.
+      options.highWaterMark = 256 * 1024;
+    }
+    return await _sendFile(file.path, options);
   } catch (error: Error | any) {
     const { canWrite } = onRouteError(undefined, res, error, logger);
     if (canWrite) {
