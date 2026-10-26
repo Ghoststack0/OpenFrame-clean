@@ -119,7 +119,7 @@ export class DatabaseBackupService {
     databaseMajorVersion?: number;
   }> {
     const {
-      database: { config: databaseConfig },
+      database: { config: databaseConfig, binDirectory },
     } = this.configRepository.getEnv();
     const isUrlConnection = databaseConfig.connectionType === 'url';
 
@@ -215,7 +215,7 @@ export class DatabaseBackupService {
     }
 
     return {
-      bin: `/usr/lib/postgresql/${databaseMajorVersion}/bin/${bin}`,
+      bin: path.join(binDirectory ?? `/usr/lib/postgresql/${databaseMajorVersion}/bin`, bin),
       args,
       databaseUsername,
       databasePassword,
