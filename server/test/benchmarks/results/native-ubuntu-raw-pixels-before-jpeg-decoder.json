@@ -1,0 +1,80 @@
+{
+  "initial": {
+    "dockerInfo": {
+      "format": "raw",
+      "width": 1728,
+      "height": 1152,
+      "channels": 3,
+      "depth": "uchar",
+      "premultiplied": false,
+      "hasAlpha": false,
+      "size": 5971968
+    },
+    "nativeInfo": {
+      "format": "raw",
+      "width": 1728,
+      "height": 1152,
+      "channels": 3,
+      "depth": "uchar",
+      "premultiplied": false,
+      "hasAlpha": false,
+      "size": 5971968
+    },
+    "samples": 5971968,
+    "differingSamples": 524185,
+    "maximumDifference": 6,
+    "psnr": 58.09329451570178
+  },
+  "resized": {
+    "dockerInfo": {
+      "format": "raw",
+      "width": 1152,
+      "height": 1728,
+      "channels": 3,
+      "depth": "uchar",
+      "premultiplied": false,
+      "hasAlpha": false,
+      "size": 5971968
+    },
+    "nativeInfo": {
+      "format": "raw",
+      "width": 1152,
+      "height": 1728,
+      "channels": 3,
+      "depth": "uchar",
+      "premultiplied": false,
+      "hasAlpha": false,
+      "size": 5971968
+    },
+    "samples": 5971968,
+    "differingSamples": 524185,
+    "maximumDifference": 6,
+    "psnr": 58.09329451570178
+  },
+  "decodedPreview": {
+    "dockerInfo": {
+      "format": "raw",
+      "width": 1152,
+      "height": 1728,
+      "channels": 3,
+      "depth": "uchar",
+      "premultiplied": false,
+      "hasAlpha": false,
+      "size": 5971968
+    },
+    "nativeInfo": {
+      "format": "raw",
+      "width": 1152,
+      "height": 1728,
+      "channels": 3,
+      "depth": "uchar",
+      "premultiplied": false,
+      "hasAlpha": false,
+      "size": 5971968
+    },
+    "samples": 5971968,
+    "differingSamples": 479415,
+    "maximumDifference": 11,
+    "psnr": 56.51165210810368
+  }
+}
