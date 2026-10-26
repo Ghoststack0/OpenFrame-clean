@@ -511,25 +511,45 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledOnce();
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledWith('/original/path.ext', [
+        {
+          path: expect.stringContaining('_preview.jpeg'),
+          options: expect.objectContaining({
+            outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440:')]),
+          }),
+        },
+        {
+          path: expect.stringContaining('_thumbnail.webp'),
+          options: expect.objectContaining({
+            outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:250:')]),
+          }),
+        },
+      ]);
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
-            '-frames:v',
-            '1',
-            '-update',
-            '1',
-            '-v',
-            'verbose',
-            '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
-          ]),
-          twoPass: false,
-        }),
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.any(String),
+            options: expect.objectContaining({
+              inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
+              outputOptions: expect.arrayContaining([
+                '-fps_mode',
+                'vfr',
+                '-frames:v',
+                '1',
+                '-update',
+                '1',
+                '-v',
+                'verbose',
+                '-vf',
+                String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
+              ]),
+              twoPass: false,
+            }),
+          }),
+        ]),
       );
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         {
@@ -551,6 +571,19 @@ describe(MediaService.name, () => {
       ]);
     });
 
+    it('should not publish video thumbnails when either output fails', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+      });
+      mocks.media.transcodeThumbnails.mockRejectedValue(new Error('thumbnail output failed'));
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).rejects.toThrow('thumbnail output failed');
+      expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
+      expect(mocks.media.generateThumbhash).not.toHaveBeenCalled();
+    });
+
     it('should tonemap thumbnail for hdr video', async () => {
       const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
@@ -560,25 +593,29 @@ describe(MediaService.name, () => {
       await sut.handleGenerateThumbnails({ id: asset.id });
 
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.any(String));
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
-            '-frames:v',
-            '1',
-            '-update',
-            '1',
-            '-v',
-            'verbose',
-            '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:250:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
-          ]),
-          twoPass: false,
-        }),
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.any(String),
+            options: expect.objectContaining({
+              inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
+              outputOptions: expect.arrayContaining([
+                '-fps_mode',
+                'vfr',
+                '-frames:v',
+                '1',
+                '-update',
+                '1',
+                '-v',
+                'verbose',
+                '-vf',
+                String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:250:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+              ]),
+              twoPass: false,
+            }),
+          }),
+        ]),
       );
       expect(mocks.asset.upsertFiles).toHaveBeenCalledWith([
         {
@@ -611,25 +648,29 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: expect.arrayContaining([
-            '-fps_mode',
-            'vfr',
-            '-frames:v',
-            '1',
-            '-update',
-            '1',
-            '-v',
-            'verbose',
-            '-vf',
-            String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:250:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
-          ]),
-          twoPass: false,
-        }),
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.any(String),
+            options: expect.objectContaining({
+              inputOptions: ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'],
+              outputOptions: expect.arrayContaining([
+                '-fps_mode',
+                'vfr',
+                '-frames:v',
+                '1',
+                '-update',
+                '1',
+                '-v',
+                'verbose',
+                '-vf',
+                String.raw`fps=12:start_time=0:eof_action=pass:round=down,thumbnail=12,select=gt(scene\,0.1)-eq(prev_selected_n\,n)+isnan(prev_selected_n)+gt(n\,20),trim=end_frame=2,reverse,scale=-2:250:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc,tonemapx=tonemap=hable:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+              ]),
+              twoPass: false,
+            }),
+          }),
+        ]),
       );
     });
 
@@ -641,15 +682,19 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: ['-sws_flags', 'accurate_rnd+full_chroma_int'],
-          outputOptions: expect.any(Array),
-          progress: expect.any(Object),
-          twoPass: false,
-        }),
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.any(String),
+            options: expect.objectContaining({
+              inputOptions: ['-sws_flags', 'accurate_rnd+full_chroma_int'],
+              outputOptions: expect.any(Array),
+              progress: expect.any(Object),
+              twoPass: false,
+            }),
+          }),
+        ]),
       );
     });
 
@@ -661,18 +706,22 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: expect.arrayContaining([
-            '-bsf:0',
-            'hevc_metadata=colour_primaries=1:matrix_coefficients=1:transfer_characteristics=1',
-          ]),
-          outputOptions: expect.any(Array),
-          progress: expect.any(Object),
-          twoPass: false,
-        }),
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.any(String),
+            options: expect.objectContaining({
+              inputOptions: expect.arrayContaining([
+                '-bsf:0',
+                'hevc_metadata=colour_primaries=1:matrix_coefficients=1:transfer_characteristics=1',
+              ]),
+              outputOptions: expect.any(Array),
+              progress: expect.any(Object),
+              twoPass: false,
+            }),
+          }),
+        ]),
       );
     });
 
@@ -685,14 +734,18 @@ describe(MediaService.name, () => {
       });
       await sut.handleGenerateThumbnails({ id: asset.id });
 
-      expect(mocks.media.transcode).toHaveBeenCalledWith(
+      expect(mocks.media.transcodeThumbnails).toHaveBeenCalledWith(
         '/original/path.ext',
-        expect.any(String),
-        expect.objectContaining({
-          inputOptions: expect.any(Array),
-          outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440')]),
-          twoPass: false,
-        }),
+        expect.arrayContaining([
+          expect.objectContaining({
+            path: expect.any(String),
+            options: expect.objectContaining({
+              inputOptions: expect.any(Array),
+              outputOptions: expect.arrayContaining([expect.stringContaining('scale=-2:1440')]),
+              twoPass: false,
+            }),
+          }),
+        ]),
       );
     });
 
