@@ -35,6 +35,23 @@ describe(AuthService.name, () => {
   let sut: AuthService;
   let mocks: ServiceMocks;
 
+  const authenticateSession = (
+    session: { updatedAt: Date; appVersion: string | null; pinExpiresAt: Date | null },
+    userAgent: string,
+  ) => {
+    mocks.session.getByToken.mockResolvedValue({
+      id: 'session-1',
+      user: UserFactory.create(),
+      ...session,
+    });
+    mocks.session.update.mockResolvedValue(SessionFactory.create());
+    return sut.authenticate({
+      headers: { cookie: 'immich_access_token=auth_token', 'user-agent': userAgent },
+      queryParams: {},
+      metadata: { adminRoute: false, sharedLinkRoute: false, uri: 'test' },
+    });
+  };
+
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AuthService));
 
@@ -607,6 +624,64 @@ describe(AuthService.name, () => {
       ).resolves.toBeDefined();
 
       expect(mocks.session.update).toHaveBeenCalled();
+    });
+
+    const browser = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36';
+
+    it('should not update a recently used session with an unchanged app version', async () => {
+      const updatedAt = new Date(Date.now() - 59 * 60 * 1000);
+      await expect(authenticateSession({ updatedAt, appVersion: null, pinExpiresAt: null }, browser)).resolves.toEqual(
+        expect.objectContaining({ session: { id: 'session-1', hasElevatedPermission: false } }),
+      );
+
+      expect(mocks.session.update).not.toHaveBeenCalled();
+    });
+
+    it('should record parsed device details when the session is refreshed', async () => {
+      const updatedAt = new Date(Date.now() - 61 * 60 * 1000);
+      await authenticateSession({ updatedAt, appVersion: null, pinExpiresAt: null }, browser);
+
+      expect(mocks.session.update).toHaveBeenCalledWith('session-1', {
+        id: 'session-1',
+        updatedAt: expect.any(Date),
+        appVersion: null,
+        deviceOS: 'Linux',
+        deviceType: 'Chrome',
+      });
+    });
+
+    it('should update a recently used session when the app version changes', async () => {
+      await authenticateSession({ updatedAt: new Date(), appVersion: '2.1.0', pinExpiresAt: null }, 'immich-ios/2.2.0');
+
+      expect(mocks.session.update).toHaveBeenCalledWith('session-1', expect.objectContaining({ appVersion: '2.2.0' }));
+    });
+
+    it('should extend an elevated session that expires within five minutes', async () => {
+      const pinExpiresAt = new Date(Date.now() + 3 * 60 * 1000);
+      await expect(
+        authenticateSession({ updatedAt: new Date(), appVersion: null, pinExpiresAt }, browser),
+      ).resolves.toEqual(expect.objectContaining({ session: { id: 'session-1', hasElevatedPermission: true } }));
+
+      const [, { pinExpiresAt: extended }] = mocks.session.update.mock.calls[0] as [string, { pinExpiresAt: Date }];
+      expect(extended.getTime()).toBeGreaterThan(Date.now() + 4 * 60 * 1000);
+    });
+
+    it('should not extend an elevated session with more than five minutes left', async () => {
+      const pinExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      await expect(
+        authenticateSession({ updatedAt: new Date(), appVersion: null, pinExpiresAt }, browser),
+      ).resolves.toEqual(expect.objectContaining({ session: { id: 'session-1', hasElevatedPermission: true } }));
+
+      expect(mocks.session.update).not.toHaveBeenCalled();
+    });
+
+    it('should not elevate a session whose PIN has expired', async () => {
+      const pinExpiresAt = new Date(Date.now() - 1000);
+      await expect(
+        authenticateSession({ updatedAt: new Date(), appVersion: null, pinExpiresAt }, browser),
+      ).resolves.toEqual(expect.objectContaining({ session: { id: 'session-1', hasElevatedPermission: false } }));
+
+      expect(mocks.session.update).not.toHaveBeenCalled();
     });
   });
 
