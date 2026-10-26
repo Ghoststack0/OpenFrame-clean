@@ -1,0 +1,26 @@
+{
+  "dryRun": false,
+  "pairs": 3,
+  "runOrder": [
+    "baseline-r0",
+    "candidate-r0",
+    "candidate-r1",
+    "baseline-r1",
+    "baseline-r2",
+    "candidate-r2"
+  ],
+  "clientSha256": "5bf8a20d81bb3ed408cb4746c8e0fb00ce9b19e00172afa1c0475c76549efe0e",
+  "runnerSha256": "d06ee07c2c8da5b171d565a8f9553fa8fe5fe6840f810738dca2a25212cbe612",
+  "rssSamplingIntervalMs": 100,
+  "gridCacheMeaning": "HTTP cold with no validators, then warm ETag/304 on the same six keep-alive connections. Filesystem caches are not globally dropped.",
+  "resumes": [
+    {
+      "timeUtc": "2026-10-26T15:12:14Z",
+      "runnerSha256": "4218d1a9986a7582eeab115aa8dd12f1e593c82cce8f81797c435c2392ffcac4"
+    },
+    {
+      "timeUtc": "2026-10-26T15:47:34Z",
+      "runnerSha256": "daa6f091f5a21955074190e18b9bb440a085893bc26207d406cb7508f1a4cc05"
+    }
+  ]
+}
