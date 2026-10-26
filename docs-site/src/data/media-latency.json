@@ -1,0 +1,30 @@
+{
+  "type": "bar",
+  "title": "Median time per 200 loopback requests",
+  "subtitle": "Median of 5 rounds. The spread between rounds is larger than these differences.",
+  "unit": "ms",
+  "better": "lower",
+  "x": [
+    "Thumbnail (200)",
+    "Conditional (304)",
+    "Range (206)"
+  ],
+  "series": [
+    {
+      "name": "Before (256eb55)",
+      "values": [
+        199.4,
+        186.1,
+        201.9
+      ]
+    },
+    {
+      "name": "After",
+      "values": [
+        220.8,
+        169.6,
+        194.1
+      ]
+    }
+  ]
+}

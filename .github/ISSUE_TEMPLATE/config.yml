@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: OpenFrame questions and feature requests
+    url: https://github.com/Ghoststack0/OpenFrame-clean/issues/new
+    about: Ask about this fork or propose performance, implementation, and UX improvements here.
+  - name: Upstream Immich documentation
+    url: https://docs.immich.app/
+    about: Installation and configuration reference for the upstream project. Report OpenFrame bugs in this fork.

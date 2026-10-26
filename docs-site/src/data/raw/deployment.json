@@ -1,0 +1,34 @@
+{
+  "note": "Sanitized summary. The temporary test deployment and its proxy have been stopped; host, paths and URLs are omitted.",
+  "baselineRef": "256eb55dbe92ac77e02794442f9487e88ffed2b1",
+  "sourceVersion": "3.3.0-rc.0",
+  "machineLearningEnabled": false,
+  "deployedCompiledSha256": {
+    "utils/file.js": "1500247bf414011231e5485af0ee612c3d2508c0eaa41d2acb7d9166093339a9",
+    "repositories/crypto.repository.js": "4c010acd633388890ebf0b7dd32ec377bb288c27b8fd6740e2ea3a4112b69009",
+    "repositories/person.repository.js": "bff917905666302b290e45c018d195814cb10315e9af4f8fa54d3deca0d2611f"
+  },
+  "checks": {
+    "focusedUnitTestsPassed": 384,
+    "personPostgresTestsPassed": 40,
+    "workerTestsPassed": 2,
+    "typescript": "passed",
+    "productionBuild": "passed",
+    "opusReview": "Caching404 finding fixed and re-reviewed; deployment native sharp fixed."
+  },
+  "publicSmoke": {
+    "login": "passed",
+    "upload": "passed",
+    "originalBytes": 787252,
+    "thumbnailBytes": 29908,
+    "unauthenticated": 401,
+    "conditional": 304,
+    "range": 206
+  },
+  "nativeCodecs": {
+    "libvips": "8.18.7",
+    "heifInput": true,
+    "jxlInput": true,
+    "source": "Same compiled sharp binary as pinned Immich base image"
+  }
+}

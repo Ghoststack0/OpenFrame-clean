@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Server performance · OpenFrame</title>
+  <meta name="description" content="Three small OpenFrame server changes to the Immich codebase: a LIMIT 1 on a face query, async bcrypt checks, and one fewer filesystem call per media request. Measured results and limits.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="site.config.js"></script>
+  <script src="assets/site.js" defer></script>
+  <script src="assets/charts.js" defer></script>
+</head>
+<body>
+  <main class="doc-main">
+    <header class="doc-head">
+      <p class="eyebrow cap">Performance · OpenFrame server, Immich base</p>
+      <h1>Three small server changes that cut wasted work</h1>
+      <p class="lede">A face query now fetches one row instead of thousands, password and PIN checks no longer block the event loop, and media responses skip a redundant filesystem call. Each result below is a focused benchmark against the upstream Immich base commit, not a measurement of the whole app.</p>
+      <div class="doc-meta"><span>Base <b>256eb55</b></span><span>Measured <b>2026-10-25</b></span><span>Server only</span><span class="badge warn">Not merged upstream</span></div>
+    </header>
+
+    <article class="doc-body">
+      <h2>Summary</h2>
+      <div class="stats">
+        <div class="stat" data-label="Face query, 10,000 faces" data-value="3.9" data-before="300.3" data-unit="ms" data-better="lower" data-note="median of 12"></div>
+        <div class="stat" data-label="Rows fetched, 10,000 faces" data-value="1" data-before="10000" data-better="lower"></div>
+        <div class="stat" data-label="Event-loop delay, 4 bcrypt checks" data-value="0.18" data-before="229.2" data-unit="ms" data-better="lower" data-note="CPU cost unchanged"></div>
+        <div class="stat" data-label="fs.access per 1,000 media requests" data-value="0" data-before="1000" data-better="lower"></div>
+      </div>
+      <div class="callout warn">
+        <p class="cap">Scope</p>
+        <p>These are synthetic benchmarks on warm caches and shared machines. They show where each change removes work. They don't show an end-to-end speedup for Immich as a whole, and nothing here measured memory use, bandwidth to clients, packet loss or CPU throttling. See <a href="methodology.html">Methodology</a> for the full list of limits.</p>
+      </div>
+
+      <h2>What changed</h2>
+      <table>
+        <thead><tr><th>Change</th><th>File</th><th>Why it helps on weak hardware or networks</th></tr></thead>
+        <tbody>
+          <tr><td>Add <code>LIMIT 1</code> to <code>getRandomFace</code></td><td><code>person.repository.ts</code></td><td>The query fetched every visible face in a group, then kept the first one. Small servers (NAS boxes, single-board computers) now skip decoding and discarding thousands of rows.</td></tr>
+          <tr><td><code>compareSync</code> → <code>compare</code> for bcrypt</td><td><code>crypto.repository.ts</code>, <code>auth.service.ts</code></td><td>Each login, password change or PIN check froze the JavaScript thread while bcrypt ran. Slow CPUs freeze it for longer. Now the hash runs on a worker thread and other requests keep moving.</td></tr>
+          <tr><td>Drop the <code>fs.access</code> check before sending media</td><td><code>utils/file.ts</code></td><td>Express <code>sendFile</code> already reports a missing file, so the extra check was a second filesystem call per thumbnail or video request. That call costs more on slow disks and network storage.</td></tr>
+          <tr><td>Strip file headers on error responses</td><td><code>utils/file.ts</code></td><td>Without the early check, a missing file could return a 404 that still carried the file's long-lived <code>Cache-Control</code>, so browsers and proxies might cache the 404. Error responses now drop those headers.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Face query: fetch one row, not all of them</h2>
+      <p><code>PersonRepository.getRandomFace</code> uses <code>executeTakeFirst()</code>, which keeps the first row but doesn't limit the query. Without a <code>LIMIT</code>, PostgreSQL sent every matching face and Node decoded all of them.</p>
+      <pre data-title="server/src/repositories/person.repository.ts"><code><span class="dim">      .where('asset_face.isVisible', 'is', true)</span>
+<span class="add">+     .limit(1)</span>
+<span class="dim">      .executeTakeFirst();</span></code></pre>
+      <figure class="chart" data-src="data/face-latency.json">
+        <figcaption>Full method latency, PostgreSQL 14 on a LAN host, client on an i5-13420H laptop. 12 measured rounds per size, alternating order.</figcaption>
+      </figure>
+      <table>
+        <thead><tr><th class="num">Eligible faces</th><th class="num">Before median</th><th class="num">After median</th><th class="num">Rows returned</th><th class="num">Approx. decoded JSON bytes</th></tr></thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="num">3.06 ms</td><td class="num">2.86 ms</td><td class="num">1 → 1</td><td class="num">511 → 511</td></tr>
+          <tr><td class="num">1,000</td><td class="num">43.15 ms</td><td class="num">1.98 ms</td><td class="num">1,000 → 1</td><td class="num">510,001 → 511</td></tr>
+          <tr><td class="num">10,000</td><td class="num">300.29 ms</td><td class="num">3.90 ms</td><td class="num">10,000 → 1</td><td class="num">5,100,001 → 511</td></tr>
+        </tbody>
+      </table>
+      <p>The median dropped about 22× at 1,000 faces and about 77× at 10,000 faces. At 1 face there's no real difference, as expected. Those ratios apply to this one query, not to Immich as a whole.</p>
+      <div class="callout">
+        <p class="cap">About the bytes</p>
+        <p>The byte column is the size of the decoded rows serialized as JSON. It approximates how much data reached Node. It isn't the number of bytes PostgreSQL sent over the wire, and it isn't traffic to the browser or phone.</p>
+      </div>
+
+      <h2>bcrypt: stop blocking the event loop</h2>
+      <p>Node runs all request handling on one JavaScript thread. <code>bcrypt.compareSync</code> holds that thread for the whole hash, so every other request waits. <code>bcrypt.compare</code> runs the same hash on libuv's worker pool. All call sites in <code>AuthService</code> now <code>await</code> the result, and a failed check still rejects the login.</p>
+      <pre data-title="server/src/repositories/crypto.repository.ts"><code><span class="del">-   return compareSync(data, encrypted);</span>
+<span class="add">+   return compare(data, encrypted);</span></code></pre>
+      <figure class="chart" data-src="data/bcrypt-delay.json">
+        <figcaption>The benchmark queues a <code>setImmediate</code> callback, starts four checks at bcrypt cost 10, and times how long the callback waits. Before: all 4 checks had finished when it ran, in every round. After: 0 had finished.</figcaption>
+      </figure>
+      <figure class="chart" data-src="data/bcrypt-rounds.json">
+        <figcaption>Each of the 6 measured rounds. Laptop, i5-13420H with 12 logical CPUs, Node 26.10, bcrypt 6.0.0.</figcaption>
+      </figure>
+      <div class="callout warn">
+        <p class="cap">What this doesn't show</p>
+        <p>The hash costs the same CPU time as before; bcrypt cost and hash strength are unchanged. The four checks finished sooner here because the worker pool ran them in parallel on a 12-thread laptop. Under heavy load the pool can queue. This was a repository-level test, not an HTTP benchmark on low-end hardware.</p>
+      </div>
+
+      <h2>Media: one fewer filesystem call per request</h2>
+      <p><code>sendFile</code> checked each file with <code>fs.access</code> before handing it to Express, which opens and stats the file anyway. The check is gone. Error responses now drop the file headers, so a missing file returns a plain 404.</p>
+      <pre data-title="server/src/utils/file.ts"><code><span class="del">-   await access(file.path, constants.R_OK);</span>
+<span class="dim">    …</span>
+<span class="dim">    if (canWrite) {</span>
+<span class="add">+     for (const header of ['Cache-Control', 'ETag', 'Last-Modified', 'Accept-Ranges',</span>
+<span class="add">+       'Content-Disposition', 'Content-Type', 'Content-Length', 'Content-Range']) {</span>
+<span class="add">+       res.removeHeader(header);</span>
+<span class="add">+     }</span>
+<span class="dim">      next(new NotFoundException());</span></code></pre>
+      <figure class="chart" data-src="data/media-access.json">
+        <figcaption>Counted by a spy around the real <code>fs.promises.access</code>, over 5 rounds of 200 requests per scenario.</figcaption>
+      </figure>
+      <p>Latency was mixed. On loopback with a warm page cache, one syscall is small next to the rest of a request, and the spread between rounds was wider than the differences:</p>
+      <figure class="chart" data-src="data/media-latency.json">
+        <figcaption>Real Express <code>sendFile</code> over loopback via supertest, 32 KiB file, 8 KiB ranges, concurrency 1. 50 warm-up requests per sample.</figcaption>
+      </figure>
+      <table>
+        <thead><tr><th>Scenario</th><th class="num">Before median</th><th class="num">After median</th><th>Result</th></tr></thead>
+        <tbody>
+          <tr><td>Thumbnail (200)</td><td class="num">199.4 ms</td><td class="num">220.8 ms</td><td><span class="badge">Higher, within noise</span></td></tr>
+          <tr><td>Conditional (304)</td><td class="num">186.1 ms</td><td class="num">169.6 ms</td><td><span class="badge">Lower, within noise</span></td></tr>
+          <tr><td>Range (206)</td><td class="num">201.9 ms</td><td class="num">194.1 ms</td><td><span class="badge">Lower, within noise</span></td></tr>
+        </tbody>
+      </table>
+      <p>Times are per 200 requests. The removed call should matter more on spinning disks or network storage (NFS, SMB). That wasn't measured.</p>
+
+      <h2>Public smoke test at 128 KiB/s</h2>
+      <p>A temporary deployment of the patched server ran behind a Cloudflare Worker and tunnel. With <code>curl --limit-rate 128k</code>, it confirmed that login, upload, caching and range requests still worked. Those cheap 304 and 206 responses matter most on slow links. One sample per scenario:</p>
+      <table>
+        <thead><tr><th>Request</th><th class="num">Status</th><th class="num">Bytes</th><th class="num">Total time</th><th class="num">Time to first byte</th></tr></thead>
+        <tbody>
+          <tr><td>Full original download</td><td class="num">200</td><td class="num">787,252</td><td class="num">6.34 s</td><td class="num">0.35 s</td></tr>
+          <tr><td>Conditional request (ETag)</td><td class="num">304</td><td class="num">0</td><td class="num">0.32 s</td><td class="num">0.32 s</td></tr>
+          <tr><td>8 KiB range</td><td class="num">206</td><td class="num">8,192</td><td class="num">0.39 s</td><td class="num">0.33 s</td></tr>
+        </tbody>
+      </table>
+      <p>The downloaded bytes matched the uploaded file's SHA-256. Unauthenticated requests got 401, and the WebSocket upgrade returned 101.</p>
+      <div class="callout">
+        <p class="cap">Not a speedup</p>
+        <p>This test checks correctness. The original server wasn't run under the same conditions, so it says nothing about before and after. Immich already supported 304 and 206 responses. The test shows the change didn't break them. The temporary deployment has since been shut down.</p>
+      </div>
+
+      <h2>Verification</h2>
+      <ul>
+        <li>424 backend tests passed: 384 unit tests in the focused suites and 40 PostgreSQL tests for <code>PersonRepository</code>.</li>
+        <li>2 proxy tests passed for the temporary deployment, making 426 in total. The proxy is not part of the Immich patch.</li>
+        <li>TypeScript checks and the production build passed.</li>
+        <li>A Claude Opus review found that removing <code>fs.access</code> let a 404 inherit the file's caching headers. That was fixed with the header stripping above, and a second review confirmed the fix.</li>
+        <li>The new auth tests cover rejected passwords and PINs after the async check, so a failed comparison can't let a login, PIN reset or session unlock through.</li>
+      </ul>
+      <p>The full Immich test suite was not run.</p>
+    </article>
+  </main>
+</body>
+</html>

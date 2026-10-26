@@ -1,0 +1,284 @@
+{
+  "generatedAt": "2026-10-25T10:41:32.617Z",
+  "baselineRef": "256eb55dbe92ac77e02794442f9487e88ffed2b1",
+  "command": "FILE_BENCHMARK_REF=256eb55dbe92ac77e02794442f9487e88ffed2b1 corepack pnpm --config.verify-deps-before-run=false test run src/utils/file.spec.ts",
+  "workingDirectory": "server",
+  "platform": {
+    "hostname": "omarchy",
+    "os": "linux",
+    "release": "7.2.8-9-omarchy",
+    "arch": "x64",
+    "node": "v26.10.0",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12
+  },
+  "method": {
+    "implementation": "Original helper loaded from git; current helper imported from source; both call real Express sendFile over loopback HTTP using supertest.",
+    "rounds": 5,
+    "order": "Alternating original/current each round",
+    "warmupRequestsPerSample": 50,
+    "measuredRequestsPerSample": 200,
+    "fileBytes": 32768,
+    "rangeBytes": 8192,
+    "concurrency": 1,
+    "storage": "Temporary file on local filesystem; page cache not cleared",
+    "network": "Loopback; no latency or bandwidth shaping; supertest opens a server per request",
+    "accessCount": "Spy delegates to real fs.promises.access; builtin named exports synchronized"
+  },
+  "summary": [
+    {
+      "name": "original",
+      "scenario": "thumbnail",
+      "requests": 1000,
+      "accessCalls": 1000,
+      "medianMsPer200Requests": 199.41394400000001
+    },
+    {
+      "name": "original",
+      "scenario": "cached",
+      "requests": 1000,
+      "accessCalls": 1000,
+      "medianMsPer200Requests": 186.07251499999984
+    },
+    {
+      "name": "original",
+      "scenario": "range",
+      "requests": 1000,
+      "accessCalls": 1000,
+      "medianMsPer200Requests": 201.87961899999937
+    },
+    {
+      "name": "current",
+      "scenario": "thumbnail",
+      "requests": 1000,
+      "accessCalls": 0,
+      "medianMsPer200Requests": 220.8498070000005
+    },
+    {
+      "name": "current",
+      "scenario": "cached",
+      "requests": 1000,
+      "accessCalls": 0,
+      "medianMsPer200Requests": 169.600915
+    },
+    {
+      "name": "current",
+      "scenario": "range",
+      "requests": 1000,
+      "accessCalls": 0,
+      "medianMsPer200Requests": 194.05112500000087
+    }
+  ],
+  "samples": [
+    {
+      "name": "original",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 199.41394400000001
+    },
+    {
+      "name": "original",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 126.67166900000007
+    },
+    {
+      "name": "original",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 135.79211699999996
+    },
+    {
+      "name": "current",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 120.46964700000012
+    },
+    {
+      "name": "current",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 103.97975599999995
+    },
+    {
+      "name": "current",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 131.4886489999999
+    },
+    {
+      "name": "current",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 121.93864800000006
+    },
+    {
+      "name": "current",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 104.49716799999987
+    },
+    {
+      "name": "current",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 115.20121199999971
+    },
+    {
+      "name": "original",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 117.74617699999999
+    },
+    {
+      "name": "original",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 95.90817500000003
+    },
+    {
+      "name": "original",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 119.62697299999991
+    },
+    {
+      "name": "original",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 154.93390199999976
+    },
+    {
+      "name": "original",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 244.53622599999971
+    },
+    {
+      "name": "original",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 278.6026630000001
+    },
+    {
+      "name": "current",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 286.7155899999998
+    },
+    {
+      "name": "current",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 178.75896000000012
+    },
+    {
+      "name": "current",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 229.87275200000022
+    },
+    {
+      "name": "current",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 220.8498070000005
+    },
+    {
+      "name": "current",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 169.600915
+    },
+    {
+      "name": "current",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 194.05112500000087
+    },
+    {
+      "name": "original",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 205.24297099999967
+    },
+    {
+      "name": "original",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 186.07251499999984
+    },
+    {
+      "name": "original",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 201.87961899999937
+    },
+    {
+      "name": "original",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 213.1081290000002
+    },
+    {
+      "name": "original",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 202.06194700000015
+    },
+    {
+      "name": "original",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 200,
+      "ms": 402.95891200000005
+    },
+    {
+      "name": "current",
+      "scenario": "thumbnail",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 359.73140499999954
+    },
+    {
+      "name": "current",
+      "scenario": "cached",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 395.1225370000002
+    },
+    {
+      "name": "current",
+      "scenario": "range",
+      "requests": 200,
+      "accessCalls": 0,
+      "ms": 384.45212600000013
+    }
+  ]
+}

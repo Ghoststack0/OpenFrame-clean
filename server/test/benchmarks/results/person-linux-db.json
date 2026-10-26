@@ -1,0 +1,483 @@
+{
+  "benchmark": "PersonRepository.getRandomFace with and without LIMIT 1",
+  "recordedAt": "2026-10-25T10:51:59.016Z",
+  "baselineRef": "256eb55dbe92ac77e02794442f9487e88ffed2b1",
+  "repositorySources": {
+    "originalSha256": "a0e7dc82b01f90e0a5ccf40de9f2925ee37f14b26456edd3c6c54bfcd97d95a1",
+    "modifiedSha256": "81c6e48864265ab4a79d85f84d110db72a0961c03171e2e599325375dfab63b3",
+    "workingTreeDiff": "diff --git c/server/src/repositories/person.repository.ts w/server/src/repositories/person.repository.ts\nindex 58638127f..9b46c994e 100644\n--- c/server/src/repositories/person.repository.ts\n+++ w/server/src/repositories/person.repository.ts\n@@ -926,6 +926,7 @@ export class PersonRepository {\n       .where('asset_face.personGroupId', '=', personGroupId)\n       .where('asset_face.deletedAt', 'is', null)\n       .where('asset_face.isVisible', 'is', true)\n+      .limit(1)\n       .executeTakeFirst();\n   }\n \n"
+  },
+  "source": "server/test/medium/specs/repositories/person.repository.benchmark.spec.ts",
+  "command": "DOCKER_HOST=unix:///tmp/immich-perf-docker.sock TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock TESTCONTAINERS_HOST_OVERRIDE=192.168.1.9 RUN_PERSON_BENCHMARK=1 /home/yvm/.local/share/mise/installs/node/24.13.1/bin/corepack pnpm --config.verify-deps-before-run=false --dir server test:medium run test/medium/specs/repositories/person.repository.benchmark.spec.ts",
+  "platform": {
+    "client": {
+      "node": "v26.10.0",
+      "os": "linux",
+      "kernel": "7.2.8-9-omarchy",
+      "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+      "totalMemoryBytes": 16372883456
+    },
+    "databaseHost": "192.168.1.9",
+    "databaseImage": "ghcr.io/immich-app/postgres:14-vectorchord0.4.3",
+    "database": {
+      "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+      "fsync": "off",
+      "full_page_writes": "off",
+      "synchronous_commit": "off"
+    }
+  },
+  "method": {
+    "original": "Complete repository loaded from git, transpiled with SWC and imported through Vite.",
+    "modified": "Working-tree repository, same Kysely connection and fixture database as original.",
+    "transfer": "KyselyPlugin.transformResult measures actual returned rows before executeTakeFirst. JSON bytes approximate decoded payload size, not PostgreSQL wire bytes.",
+    "timing": "Full method latency without the measurement plugin or assertions; fixture creation and JSON serialization excluded.",
+    "warmupRounds": 3,
+    "measuredRounds": 12,
+    "order": "Alternate original/modified first on successive rounds, including warmups.",
+    "fixtures": "Each group has N eligible faces plus one invisible and one deleted face; another group has a visible face. All share one asset. Database-generated timestamps and factory UUIDs vary.",
+    "limitations": "Client runs locally; PostgreSQL runs on the Linux box over LAN. Warm database, synthetic faces sharing one asset, no isolated load. Other services and deployment builds may contend for resources. Medium-test PostgreSQL disables fsync/full_page_writes/synchronous_commit. JSON bytes are not wire bytes. No timing threshold asserted."
+  },
+  "results": [
+    {
+      "eligibleFaces": 1,
+      "returned": [
+        {
+          "version": "original",
+          "rows": 1,
+          "approximateJsonBytes": 511
+        },
+        {
+          "version": "modified",
+          "rows": 1,
+          "approximateJsonBytes": 511
+        }
+      ],
+      "medians": [
+        {
+          "version": "original",
+          "medianMs": 3.062929499999882
+        },
+        {
+          "version": "modified",
+          "medianMs": 2.8572034999997413
+        }
+      ],
+      "samples": [
+        {
+          "round": 0,
+          "version": "original",
+          "elapsedMs": 2.789882000000034
+        },
+        {
+          "round": 0,
+          "version": "modified",
+          "elapsedMs": 2.6049370000000636
+        },
+        {
+          "round": 1,
+          "version": "modified",
+          "elapsedMs": 2.1465629999997873
+        },
+        {
+          "round": 1,
+          "version": "original",
+          "elapsedMs": 1.9080150000004323
+        },
+        {
+          "round": 2,
+          "version": "original",
+          "elapsedMs": 1.7078729999998359
+        },
+        {
+          "round": 2,
+          "version": "modified",
+          "elapsedMs": 1.842431999999917
+        },
+        {
+          "round": 3,
+          "version": "modified",
+          "elapsedMs": 1.7581090000003314
+        },
+        {
+          "round": 3,
+          "version": "original",
+          "elapsedMs": 3.6698200000000725
+        },
+        {
+          "round": 4,
+          "version": "original",
+          "elapsedMs": 1.8388830000003509
+        },
+        {
+          "round": 4,
+          "version": "modified",
+          "elapsedMs": 2.472983000000113
+        },
+        {
+          "round": 5,
+          "version": "modified",
+          "elapsedMs": 2.949702999999772
+        },
+        {
+          "round": 5,
+          "version": "original",
+          "elapsedMs": 2.2094889999998486
+        },
+        {
+          "round": 6,
+          "version": "original",
+          "elapsedMs": 9.83283799999981
+        },
+        {
+          "round": 6,
+          "version": "modified",
+          "elapsedMs": 2.7647039999997105
+        },
+        {
+          "round": 7,
+          "version": "modified",
+          "elapsedMs": 3.252089999999953
+        },
+        {
+          "round": 7,
+          "version": "original",
+          "elapsedMs": 3.451462999999876
+        },
+        {
+          "round": 8,
+          "version": "original",
+          "elapsedMs": 2.2112379999998666
+        },
+        {
+          "round": 8,
+          "version": "modified",
+          "elapsedMs": 3.319945000000189
+        },
+        {
+          "round": 9,
+          "version": "modified",
+          "elapsedMs": 6.260115999999925
+        },
+        {
+          "round": 9,
+          "version": "original",
+          "elapsedMs": 3.6642830000000686
+        },
+        {
+          "round": 10,
+          "version": "original",
+          "elapsedMs": 3.8127009999998336
+        },
+        {
+          "round": 10,
+          "version": "modified",
+          "elapsedMs": 4.233760999999959
+        },
+        {
+          "round": 11,
+          "version": "modified",
+          "elapsedMs": 15.53095600000006
+        },
+        {
+          "round": 11,
+          "version": "original",
+          "elapsedMs": 3.3359769999997297
+        }
+      ]
+    },
+    {
+      "eligibleFaces": 1000,
+      "returned": [
+        {
+          "version": "original",
+          "rows": 1000,
+          "approximateJsonBytes": 510001
+        },
+        {
+          "version": "modified",
+          "rows": 1,
+          "approximateJsonBytes": 511
+        }
+      ],
+      "medians": [
+        {
+          "version": "original",
+          "medianMs": 43.15387200000009
+        },
+        {
+          "version": "modified",
+          "medianMs": 1.9823695000000043
+        }
+      ],
+      "samples": [
+        {
+          "round": 0,
+          "version": "original",
+          "elapsedMs": 28.656753000000208
+        },
+        {
+          "round": 0,
+          "version": "modified",
+          "elapsedMs": 1.971889999999803
+        },
+        {
+          "round": 1,
+          "version": "modified",
+          "elapsedMs": 6.921501000000262
+        },
+        {
+          "round": 1,
+          "version": "original",
+          "elapsedMs": 63.07073799999989
+        },
+        {
+          "round": 2,
+          "version": "original",
+          "elapsedMs": 52.10861799999975
+        },
+        {
+          "round": 2,
+          "version": "modified",
+          "elapsedMs": 3.408810999999787
+        },
+        {
+          "round": 3,
+          "version": "modified",
+          "elapsedMs": 2.516728999999941
+        },
+        {
+          "round": 3,
+          "version": "original",
+          "elapsedMs": 30.38601400000016
+        },
+        {
+          "round": 4,
+          "version": "original",
+          "elapsedMs": 187.50175499999978
+        },
+        {
+          "round": 4,
+          "version": "modified",
+          "elapsedMs": 1.9928490000002057
+        },
+        {
+          "round": 5,
+          "version": "modified",
+          "elapsedMs": 1.7311369999997623
+        },
+        {
+          "round": 5,
+          "version": "original",
+          "elapsedMs": 55.522631000000274
+        },
+        {
+          "round": 6,
+          "version": "original",
+          "elapsedMs": 67.05589000000009
+        },
+        {
+          "round": 6,
+          "version": "modified",
+          "elapsedMs": 2.7091669999999795
+        },
+        {
+          "round": 7,
+          "version": "modified",
+          "elapsedMs": 1.7086460000000443
+        },
+        {
+          "round": 7,
+          "version": "original",
+          "elapsedMs": 31.65281099999993
+        },
+        {
+          "round": 8,
+          "version": "original",
+          "elapsedMs": 34.19912600000043
+        },
+        {
+          "round": 8,
+          "version": "modified",
+          "elapsedMs": 1.701828000000205
+        },
+        {
+          "round": 9,
+          "version": "modified",
+          "elapsedMs": 2.194064000000253
+        },
+        {
+          "round": 9,
+          "version": "original",
+          "elapsedMs": 64.0434009999999
+        },
+        {
+          "round": 10,
+          "version": "original",
+          "elapsedMs": 33.01396999999997
+        },
+        {
+          "round": 10,
+          "version": "modified",
+          "elapsedMs": 1.7442049999999654
+        },
+        {
+          "round": 11,
+          "version": "modified",
+          "elapsedMs": 1.760997999999745
+        },
+        {
+          "round": 11,
+          "version": "original",
+          "elapsedMs": 28.971407
+        }
+      ]
+    },
+    {
+      "eligibleFaces": 10000,
+      "returned": [
+        {
+          "version": "original",
+          "rows": 10000,
+          "approximateJsonBytes": 5100001
+        },
+        {
+          "version": "modified",
+          "rows": 1,
+          "approximateJsonBytes": 511
+        }
+      ],
+      "medians": [
+        {
+          "version": "original",
+          "medianMs": 300.29449300000033
+        },
+        {
+          "version": "modified",
+          "medianMs": 3.9038860000009663
+        }
+      ],
+      "samples": [
+        {
+          "round": 0,
+          "version": "original",
+          "elapsedMs": 409.4946209999998
+        },
+        {
+          "round": 0,
+          "version": "modified",
+          "elapsedMs": 2.344828999999663
+        },
+        {
+          "round": 1,
+          "version": "modified",
+          "elapsedMs": 2.733040000000983
+        },
+        {
+          "round": 1,
+          "version": "original",
+          "elapsedMs": 346.7551619999995
+        },
+        {
+          "round": 2,
+          "version": "original",
+          "elapsedMs": 279.01292099999955
+        },
+        {
+          "round": 2,
+          "version": "modified",
+          "elapsedMs": 4.4680740000003425
+        },
+        {
+          "round": 3,
+          "version": "modified",
+          "elapsedMs": 3.389528000001519
+        },
+        {
+          "round": 3,
+          "version": "original",
+          "elapsedMs": 281.6048870000013
+        },
+        {
+          "round": 4,
+          "version": "original",
+          "elapsedMs": 298.11705299999994
+        },
+        {
+          "round": 4,
+          "version": "modified",
+          "elapsedMs": 4.301430999999866
+        },
+        {
+          "round": 5,
+          "version": "modified",
+          "elapsedMs": 3.8543570000001637
+        },
+        {
+          "round": 5,
+          "version": "original",
+          "elapsedMs": 328.0368129999988
+        },
+        {
+          "round": 6,
+          "version": "original",
+          "elapsedMs": 276.99314200000117
+        },
+        {
+          "round": 6,
+          "version": "modified",
+          "elapsedMs": 3.3656520000004093
+        },
+        {
+          "round": 7,
+          "version": "modified",
+          "elapsedMs": 3.953415000001769
+        },
+        {
+          "round": 7,
+          "version": "original",
+          "elapsedMs": 275.2915200000007
+        },
+        {
+          "round": 8,
+          "version": "original",
+          "elapsedMs": 302.4719330000007
+        },
+        {
+          "round": 8,
+          "version": "modified",
+          "elapsedMs": 3.363031000000774
+        },
+        {
+          "round": 9,
+          "version": "modified",
+          "elapsedMs": 9.113736999999674
+        },
+        {
+          "round": 9,
+          "version": "original",
+          "elapsedMs": 416.11123000000043
+        },
+        {
+          "round": 10,
+          "version": "original",
+          "elapsedMs": 275.64512099999956
+        },
+        {
+          "round": 10,
+          "version": "modified",
+          "elapsedMs": 5.503649000000223
+        },
+        {
+          "round": 11,
+          "version": "modified",
+          "elapsedMs": 4.922248999999283
+        },
+        {
+          "round": 11,
+          "version": "original",
+          "elapsedMs": 305.98520800000006
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+services:
+  server:
+    image: ${SERVER_IMAGE:?Set SERVER_IMAGE}
+    ports:
+      - '127.0.0.1:${BENCH_PORT:-2297}:2283'
+    environment:
+      IMMICH_HOST: 0.0.0.0
+      IMMICH_WORKERS_INCLUDE: ${BENCH_WORKERS_INCLUDE:-api,microservices}
+      DB_HOSTNAME: database
+      DB_USERNAME: postgres
+      DB_DATABASE_NAME: immich
+      DB_PASSWORD: disposable-benchmark-only
+      REDIS_HOSTNAME: redis
+      IMMICH_CONFIG_FILE: /config/immich.json
+    volumes:
+      - uploads:/data
+      - ./http-config.json:/config/immich.json:ro
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_started
+  database:
+    image: ghcr.io/immich-app/postgres@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: immich
+      POSTGRES_PASSWORD: disposable-benchmark-only
+      POSTGRES_INITDB_ARGS: --data-checksums
+    volumes:
+      - database:/var/lib/postgresql/data
+    shm_size: 128mb
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d immich']
+      interval: 2s
+      timeout: 5s
+      retries: 60
+  redis:
+    image: redis@sha256:b2b95679e3b46fb51864949ed25ea976fc3a6bcc00a40a1bc00d568cb2822e50
+volumes:
+  database:
+  uploads:

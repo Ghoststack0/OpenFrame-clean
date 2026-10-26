@@ -1,0 +1,109 @@
+{
+  "benchmark": "AssetMediaService.bulkUploadCheck CPU with an in-memory repository",
+  "baselineRelease": {
+    "tag_name": "v3.3.5",
+    "published_at": "2026-10-21T18:12:57Z",
+    "html_url": "https://github.com/immich-app/immich/releases/tag/v3.3.5",
+    "prerelease": false,
+    "commit": "8303cb117e197c700332b33b61b45314c9cc5bb4"
+  },
+  "candidate": {
+    "source": "server/src/services/asset-media.service.ts",
+    "head": "62a489eaf996267ec8c246412a2d13f6010d7b42",
+    "diff": "diff --git i/server/src/services/asset-media.service.ts w/server/src/services/asset-media.service.ts\nindex 5328d98f4..e2fe7d645 100644\n--- i/server/src/services/asset-media.service.ts\n+++ w/server/src/services/asset-media.service.ts\n@@ -315,8 +315,8 @@ export class AssetMediaService extends BaseService {\n     }\n \n     return {\n-      results: dto.assets.map(({ id, checksum }) => {\n-        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];\n+      results: dto.assets.map(({ id }, index) => {\n+        const duplicate = checksumMap[checksums[index].toString('hex')];\n         if (duplicate) {\n           return {\n             id,\n",
+    "sourceSha256": "39371ec88ba6a917af0651bf1829f63ee1b61a2fef899cca3165c1be04ba22b3",
+    "methodSha256": "34e1f807990822a2d8103e798e9f0a6032ebf8c3124710df29c45e63f396abee",
+    "methodSource": "async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {\n    const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));\n    const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);\n    const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};\n\n    for (const { id, deletedAt, checksum } of results) {\n      checksumMap[checksum.toString('hex')] = { id, isTrashed: !!deletedAt };\n    }\n\n    return {\n      results: dto.assets.map(({ id }, index) => {\n        const duplicate = checksumMap[checksums[index].toString('hex')];\n        if (duplicate) {\n          return {\n            id,\n            action: AssetUploadAction.REJECT,\n            reason: AssetRejectReason.DUPLICATE,\n            assetId: duplicate.id,\n            isTrashed: duplicate.isTrashed,\n          };\n        }\n\n        return {\n          id,\n          action: AssetUploadAction.ACCEPT,\n        };\n      }),\n    };\n  }",
+    "compilerVersion": "6.0.3",
+    "compiledSha256": "9e3540ffe3aa7c3eafa4db885d576bb0901fb524175520efc4ac63a77b26140c"
+  },
+  "runFiles": [
+    "upload-check-linux-run-1.json",
+    "upload-check-linux-run-2.json",
+    "upload-check-linux-run-3.json"
+  ],
+  "note": "Median of three per-process medians; reduction range is observed process variation, not a confidence interval. Runs 2 and 3 overlapped dependency copying on the host. No whole-app or transfer-throughput conclusion.",
+  "results": [
+    {
+      "count": 100,
+      "duplicateFraction": 0,
+      "baselineMedianMs": 0.1596565499999997,
+      "candidateMedianMs": 0.09882895000000644,
+      "medianReductionPercent": 37.940543342582856,
+      "minReductionPercent": 36.92228072763295,
+      "maxReductionPercent": 38.099031953273055
+    },
+    {
+      "count": 100,
+      "duplicateFraction": 0.5,
+      "baselineMedianMs": 0.18855909999999768,
+      "candidateMedianMs": 0.13580702500000824,
+      "medianReductionPercent": 28.409503706183582,
+      "minReductionPercent": 27.976414291323024,
+      "maxReductionPercent": 31.96637230940713
+    },
+    {
+      "count": 100,
+      "duplicateFraction": 1,
+      "baselineMedianMs": 0.21527209999999286,
+      "candidateMedianMs": 0.17756409999999506,
+      "medianReductionPercent": 17.51643617542591,
+      "minReductionPercent": 17.291824120757926,
+      "maxReductionPercent": 21.50727287417561
+    },
+    {
+      "count": 1000,
+      "duplicateFraction": 0,
+      "baselineMedianMs": 1.6635967500001243,
+      "candidateMedianMs": 1.1008402500001466,
+      "medianReductionPercent": 32.070416761949375,
+      "minReductionPercent": 30.668059174968054,
+      "maxReductionPercent": 33.9420746043135
+    },
+    {
+      "count": 1000,
+      "duplicateFraction": 0.5,
+      "baselineMedianMs": 2.251041750000013,
+      "candidateMedianMs": 1.7775970000002417,
+      "medianReductionPercent": 22.764326783362577,
+      "minReductionPercent": 20.764294216085876,
+      "maxReductionPercent": 24.592328532434315
+    },
+    {
+      "count": 1000,
+      "duplicateFraction": 1,
+      "baselineMedianMs": 2.6519034999998894,
+      "candidateMedianMs": 2.163931000000048,
+      "medianReductionPercent": 18.40083924621925,
+      "minReductionPercent": 18.148614600853698,
+      "maxReductionPercent": 19.343547868762112
+    },
+    {
+      "count": 10000,
+      "duplicateFraction": 0,
+      "baselineMedianMs": 17.357927500000187,
+      "candidateMedianMs": 12.250517999999829,
+      "medianReductionPercent": 30.366416876020896,
+      "minReductionPercent": 29.424074389066913,
+      "maxReductionPercent": 30.84190440624329
+    },
+    {
+      "count": 10000,
+      "duplicateFraction": 0.5,
+      "baselineMedianMs": 22.757505249999667,
+      "candidateMedianMs": 17.919985249999627,
+      "medianReductionPercent": 21.25681153034167,
+      "minReductionPercent": 20.480065454027507,
+      "maxReductionPercent": 22.475256514072683
+    },
+    {
+      "count": 10000,
+      "duplicateFraction": 1,
+      "baselineMedianMs": 28.327376500000355,
+      "candidateMedianMs": 23.74136200000021,
+      "medianReductionPercent": 16.46628836242625,
+      "minReductionPercent": 15.879537798751365,
+      "maxReductionPercent": 17.27731542212416
+    }
+  ]
+}

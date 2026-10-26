@@ -1,0 +1,60 @@
+{
+  "serverTypeCheck": {
+    "command": "node node_modules/.pnpm/typescript@6.0.3/node_modules/typescript/bin/tsc --noEmit --incremental false -p server/tsconfig.json",
+    "status": "passed",
+    "location": "current PC, static compilation only"
+  },
+  "serverBuild": {
+    "command": "/home/yvm/.local/share/mise/installs/node/24.13.1/bin/node node_modules/@nestjs/cli/bin/nest.js build",
+    "cwd": "server",
+    "status": "passed",
+    "location": "current PC, compilation only"
+  },
+  "changedServiceLint": {
+    "command": "node node_modules/eslint/bin/eslint.js src/services/asset-media.service.ts src/services/asset-media.service.spec.ts --max-warnings 0",
+    "cwd": "server",
+    "status": "passed"
+  },
+  "serviceUnitTests": {
+    "command": "docker run --rm --user \"$(id -u):$(id -g)\" --network none --read-only --tmpfs /tmp:exec --env SWC_NATIVE_BINDING_CACHE=/workspace/.native-cache --mount \"type=bind,src=$PWD/verification,dst=/workspace\" --workdir /workspace/server --entrypoint node ghcr.io/immich-app/immich-server:v3.3.5 node_modules/vitest/vitest.mjs --config test/vitest.config.mjs run src/services/asset-media.service.spec.ts",
+    "host": "yvm@192.168.1.9",
+    "cwd": "/home/yvm/openframe-bench-20261026",
+    "status": "passed",
+    "tests": 135,
+    "log": "upload-check-linux-unit-tests.log",
+    "setup": "Copied checkout server/src, server/test, server/package.json and configuration, existing root/server node_modules and packages/plugin-sdk. Created mode-0700 verification/.native-cache for SWC. No package install."
+  },
+  "singleDecodeRegression": {
+    "before": "Failed: 6 !== 3",
+    "after": "Passed in each patched microbenchmark process",
+    "log": "upload-check-single-decode-before.log"
+  },
+  "preserved": [
+    "server/test/medium/globalSetup.ts",
+    "pre-existing server/test/benchmarks/results/*"
+  ],
+  "notMeasured": [
+    "mobile connectivity",
+    "WAN/TLS uploads",
+    "concurrent upload capacity",
+    "production photo libraries"
+  ],
+  "httpDefaultWorkerSmoke": {
+    "behaviorStatus": "passed",
+    "deployments": 6,
+    "measuredUploads": 30,
+    "measuredPreflightRequests": 72,
+    "performanceGate": "inconclusive",
+    "artifact": "http-upload-linux.json"
+  },
+  "httpControlledApiOnly": {
+    "behaviorStatus": "passed",
+    "deployments": 12,
+    "measuredUploads": 240,
+    "measuredPreflightRequests": 144,
+    "performanceGate": "regression_above_5_percent_not_detected_in_measured_upload_path",
+    "pairedGeometricMeanLatencyReductionPercent": 8.748764612427404,
+    "scope": "API-only controlled upload path, not default-worker/media-ready throughput",
+    "artifact": "http-upload-linux-controlled.json"
+  }
+}

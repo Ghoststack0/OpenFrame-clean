@@ -1,0 +1,1 @@
+/home/yvm/code/a-site-template/AGENTS.md

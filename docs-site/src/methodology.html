@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Methodology · OpenFrame</title>
+  <meta name="description" content="How the Immich face query, bcrypt and media benchmarks were measured, what they leave out, and the raw data.">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="site.config.js"></script>
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+  <main class="doc-main">
+    <header class="doc-head">
+      <p class="eyebrow cap">Report</p>
+      <h1>Methodology</h1>
+      <p class="lede">Each benchmark loads the original code from git at the base commit and runs it next to the patched code, in alternating order, against the same fixtures.</p>
+      <div class="doc-meta"><span>Base <b>256eb55dbe92ac77e02794442f9487e88ffed2b1</b></span></div>
+    </header>
+
+    <article class="doc-body">
+      <h2>Environment</h2>
+      <table>
+        <thead><tr><th>Item</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Client machine</td><td>Laptop, 13th Gen Intel(R) Core(TM) i5-13420H, 12 logical CPUs, 16 GB RAM, Linux 7.2</td></tr>
+          <tr><td>Runtime</td><td>Node v26.10.0, Vitest 5.0.4, bcrypt 6.0.0</td></tr>
+          <tr><td>Database</td><td>PostgreSQL 14.19 (<code>ghcr.io/immich-app/postgres:14-vectorchord0.4.3</code>) on a separate Linux box on the LAN, with <code>fsync</code>, <code>full_page_writes</code> and <code>synchronous_commit</code> off, as in Immich's medium tests</td></tr>
+          <tr><td>Load</td><td>Not isolated. Other builds, tests and services could run at the same time. No CPU pinning.</td></tr>
+          <tr><td>Base commit</td><td><code>256eb55dbe92ac77e02794442f9487e88ffed2b1</code></td></tr>
+        </tbody>
+      </table>
+
+      <h2>Face query</h2>
+      <ul>
+        <li>The original <code>PersonRepository</code> source is loaded with <code>git show</code>, transpiled with SWC and imported. The patched one comes from the working tree. Both use the same Kysely connection and fixture database.</li>
+        <li>Each group has N eligible faces (1, 1,000 or 10,000) plus one invisible and one deleted face. Another group has a visible face. All faces share one asset.</li>
+        <li>3 warm-up rounds, then 12 measured rounds, alternating which version runs first. The page reports the median.</li>
+        <li>Timing covers the full method call, without the measuring plugin. A separate pass counts returned rows with a Kysely plugin and serializes them as JSON to estimate decoded size. That isn't wire bytes.</li>
+      </ul>
+
+      <h2>bcrypt</h2>
+      <ul>
+        <li>The original <code>CryptoRepository.compareBcrypt</code> (<code>compareSync</code>) is loaded from git. The patched one uses <code>compare</code>. Both run real bcrypt.</li>
+        <li>Each batch makes four checks of the password <code>password</code> against a cost-10 hash. Every batch must return four <code>true</code> results.</li>
+        <li>A <code>setImmediate</code> callback is queued before the batch starts. Its delay shows how long the event loop was blocked. The test asserts that 4 checks had finished when it ran for the original, and 0 for the patch, in every round.</li>
+        <li>1 warm-up batch per version, then 6 rounds in alternating order. The page reports medians. No timing threshold is asserted.</li>
+        <li>Malformed hashes return <code>false</code> in both APIs. Bad argument types throw in the sync API and reject in the async one, and callers propagate the rejection.</li>
+      </ul>
+
+      <h2>Media requests</h2>
+      <ul>
+        <li>The original <code>sendFile</code> helper is loaded from git. The patched one is imported from source. Both call real Express <code>sendFile</code> over loopback HTTP using supertest, which opens a server per request.</li>
+        <li>32 KiB temporary file on the local filesystem with the page cache not cleared. Range requests ask for 8 KiB. Concurrency 1.</li>
+        <li>5 rounds per scenario in alternating order, each with 50 warm-up and 200 measured requests. The page reports the median time per 200 requests.</li>
+        <li>A spy around the real <code>fs.promises.access</code> counts calls.</li>
+      </ul>
+
+      <h2>Public smoke test</h2>
+      <ul>
+        <li>Authenticated <code>curl</code> over HTTPS through a Cloudflare Worker and tunnel to a temporary deployment of the patched server, with a separate database and uploads and machine learning off.</li>
+        <li>Rate limited to 128 KiB/s with <code>--limit-rate 128k</code>. One sample each for full download, conditional request and an 8 KiB range. Downloaded bytes were compared with the uploaded synthetic PNG.</li>
+        <li>This checks correctness only. The original server wasn't measured the same way. The deployment has been shut down.</li>
+      </ul>
+
+      <h2>What wasn't tested</h2>
+      <ul>
+        <li>The full Immich test suite. Only the focused suites listed in the <a href="performance.html">server performance report</a> ran.</li>
+        <li>End-to-end HTTP latency on low-end hardware, such as a NAS or single-board computer.</li>
+        <li>Added network latency, packet loss, outages or CPU throttling.</li>
+        <li>Memory use, or bandwidth between the server and clients.</li>
+        <li>Slow disks or network storage for the media change.</li>
+        <li>Many concurrent logins competing for the bcrypt worker pool.</li>
+      </ul>
+      <div class="callout warn">
+        <p class="cap">Reading the numbers</p>
+        <p>Every benchmark ran on warm caches with synthetic data, on machines doing other work. Treat the face query and bcrypt results as large, consistent effects, and the media latency numbers as noise.</p>
+      </div>
+
+      <h2>Reproduce</h2>
+      <p>From <code>server/</code> in a checkout with the patch applied:</p>
+      <pre data-title="terminal"><code>RUN_BCRYPT_BENCHMARK=1 pnpm test run src/repositories/crypto.repository.benchmark.spec.ts
+FILE_BENCHMARK_REF=256eb55dbe92ac77e02794442f9487e88ffed2b1 pnpm test run src/utils/file.spec.ts
+RUN_PERSON_BENCHMARK=1 pnpm test:medium run test/medium/specs/repositories/person.repository.benchmark.spec.ts</code></pre>
+      <p>The face query benchmark needs Docker for its PostgreSQL test container.</p>
+
+      <h2>Raw data</h2>
+      <p>Every sample behind the charts. Private hostnames, LAN addresses and home-directory paths are redacted. Numbers are unchanged.</p>
+      <table>
+        <thead><tr><th>File</th><th>Contents</th></tr></thead>
+        <tbody>
+          <tr><td><a href="data/raw/person-linux-db.json" download>person-linux-db.json</a></td><td>Face query: per-round timings, rows and bytes, the diff, and the database settings</td></tr>
+          <tr><td><a href="data/raw/bcrypt-local.json" download>bcrypt-local.json</a></td><td>bcrypt: per-round delays and totals, completion counts, invalid-hash behaviour</td></tr>
+          <tr><td><a href="data/raw/media-local.json" download>media-local.json</a></td><td>Media: every 200-request sample and its <code>fs.access</code> count</td></tr>
+          <tr><td><a href="data/raw/hosted-network.json" download>hosted-network.json</a></td><td>128 KiB/s smoke test: curl timings and status codes</td></tr>
+          <tr><td><a href="data/raw/deployment.json" download>deployment.json</a></td><td>Test counts, compiled file hashes and smoke results for the temporary deployment</td></tr>
+        </tbody>
+      </table>
+      <p>The chart data is in <code>data/*.json</code>. <code>prepare-data.mjs</code> in the site source rebuilds all of it from the original results and checks that these pages quote the same numbers.</p>
+    </article>
+  </main>
+</body>
+</html>

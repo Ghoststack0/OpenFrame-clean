@@ -1,0 +1,459 @@
+{
+  "benchmark": "Isolated HTTP upload and bulk preflight with real PostgreSQL, Redis, and disposable storage",
+  "recordedAt": "2026-10-26T05:40:59Z",
+  "host": {
+    "hostname": "yvm",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           48 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  2\nOn-line CPU(s) list:                     0,1\nVendor ID:                               AuthenticAMD\nModel name:                              AMD A4-9125 RADEON R3, 4 COMPUTE CORES 2C+2G\nCPU family:                              21\nModel:                                   112\nThread(s) per core:                      1\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                0\nFrequency boost:                         enabled\nCPU(s) scaling MHz:                      113%\nCPU max MHz:                             2300.0000\nCPU min MHz:                             1300.0000\nBogoMIPS:                                4591.43\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good acc_power nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm perfctr_core perfctr_nb bpext ptsc mwaitx cpb hw_pstate ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 xsaveopt arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov\nVirtualization:                          AMD-V\nL1d cache:                               64 KiB (2 instances)\nL1i cache:                               192 KiB (2 instances)\nL2 cache:                                2 MiB (2 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0,1\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; untrained return thunk; SMT disabled\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Retpolines; IBPB conditional; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+    "memory": "               total        used        free      shared  buff/cache   available\nMem:      7149137920  1738870784   584978432    18448384  5156208640  5410267136\nSwap:     4294963200    47714304  4247248896\n",
+    "storage": "Filesystem     Type 1K-blocks      Used Available Use% Mounted on\n/dev/nvme0n1p2 ext4 243937628 198511412  32962040  86% /\n",
+    "docker": "29.8.2"
+  },
+  "baselineRelease": {
+    "tag_name": "v3.3.5",
+    "published_at": "2026-10-21T18:12:57Z",
+    "html_url": "https://github.com/immich-app/immich/releases/tag/v3.3.5",
+    "prerelease": false,
+    "commit": "8303cb117e197c700332b33b61b45314c9cc5bb4"
+  },
+  "candidateBuild": {
+    "head": "62a489eaf996267ec8c246412a2d13f6010d7b42",
+    "sourceTreeSha256": "739ff34582320d749c7ecb7411a098718bbfbc836d30e096bd32c819e7a4e926",
+    "distTreeSha256": "9514b598569a8d3e9ddbdd7442ee5431ce6484272b6ea96c14a2d774e3fbceb2",
+    "diff": "diff --git i/server/src/services/asset-media.service.spec.ts w/server/src/services/asset-media.service.spec.ts\nindex 729b64325..70381cf6e 100644\n--- i/server/src/services/asset-media.service.spec.ts\n+++ w/server/src/services/asset-media.service.spec.ts\n@@ -780,6 +780,44 @@ describe(AssetMediaService.name, () => {\n   });\n \n   describe('bulkUploadCheck', () => {\n+    it('should preserve order and trashed status for repeated checksums with mixed encodings', async () => {\n+      const checksum = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');\n+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'trashed', checksum, deletedAt: new Date() }]);\n+\n+      await expect(\n+        sut.bulkUploadCheck(authStub.admin, {\n+          assets: [\n+            { id: 'hex', checksum: checksum.toString('hex').toUpperCase() },\n+            { id: 'new', checksum: Buffer.alloc(20).toString('base64') },\n+            { id: 'base64', checksum: checksum.toString('base64') },\n+          ],\n+        }),\n+      ).resolves.toEqual({\n+        results: [\n+          {\n+            id: 'hex',\n+            action: AssetUploadAction.REJECT,\n+            reason: AssetRejectReason.DUPLICATE,\n+            assetId: 'trashed',\n+            isTrashed: true,\n+          },\n+          { id: 'new', action: AssetUploadAction.ACCEPT },\n+          {\n+            id: 'base64',\n+            action: AssetUploadAction.REJECT,\n+            reason: AssetRejectReason.DUPLICATE,\n+            assetId: 'trashed',\n+            isTrashed: true,\n+          },\n+        ],\n+      });\n+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [\n+        checksum,\n+        Buffer.alloc(20),\n+        checksum,\n+      ]);\n+    });\n+\n     it('should accept hex and base64 checksums', async () => {\n       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');\n       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');\ndiff --git i/server/src/services/asset-media.service.ts w/server/src/services/asset-media.service.ts\nindex 5328d98f4..e2fe7d645 100644\n--- i/server/src/services/asset-media.service.ts\n+++ w/server/src/services/asset-media.service.ts\n@@ -315,8 +315,8 @@ export class AssetMediaService extends BaseService {\n     }\n \n     return {\n-      results: dto.assets.map(({ id, checksum }) => {\n-        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];\n+      results: dto.assets.map(({ id }, index) => {\n+        const duplicate = checksumMap[checksums[index].toString('hex')];\n         if (duplicate) {\n           return {\n             id,\n",
+    "buildCommand": "Node 24.13.1 node_modules/@nestjs/cli/bin/nest.js build, from server/",
+    "packaging": "Full freshly compiled server/dist over existing immich-perf:local production dependencies/native codecs. No web/CLI rebuild. No native build or dependency installation."
+  },
+  "images": {
+    "upstream": {
+      "id": "sha256:fb31598c03fbb3d68f6409548ab7b18148ee651bf7d6b40e1d907308edbf0dc2",
+      "repoDigests": [
+        "ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6"
+      ],
+      "labels": {
+        "org.opencontainers.image.created": "2026-10-21T18:13:42.816Z",
+        "org.opencontainers.image.description": "High performance self-hosted photo and video management solution.",
+        "org.opencontainers.image.licenses": "AGPL-3.0",
+        "org.opencontainers.image.revision": "8303cb117e197c700332b33b61b45314c9cc5bb4",
+        "org.opencontainers.image.source": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.title": "immich",
+        "org.opencontainers.image.url": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.version": "v3.3.5"
+      }
+    },
+    "candidate": {
+      "id": "sha256:0bb71185d49546fd049b5c6d33d3c08184ba7385bd4d4adb02229580f5689a27",
+      "repoDigests": [],
+      "labels": {
+        "com.docker.compose.project": "immich-perf",
+        "com.docker.compose.service": "server",
+        "com.docker.compose.version": "5.6.0",
+        "openframe.server-source-sha256": "739ff34582320d749c7ecb7411a098718bbfbc836d30e096bd32c819e7a4e926",
+        "org.opencontainers.image.created": "2026-10-21T18:13:42.816Z",
+        "org.opencontainers.image.description": "High performance self-hosted photo and video management solution.",
+        "org.opencontainers.image.licenses": "AGPL-3.0",
+        "org.opencontainers.image.revision": "62a489eaf996267ec8c246412a2d13f6010d7b42-working-tree",
+        "org.opencontainers.image.source": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.title": "OpenFrame disposable HTTP benchmark",
+        "org.opencontainers.image.url": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.version": "openframe-benchmark-20261026"
+      }
+    }
+  },
+  "workload": {
+    "rounds": 3,
+    "warmupUploadsPerRound": 1,
+    "measuredUploadsPerRound": 5,
+    "fixture": "512x512 RGB seeded random PNG, different bytes each round/index, identical between versions",
+    "fixtureSha256": {
+      "0-0": "1cdc20d9c31f32d9058e016f3483994470f2bc21e24bd01c0cb97ae1f28671b5",
+      "0-1": "6338e9839faf6d1e8930552406221d4587410f4798938af449601c7c163f3529",
+      "0-2": "5ef0e66c11cf836f57a6750be91c81e288f84307b10e9190d37256e837355c1f",
+      "0-3": "fb83936512e85b7c98b98d98d3078e2a87f60453f3db826f4381786d18bf7b9d",
+      "0-4": "a53600f42183f3d9d7caa938fc0851453bba39908da811e5a15519c81eba8539",
+      "0-5": "cd81016372dd90e7da946e12fa0e9e70621eb017b687103a868e49f566790221",
+      "1-0": "95192e416327071f417f9c22c267071390d6093f252edcad736ac2b898a7e0d7",
+      "1-1": "61120f766dc0e9d536a8e7525784fb96dc56b3c94af5ac9c72d82cfe97a910c3",
+      "1-2": "a037442f540a897960164f29d8b3592e860d6d9c55b9374ed610547b50fc3495",
+      "1-3": "4ec9a256a399b1c79b85cd3f54a14017d21de4a5a3b942aaf6c7bf0434c2c5c7",
+      "1-4": "5c37e68f576a62aee9d8fff4b0bd3d71288000ff675531c1bf38ed156d535079",
+      "1-5": "0f3ff769f86682d550f5ca9e64a5ad7205b0c804411b423bd2de47de78672fb0",
+      "2-0": "64da9514329bf64562aa7f77dcb4657c52622ff4af447201ad4ea50127bd5678",
+      "2-1": "faefc9f7bd00a97741a57248043d5d92b5d6e1d77fe0937b6a6cdd42fed01d0e",
+      "2-2": "8b1a768a5d46a7fbaa4275d39a1aafeb03239591e86908201f4a5f63a21ec9ce",
+      "2-3": "3458233092ee3ec4f2c58a3341a3196b629ea5425c3e36948c6fa9920fc1b3e6",
+      "2-4": "5d0143b0d054e6d39750e5a9ef0f0ac0d4071084175cd19ba389d097a2905ad5",
+      "2-5": "cdd2f1c51b1c21b8d0aebd718a19ef04e5fa01c886c09258c7291679ed6c2c99"
+    },
+    "preflight": "1000 entries, alternating existing/new, mixed hex/base64; 3 warmups and 12 measured requests per round"
+  },
+  "limitations": "Loopback HTTP on one shared 2-core host. Sequential requests only; background default jobs enabled except ML. Fresh per-version volumes at start, then retained between rounds. No WAN/TLS/mobile testing. Upload HTTP completion does not mean all background jobs completed. Existing candidate production dependency/native-codec image reused with freshly built full server dist; web/CLI remain from prior build. Three rounds and 15 measured uploads per version are smoke-level evidence, not a capacity test.",
+  "rounds": [
+    {
+      "round": 0,
+      "version": "upstream",
+      "startupMs": 30717.408632001025,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 69.27154501318,
+          "MiBPerSecond": 10.83824552775032
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 88.88725101132877,
+          "MiBPerSecond": 8.446453280952127
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 54.063044997747056,
+          "MiBPerSecond": 13.887157354358049
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 51.071895999484695,
+          "MiBPerSecond": 14.70049228145022
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 48.70646700146608,
+          "MiBPerSecond": 15.4144215164868
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        23.28572398982942,
+        23.50482199108228,
+        23.20498701010365,
+        23.265819996595383,
+        50.94729700067546,
+        29.626243995153345,
+        41.83835799631197,
+        63.81320800574031,
+        44.39159299363382,
+        142.86878998973407,
+        22.7720330003649,
+        22.295217000646517
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 0,
+      "version": "candidate",
+      "startupMs": 32198.75344200409,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 90.80897399690002,
+          "MiBPerSecond": 8.267707252865591
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 79.92317000753246,
+          "MiBPerSecond": 9.393796728391713
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 49.97662699315697,
+          "MiBPerSecond": 15.022662754776421
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 67.25847501365934,
+          "MiBPerSecond": 11.162638058430241
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 59.230209997622296,
+          "MiBPerSecond": 12.675660156693553
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        35.14876701228786,
+        25.399651000043377,
+        39.29092099133413,
+        45.409620011923835,
+        40.78471400134731,
+        40.16332598985173,
+        36.033184005646035,
+        33.16139700473286,
+        58.506640008999966,
+        26.493455006857403,
+        20.208251997246407,
+        25.408032000996172
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 1,
+      "version": "candidate",
+      "startupMs": 27222.567199991317,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 70.93855200218968,
+          "MiBPerSecond": 10.583554241652388
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 98.71417899557855,
+          "MiBPerSecond": 7.605614720992421
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 57.28362899390049,
+          "MiBPerSecond": 13.106397519252765
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 47.26184700848535,
+          "MiBPerSecond": 15.885583413713357
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 50.92837299162056,
+          "MiBPerSecond": 14.741920246754832
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        23.588983007357456,
+        19.918824997148477,
+        22.898030001670122,
+        25.517126996419393,
+        23.994838004000485,
+        19.59293900290504,
+        23.659733997192234,
+        27.84428199811373,
+        32.28920401306823,
+        24.39189300639555,
+        24.14304399280809,
+        22.925617988221347
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 1,
+      "version": "upstream",
+      "startupMs": 26615.25865700969,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 68.56830600008834,
+          "MiBPerSecond": 10.949402963790382
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 60.25752799178008,
+          "MiBPerSecond": 12.459555477315128
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 47.98695399949793,
+          "MiBPerSecond": 15.645544264953935
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 94.81766399403568,
+          "MiBPerSecond": 7.918166102327511
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 53.744846998597495,
+          "MiBPerSecond": 13.969376691295544
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        26.684267009841278,
+        31.543215998681262,
+        28.924747995915823,
+        55.702184996334836,
+        31.511159002548084,
+        24.955244996817783,
+        26.6795179923065,
+        64.62932399881538,
+        73.2404259906616,
+        37.47746099543292,
+        53.81922899687197,
+        29.291072001797147
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 2,
+      "version": "upstream",
+      "startupMs": 26588.560870994115,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 86.10710898938123,
+          "MiBPerSecond": 8.719164094012724
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 80.46089400886558,
+          "MiBPerSecond": 9.331017535757535
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 67.3454350035172,
+          "MiBPerSecond": 11.148224269399146
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 64.21362300170586,
+          "MiBPerSecond": 11.691942890677705
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 50.13252000208013,
+          "MiBPerSecond": 14.975948005572057
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        24.58549800212495,
+        25.24397500383202,
+        28.734986000927165,
+        25.157230003969744,
+        42.506896003033035,
+        30.793387006269768,
+        25.032769990502857,
+        21.07241599878762,
+        31.842632000916637,
+        34.78775400435552,
+        32.97820300213061,
+        22.933652013307437
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 2,
+      "version": "candidate",
+      "startupMs": 27637.958784995135,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 80.91585099464282,
+          "MiBPerSecond": 9.278553011685682
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 72.54689300316386,
+          "MiBPerSecond": 10.348920289483805
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 48.56846599432174,
+          "MiBPerSecond": 15.45821959926074
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 68.07724700774997,
+          "MiBPerSecond": 11.028383871838757
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 54.08861499745399,
+          "MiBPerSecond": 13.88059230162934
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        44.79745500429999,
+        26.449668002896942,
+        20.979666005587205,
+        26.65151200199034,
+        36.75962099805474,
+        66.99461600510404,
+        52.70594099420123,
+        53.35373099660501,
+        37.51643501163926,
+        29.868532001273707,
+        28.330109009402804,
+        22.168595998664387
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    }
+  ],
+  "summary": {
+    "upstream": {
+      "uploadMedianMs": 64.21362300170586,
+      "bulkCheckMedianMs": 29.458657998475246
+    },
+    "candidate": {
+      "uploadMedianMs": 67.25847501365934,
+      "bulkCheckMedianMs": 27.247897000052035
+    }
+  },
+  "status": "behavior_passed",
+  "behaviorStatus": "passed",
+  "performanceGate": {
+    "status": "inconclusive",
+    "scope": "Default-background-worker upload smoke",
+    "reason": "Three deployment rounds; initial imports and media jobs contend with requests. Pooled medians cannot separate a slower path from background interference. Behavior pass is not a performance pass.",
+    "observedUploadMedianIncreasePercent": 4.741753960639472
+  }
+}

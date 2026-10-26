@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>Contributing · OpenFrame</title>
+  <meta name="description" content="How to contribute to OpenFrame, including AI-assisted pull requests for performance, implementations, UX and tests, and what authors are responsible for.">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="site.config.js"></script>
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+  <main class="doc-main">
+    <header class="doc-head">
+      <p class="eyebrow cap">OpenFrame</p>
+      <h1>AI-assisted pull requests are welcome</h1>
+      <p class="lede">Use whatever tools help you, AI included. What matters is that the change works, you can explain it, and any performance claim comes with a measurement.</p>
+      <div class="doc-meta"><span>Full rules in <b>CONTRIBUTING.md</b></span></div>
+    </header>
+
+    <article class="doc-body">
+      <h2>What helps most</h2>
+      <div class="cards">
+        <div class="card"><b>Performance</b><span>Profiling, removing wasted work, faster uploads and media delivery</span></div>
+        <div class="card"><b>Implementations</b><span>Features that move a goal forward, like the mobile-to-desktop connection</span></div>
+        <div class="card"><b>UX</b><span>Clearer flows, accessibility and the redesign</span></div>
+        <div class="card"><b>Tests</b><span>Coverage for changed code and regression tests</span></div>
+      </div>
+
+      <h2>You're the author</h2>
+      <p>An AI tool doesn't change who's responsible for a pull request. Before you open one:</p>
+      <ol class="steps">
+        <li><div><b>Understand it.</b> Read every line and be ready to explain the behaviour and the trade-offs.</div></li>
+        <li><div><b>Verify it.</b> Run the relevant tests, lint and type checks. Say in the PR what you ran and what you didn't.</div></li>
+        <li><div><b>Measure speed claims.</b> Give the baseline and candidate commits, machine, software versions, workload, commands, run count and median or mean. Report regressions too.</div></li>
+        <li><div><b>Keep compatibility.</b> Don't break the API, the mobile apps, existing data or upstream attribution.</div></li>
+        <li><div><b>Disclose AI use.</b> Say in the PR template that AI tools were used and which parts they wrote.</div></li>
+      </ol>
+      <div class="callout warn">
+        <p class="cap">Privacy</p>
+        <p>Never put credentials or private photo libraries in prompts, fixtures or benchmark results.</p>
+      </div>
+
+      <h2>Checks to run</h2>
+      <p>For web changes, from <code>web/</code>:</p>
+      <pre data-title="terminal"><code>pnpm run lint
+pnpm run check:svelte
+pnpm run check:typescript
+pnpm test</code></pre>
+      <p>For server changes, run the focused suites you touched from <code>server/</code>. The <a href="methodology.html">Methodology</a> page shows how the published benchmarks were run.</p>
+
+      <h2>Performance claims</h2>
+      <p>Compare both versions on the same machine with the same settings and disposable data, and alternate which runs first. Say which kind of comparison it is: against the fork's base commit, or against the latest stable Immich release. A faster query or method alone doesn't prove faster uploads or a faster app, so say what you measured and what you didn't.</p>
+    </article>
+  </main>
+</body>
+</html>

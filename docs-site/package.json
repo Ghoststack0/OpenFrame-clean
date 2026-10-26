@@ -1,0 +1,17 @@
+{
+  "name": "a-site-immich",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "new": "node scripts/site.mjs new",
+    "dev": "node scripts/site.mjs dev",
+    "build": "node scripts/site.mjs build",
+    "deploy": "node scripts/site.mjs deploy",
+    "remove": "node scripts/site.mjs remove",
+    "build:domain": "node scripts/domain.mjs build",
+    "deploy:domain": "node scripts/domain.mjs deploy"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

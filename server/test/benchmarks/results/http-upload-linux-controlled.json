@@ -1,0 +1,2042 @@
+{
+  "benchmark": "Isolated HTTP upload and bulk preflight with real PostgreSQL, Redis, and disposable storage",
+  "recordedAt": "2026-10-26T05:46:26Z",
+  "host": {
+    "hostname": "yvm",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           48 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  2\nOn-line CPU(s) list:                     0,1\nVendor ID:                               AuthenticAMD\nModel name:                              AMD A4-9125 RADEON R3, 4 COMPUTE CORES 2C+2G\nCPU family:                              21\nModel:                                   112\nThread(s) per core:                      1\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                0\nFrequency boost:                         enabled\nCPU(s) scaling MHz:                      113%\nCPU max MHz:                             2300.0000\nCPU min MHz:                             1300.0000\nBogoMIPS:                                4591.43\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good acc_power nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm perfctr_core perfctr_nb bpext ptsc mwaitx cpb hw_pstate ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 xsaveopt arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov\nVirtualization:                          AMD-V\nL1d cache:                               64 KiB (2 instances)\nL1i cache:                               192 KiB (2 instances)\nL2 cache:                                2 MiB (2 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0,1\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; untrained return thunk; SMT disabled\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Retpolines; IBPB conditional; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+    "memory": "               total        used        free      shared  buff/cache   available\nMem:      7149137920  1738870784   584978432    18448384  5156208640  5410267136\nSwap:     4294963200    47714304  4247248896\n",
+    "storage": "Filesystem     Type 1K-blocks      Used Available Use% Mounted on\n/dev/nvme0n1p2 ext4 243937628 198511412  32962040  86% /\n",
+    "docker": "29.8.2"
+  },
+  "baselineRelease": {
+    "tag_name": "v3.3.5",
+    "published_at": "2026-10-21T18:12:57Z",
+    "html_url": "https://github.com/immich-app/immich/releases/tag/v3.3.5",
+    "prerelease": false,
+    "commit": "8303cb117e197c700332b33b61b45314c9cc5bb4"
+  },
+  "candidateBuild": {
+    "head": "62a489eaf996267ec8c246412a2d13f6010d7b42",
+    "sourceTreeSha256": "739ff34582320d749c7ecb7411a098718bbfbc836d30e096bd32c819e7a4e926",
+    "distTreeSha256": "9514b598569a8d3e9ddbdd7442ee5431ce6484272b6ea96c14a2d774e3fbceb2",
+    "diff": "diff --git i/server/src/services/asset-media.service.spec.ts w/server/src/services/asset-media.service.spec.ts\nindex 729b64325..70381cf6e 100644\n--- i/server/src/services/asset-media.service.spec.ts\n+++ w/server/src/services/asset-media.service.spec.ts\n@@ -780,6 +780,44 @@ describe(AssetMediaService.name, () => {\n   });\n \n   describe('bulkUploadCheck', () => {\n+    it('should preserve order and trashed status for repeated checksums with mixed encodings', async () => {\n+      const checksum = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');\n+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'trashed', checksum, deletedAt: new Date() }]);\n+\n+      await expect(\n+        sut.bulkUploadCheck(authStub.admin, {\n+          assets: [\n+            { id: 'hex', checksum: checksum.toString('hex').toUpperCase() },\n+            { id: 'new', checksum: Buffer.alloc(20).toString('base64') },\n+            { id: 'base64', checksum: checksum.toString('base64') },\n+          ],\n+        }),\n+      ).resolves.toEqual({\n+        results: [\n+          {\n+            id: 'hex',\n+            action: AssetUploadAction.REJECT,\n+            reason: AssetRejectReason.DUPLICATE,\n+            assetId: 'trashed',\n+            isTrashed: true,\n+          },\n+          { id: 'new', action: AssetUploadAction.ACCEPT },\n+          {\n+            id: 'base64',\n+            action: AssetUploadAction.REJECT,\n+            reason: AssetRejectReason.DUPLICATE,\n+            assetId: 'trashed',\n+            isTrashed: true,\n+          },\n+        ],\n+      });\n+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [\n+        checksum,\n+        Buffer.alloc(20),\n+        checksum,\n+      ]);\n+    });\n+\n     it('should accept hex and base64 checksums', async () => {\n       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');\n       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');\ndiff --git i/server/src/services/asset-media.service.ts w/server/src/services/asset-media.service.ts\nindex 5328d98f4..e2fe7d645 100644\n--- i/server/src/services/asset-media.service.ts\n+++ w/server/src/services/asset-media.service.ts\n@@ -315,8 +315,8 @@ export class AssetMediaService extends BaseService {\n     }\n \n     return {\n-      results: dto.assets.map(({ id, checksum }) => {\n-        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];\n+      results: dto.assets.map(({ id }, index) => {\n+        const duplicate = checksumMap[checksums[index].toString('hex')];\n         if (duplicate) {\n           return {\n             id,\n",
+    "buildCommand": "Node 24.13.1 node_modules/@nestjs/cli/bin/nest.js build, from server/",
+    "packaging": "Full freshly compiled server/dist over existing immich-perf:local production dependencies/native codecs. No web/CLI rebuild. No native build or dependency installation."
+  },
+  "images": {
+    "upstream": {
+      "id": "sha256:fb31598c03fbb3d68f6409548ab7b18148ee651bf7d6b40e1d907308edbf0dc2",
+      "repoDigests": [
+        "ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6"
+      ],
+      "labels": {
+        "org.opencontainers.image.created": "2026-10-21T18:13:42.816Z",
+        "org.opencontainers.image.description": "High performance self-hosted photo and video management solution.",
+        "org.opencontainers.image.licenses": "AGPL-3.0",
+        "org.opencontainers.image.revision": "8303cb117e197c700332b33b61b45314c9cc5bb4",
+        "org.opencontainers.image.source": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.title": "immich",
+        "org.opencontainers.image.url": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.version": "v3.3.5"
+      }
+    },
+    "candidate": {
+      "id": "sha256:0bb71185d49546fd049b5c6d33d3c08184ba7385bd4d4adb02229580f5689a27",
+      "repoDigests": [],
+      "labels": {
+        "com.docker.compose.project": "immich-perf",
+        "com.docker.compose.service": "server",
+        "com.docker.compose.version": "5.6.0",
+        "openframe.server-source-sha256": "739ff34582320d749c7ecb7411a098718bbfbc836d30e096bd32c819e7a4e926",
+        "org.opencontainers.image.created": "2026-10-21T18:13:42.816Z",
+        "org.opencontainers.image.description": "High performance self-hosted photo and video management solution.",
+        "org.opencontainers.image.licenses": "AGPL-3.0",
+        "org.opencontainers.image.revision": "62a489eaf996267ec8c246412a2d13f6010d7b42-working-tree",
+        "org.opencontainers.image.source": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.title": "OpenFrame disposable HTTP benchmark",
+        "org.opencontainers.image.url": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.version": "openframe-benchmark-20261026"
+      }
+    }
+  },
+  "behaviorStatus": "passed",
+  "performanceGate": {
+    "status": "regression_above_5_percent_not_detected_in_measured_upload_path",
+    "scope": "Controlled API-only authenticated HTTP upload completion, not media-ready throughput or whole application",
+    "pairedBlocks": [
+      {
+        "round": 0,
+        "upstreamMedianMs": 38.06400449684588,
+        "candidateMedianMs": 35.660057998029515,
+        "increasePercent": -6.315537554687833
+      },
+      {
+        "round": 1,
+        "upstreamMedianMs": 38.226919998123776,
+        "candidateMedianMs": 35.02480349561665,
+        "increasePercent": -8.376600842192595
+      },
+      {
+        "round": 2,
+        "upstreamMedianMs": 37.30262350291014,
+        "candidateMedianMs": 35.64394149725558,
+        "increasePercent": -4.446555898474958
+      },
+      {
+        "round": 3,
+        "upstreamMedianMs": 40.01149349642219,
+        "candidateMedianMs": 35.467191504721995,
+        "increasePercent": -11.357491547038967
+      },
+      {
+        "round": 4,
+        "upstreamMedianMs": 40.094484997098334,
+        "candidateMedianMs": 35.66266000416363,
+        "increasePercent": -11.053452845835132
+      },
+      {
+        "round": 5,
+        "upstreamMedianMs": 39.41501150256954,
+        "candidateMedianMs": 35.18865999649279,
+        "increasePercent": -10.7226950975296
+      }
+    ],
+    "geometricMeanIncreasePercent": -8.748764612427404,
+    "exploratory95PercentBlockBootstrapInterval": [
+      -10.6595184722761,
+      -6.600939642734678
+    ],
+    "budgetPercent": 5,
+    "method": "Each deployment round is one paired block; log ratio of its 20-upload medians. Resample whole paired blocks 10000 times, seed 0. Positive means candidate slower. No individual-request independence assumption.",
+    "limitations": "Six paired blocks on one host give limited precision; bootstrap interval is exploratory, not a formal release qualification. The 5% budget was chosen before this controlled run completed. Default-background-work smoke remains inconclusive regardless of this result."
+  },
+  "controlled": true,
+  "workload": {
+    "rounds": 6,
+    "warmupUploadsPerRound": 1,
+    "measuredUploadsPerRound": 20,
+    "workersInclude": "api",
+    "fixture": "512x512 RGB seeded random PNG, different bytes each round/index, identical between versions",
+    "fixtureSha256": {
+      "0-0": "1cdc20d9c31f32d9058e016f3483994470f2bc21e24bd01c0cb97ae1f28671b5",
+      "0-1": "6338e9839faf6d1e8930552406221d4587410f4798938af449601c7c163f3529",
+      "0-2": "5ef0e66c11cf836f57a6750be91c81e288f84307b10e9190d37256e837355c1f",
+      "0-3": "fb83936512e85b7c98b98d98d3078e2a87f60453f3db826f4381786d18bf7b9d",
+      "0-4": "a53600f42183f3d9d7caa938fc0851453bba39908da811e5a15519c81eba8539",
+      "0-5": "cd81016372dd90e7da946e12fa0e9e70621eb017b687103a868e49f566790221",
+      "0-6": "7d85014e60486e40ce0b67d85a5c245d3e781ed2dbc2e6844a5210ee21f708f6",
+      "0-7": "ea4138612c3fb79d30bf4f92dc00ebee3980ad69e073591a1b08115530d8de92",
+      "0-8": "1be780281d46a0ffbd3f154fc76cb7df7fcc200a8e06cd660f5f02d3cc952dd1",
+      "0-9": "b62e6c6d97bc07bc66450edcbb7debfafec5a37b013c783ccc8e31acd8463ef0",
+      "0-10": "95192e416327071f417f9c22c267071390d6093f252edcad736ac2b898a7e0d7",
+      "0-11": "61120f766dc0e9d536a8e7525784fb96dc56b3c94af5ac9c72d82cfe97a910c3",
+      "0-12": "a037442f540a897960164f29d8b3592e860d6d9c55b9374ed610547b50fc3495",
+      "0-13": "4ec9a256a399b1c79b85cd3f54a14017d21de4a5a3b942aaf6c7bf0434c2c5c7",
+      "0-14": "5c37e68f576a62aee9d8fff4b0bd3d71288000ff675531c1bf38ed156d535079",
+      "0-15": "0f3ff769f86682d550f5ca9e64a5ad7205b0c804411b423bd2de47de78672fb0",
+      "0-16": "95948cfc15a0eb9f1bc41e00fa375e62abdaba4d154d99382c4090c0ba20baa4",
+      "0-17": "70301c68a7cacffa33c50959aa04f423ad86a4c86b5791882b2e2f4e1d666dc8",
+      "0-18": "faa14d4e6d8485688c751ac5d5e652292e9c4b25131c095efb1ba6b5e3cf44d6",
+      "0-19": "cce983ddaab17c7a63617b639cc3598eae49dcc315cbc4589dd675e155ef77ff",
+      "0-20": "64da9514329bf64562aa7f77dcb4657c52622ff4af447201ad4ea50127bd5678",
+      "1-0": "faefc9f7bd00a97741a57248043d5d92b5d6e1d77fe0937b6a6cdd42fed01d0e",
+      "1-1": "8b1a768a5d46a7fbaa4275d39a1aafeb03239591e86908201f4a5f63a21ec9ce",
+      "1-2": "3458233092ee3ec4f2c58a3341a3196b629ea5425c3e36948c6fa9920fc1b3e6",
+      "1-3": "5d0143b0d054e6d39750e5a9ef0f0ac0d4071084175cd19ba389d097a2905ad5",
+      "1-4": "cdd2f1c51b1c21b8d0aebd718a19ef04e5fa01c886c09258c7291679ed6c2c99",
+      "1-5": "084a55e9e064b50469c5c349e6eb4a162655cd54eb8c3db826c98753416a5ae4",
+      "1-6": "19546b1525d88b4a6852bc75c459b79846cd818fec2f74ca0add10e214642a3e",
+      "1-7": "29728a7a954d49c070248669049057f93a10b9553dadf999d708dedef0d07d04",
+      "1-8": "dfa42054c4e019dd229ab0c3fe50ba7398931bc20d57dd72da1ec4504f8eedcc",
+      "1-9": "24431dbeb1e76bb1fdfeeb1bd9e15c5df1df5a61731caa13cf9f41049704ad5a",
+      "1-10": "1b667a3cdb2444fc48179ce84ff4d41a2f5bda257244be92377639b5c6fa1ab7",
+      "1-11": "1ea4c521a1e702825b2fc34eed373edee46fd84d3abb5c69edd5f45163963e3c",
+      "1-12": "4232a2d9aae498964eec3f20af121585ceb2fefda97e00f2c248ff0ba1efd6c2",
+      "1-13": "4e36964c7f0cafeb032cde671af42781a9c2949b03f728e4dd87d2946e9195a0",
+      "1-14": "1cbfa5abdc93b751e31e877befde68f3eb7cd10764d7896f0bdc49a419208aa7",
+      "1-15": "1a21fee2d825d11160983d6547c64a99ba13656a653387f8158cd233bea31e67",
+      "1-16": "c845a97b7c44602dcd2d897a4609ccd37d237ec7dfa7b81de020289d44425fb0",
+      "1-17": "f57e8ccc2757e3c70afdc37b72dfb0206bab7160ad34f5f1829835a4565d8319",
+      "1-18": "ff90b12100e19a2357820183d3bb698ba6d885684f28de22d4f7b14af4d53514",
+      "1-19": "ea3ffeef72e37ff113aafe2a77dcae1987fbfdf9737448b7205de46347de8c11",
+      "1-20": "68188a3b4fb4c1f8c745108df72d11d6525d9dc00b316b7e4cd48418777436ef",
+      "2-0": "5f2f8d6bf982f24063ba0bfbcbce2c11ba9da235fba1dc2329bb55d9734afe4c",
+      "2-1": "8b94ed306f179f8bfc15a875d4836291e52f6e5efd87aa23cc38e67fb41d7b0c",
+      "2-2": "8bd6d45117b2221ad3473253132094942a71e794b761d71987b4adbe245e63c7",
+      "2-3": "0bac7ef6f0ac25c29e554e935f9af2e6c6d53dff49575c8f4f2b6f2b524d9667",
+      "2-4": "c1058b2572a23f4da91c94465caa9f69996feeb2736c5d50eaa5cdb9f51cf07d",
+      "2-5": "5809e5e2e4bc46d0988428b07fcd0825031dbfc464733eaf814a195977d7ec70",
+      "2-6": "3a17d5f34e1e9f85b8fc3bc2a66b54cfc9b78046137b14d4cf8bf9677cc07270",
+      "2-7": "4fa8b2131d92129d55b07ea12f3a9902101ab00111b869226a2dfcac003af22e",
+      "2-8": "d033c4b38e9f581f01f9ffc9ae9254c32a9510e07699f51a2a57aaa280496fce",
+      "2-9": "5fa7543bfade2739a9a3f4a95defc48bcdd0e5d8ce55f1faa208578130a57d87",
+      "2-10": "f8d80dba8d42fcea7e43865d81d65d4fdb46ceb3e68c592a1b26460ce66d2922",
+      "2-11": "d2cfeccefa14b29b7fb1fd39dd1581f6aba07c854325d71a717250c402e8e69f",
+      "2-12": "fb0f9f02fe889cfe0397829903cd725a5d1400009eb74e0d69f5d3340ec3f769",
+      "2-13": "352eb9b2461b7f167f4a9dca40708f61e7bd4a1e179e573df036eb173dd2c78e",
+      "2-14": "176b0e2c24fa7b251b8cd42445126585bc8cc81a3b60d4a7b21e4770dfd7d515",
+      "2-15": "41e90f588c1f74dc6cf663d281f349d764c1d544cf1e991b8cc92cff80921ff3",
+      "2-16": "e1327cbe0f5ef5382a38883215a8d5f00bf6ac05cb1e9b6624c4b1c283d223b1",
+      "2-17": "57af007b09c563ed4e87c1891a8f0c1e7e28ed8cb29a61a1bcb478c487e1301d",
+      "2-18": "b9a16f592f8a97c60be7c2bf7270cf2a296c0a1a4d5dd1c81f2c41b5fe244921",
+      "2-19": "50fab9890b816ea4d1939db1ff30603e166de43d382fa2c6156471b5bc40b577",
+      "2-20": "91448a45dda1fd27d3adf40e229f8447acc68f791b436eaaca49586df209df6e",
+      "3-0": "31d6ccd9d45eb15ef9534ead83d7032ca231556981d36e28ea0474910627b1ca",
+      "3-1": "99715bd499323054673f793f818d0c3cb14e90800158cbe6d7c4477283b3c7b5",
+      "3-2": "20e16d8d5d053885a5ce6b2e3e5c8577e8885d471fbaadac1fe33ca204434fd3",
+      "3-3": "3489c9c00129dd962ba0927eac76d070827aede314972b2df6aefd5e90ee8c92",
+      "3-4": "396f2f486bd42c18a5a288c7ff626a04a4457c21f4ad1a6029d7838ec531a8cb",
+      "3-5": "83096d55ea9382913b1af06f145295239e7355f5a6d09f220f0f214fed7736f0",
+      "3-6": "a9b820d58d27a347ad327d9261f2a5d30cc445be54bf9c787f619f59f7091855",
+      "3-7": "ce369bc68df316cec8ab82fe16714a6cdb6d78765b3ca1c3f1d9fbf85557e00e",
+      "3-8": "77e8fdeb928e3989df6e72351f9360e27a53cbb5bfed904d1d3bf442c0d10f16",
+      "3-9": "8c009a2171db4c3d9f9a03f0e134042349aa333ad540e97882d9464233afc4f4",
+      "3-10": "9c11133ab05879101dd2525507ba65b90409da30a5c43c841904da73c1dce93d",
+      "3-11": "8bea6ed4186f3a3c75fde402e269ecd1e4173c30f2b5b1291e9e1eed5d58554a",
+      "3-12": "6da19fe1ce907efd27ed57099945642a3bd4d1d58dba42a986ee28fdc32ca5bf",
+      "3-13": "d85f97772f75013d3fa453d22cf47fd434f3ce713a2c7660882c8070799c1640",
+      "3-14": "4bfb93d5df0596a8cf8bd94511e6defa12410de3aa1eed1658a4811141eabba2",
+      "3-15": "0c2d0691f306de7deea8525bc4a9ec5f3ad2ea31a26014e10b5dac8a32e7b850",
+      "3-16": "219e753438a17b2a5ddd9fb23389179b0445818778a42b636362b0dfe9554e02",
+      "3-17": "ab5ec3dc1e697c49967e735545bd19ef623fe665344070d5afbf2f3787897a76",
+      "3-18": "4f7d2a3fc18b9bfa10a8235671b9c0449cda11046b06ae64bdec0973df51e461",
+      "3-19": "cd0212d9f62dbdcd7d2289ea7db001fa61c9a664117b569bd401f1ae67ee9a70",
+      "3-20": "eeb13010194439a776d1dc954608e6cc1caf69a15e216479dcf49a9c1c935b58",
+      "4-0": "5b0af287f6568ebcec587a35ee5018b029b63df2d49d2775762495716a9e3ec8",
+      "4-1": "425e98548e4e425e8da877a46cb62e9ba68991e6c0c3d332fecdad4f8c701570",
+      "4-2": "032291a03915439d666fb2d762afa0be2a166c3b6e20a7d58f84c298fd2b88e8",
+      "4-3": "49c8f30de42ef03ba8547db9c4401d231f2acd0e58a3d9a392ed0f7932ca5155",
+      "4-4": "6ea3f87394d0874b4916506a1cb31b3965131b7123df7a0e25f68bebc53e6590",
+      "4-5": "d3a86a358366ebec58e3d7c1efb98a9f81c77509f1441a62c4687713efc992a2",
+      "4-6": "a81f283b89e01923e71fb7064e06c19b70983bc73eea1bf2cd03287e6789513c",
+      "4-7": "0f5c389e81e4e74da5b2f503898ca8ce9458eacb68c1c3520231eb2c70717920",
+      "4-8": "5886aba2cd70b23089c78146d7cb34ca2bc6791b92e9cb7db916ece57c0db7fa",
+      "4-9": "3e85ca239ee32d17e0eaea23363afef82a60146683004764d7154b297cd36c3b",
+      "4-10": "881b5885f28286ff010f390c3f1caa8490a230058a9bb73f0374b2e103b11d2c",
+      "4-11": "b3f3d32fdef9cb58e6d3fb69d07406e334375a9eece3dd23e9e24c8a23d2d15d",
+      "4-12": "d8eaec1970053fd3a9e541bef7c2e59d33a4f26036c6845ce420e428cd7aea89",
+      "4-13": "4a9431647dc7ac50e81c9bb4ba2f4462c8d2ca4b943ddeab08299d3570c65dd0",
+      "4-14": "a6f0ba174bd3015443e1894759769b4ff95f215fefee59165224ac278242e1a1",
+      "4-15": "dd4300c7021aec282d857d487c0583570119a622c707060d4319287789f8319e",
+      "4-16": "226ef913b1de1f63ef9bd7c63960c913b0ae95a2b89519d9f6951c7acb1da69f",
+      "4-17": "1b2b1856cafedceee7ebccd1b3a9669f906430f270e3666261eabe11adffb723",
+      "4-18": "fc9379eab0f9006c907035b7d348dcc311c15632a7adfb402ea8392069f315ef",
+      "4-19": "fd7008daddce452a3401d45eb61974e95f28b7b287fc9769f202c7510006a470",
+      "4-20": "5da8c407ed0fdbac780955b9040a5441e3fbfdd1b0244e28289c73063091b180",
+      "5-0": "663ab2669e1f64321552eca8520d38884c4da6da9436cc8b0a7b64d56d03b426",
+      "5-1": "8d962b0f5ecb06a2423fac858c349d94f13465d67b992c76c23b4d718d11ef8a",
+      "5-2": "89b8cef274167e76a368d56b4f0640b26c5c14472c3b0f3469a3ac74b632391b",
+      "5-3": "bfb1e1e1739bb1013f4c48f63805e458e07c2ab73b4e74b9913b5623c90cd778",
+      "5-4": "23ff711c178e6dcd1005bd5535a118311af4e6eb009c061c9ee11f6c8e502044",
+      "5-5": "33e260ed87f6e2d7154c97d3704e1474881b567108b4f9ed3d933ae48c10380c",
+      "5-6": "051994a4d8759d32c812f7705529b0f4527347404c9eebbc8232c4dc259eddad",
+      "5-7": "f03647d3f343d1c2b88dc560e02be6facda13aee510ca4ee1226aecb179c5141",
+      "5-8": "5ed12569deb40f003ad46492f42e1495f41019fb175ab1a4896b707d5a6f899c",
+      "5-9": "94261f1d873f929ceddf2875bfb02d2549633ed47f55b0a7d5caf2ce19b0124f",
+      "5-10": "68d45f7a4b16af9e62e496a5645b18c5fb1c9bae1ff563f75c8939819d0129a3",
+      "5-11": "a1ce72c6ad5ac7e92bde9a568459ef0d289b0e0e6f352a1c124f486efaedb67f",
+      "5-12": "6313401e379263565a0f1334408d926103876777b418702e330eb2bd897d443c",
+      "5-13": "88e72be59705eb358af576901aa8e913e0dfabb0e1b1437b533cb6306874f943",
+      "5-14": "7e0422a25918192f70e06dfff01bc6985009a35f10e0928cc7f6b9cf94cef3cc",
+      "5-15": "2832eb9e975f5953b30dcdfef0e9ebbbb5246881777d4191aa24a45c7bee2092",
+      "5-16": "6b6e16973f145d9b86997f3fd7db7527447fb4eaf76fed0ed5d5db6a563a3eaa",
+      "5-17": "dacdd43a515fe0383dd7b919c5e4374b9cfd8c76f6c27a0fd62c36fbee34a748",
+      "5-18": "99531cfb211a17f42e418276b36fec03ff3d890186a51f2c72ddd0b2cc18c49a",
+      "5-19": "4c5c7befafb5e3e42fa88bcc168426cf1a3fea60bb323126da7fdf369f73dd10",
+      "5-20": "ce64fa776fdba3b732233cbf01b812362485fc97f447276895e5f2dc8586dca8"
+    },
+    "preflight": "1000 entries, alternating existing/new, mixed hex/base64; 3 warmups and 12 measured requests per round"
+  },
+  "limitations": "Loopback HTTP on one shared 2-core host. Sequential requests only; microservices workers excluded in this controlled run. ML disabled. Fresh per-version volumes at start, then retained between rounds. No WAN/TLS/mobile testing. Upload HTTP completion does not mean all background jobs completed. Existing candidate production dependency/native-codec image reused with freshly built full server dist; web/CLI remain from prior build. Sample counts are specified under workload; sequential small-file measurements are not a capacity test.",
+  "controlledLimitations": "Controlled mode disables microservices workers equally for both builds, leaving real authenticated HTTP, checksum/deduplication, PostgreSQL durability and storage writes enabled. Queued media/geodata work does not execute. This isolates upload request completion and does not measure media-ready throughput.",
+  "rounds": [
+    {
+      "round": 0,
+      "version": "upstream",
+      "startupMs": 23517.424050005502,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 54.204938001930714,
+          "MiBPerSecond": 13.850804753484105
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 50.093516998458654,
+          "MiBPerSecond": 14.987608335876162
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 59.485015997779556,
+          "MiBPerSecond": 12.621363554268493
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 41.73951099801343,
+          "MiBPerSecond": 17.987321724377324
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 37.13445000175852,
+          "MiBPerSecond": 20.217938138410542
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 36.37171199079603,
+          "MiBPerSecond": 20.641921203198816
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 43.96207399258856,
+          "MiBPerSecond": 17.077947984574735
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 38.70043299684767,
+          "MiBPerSecond": 19.399834957934655
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 38.031632007914595,
+          "MiBPerSecond": 19.740988574542666
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 36.09430301003158,
+          "MiBPerSecond": 20.800568242882832
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 38.33250899333507,
+          "MiBPerSecond": 19.586038917254093
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 37.62438699777704,
+          "MiBPerSecond": 19.95466432406757
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 38.04413499892689,
+          "MiBPerSecond": 19.734500809668308
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 36.6813200089382,
+          "MiBPerSecond": 20.467693440598886
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 38.330483992467634,
+          "MiBPerSecond": 19.587073648404495
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 38.08387399476487,
+          "MiBPerSecond": 19.713908649174137
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 34.787500990205444,
+          "MiBPerSecond": 21.581947296267092
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 36.53919300995767,
+          "MiBPerSecond": 20.547306907814022
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 35.56797899364028,
+          "MiBPerSecond": 21.10836865579842
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 53.69719500595238,
+          "MiBPerSecond": 13.981773402804901
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        22.674493011436425,
+        19.17313499143347,
+        23.28099599981215,
+        18.859966003219597,
+        18.6952799995197,
+        18.967312993481755,
+        27.959250001003966,
+        26.377830989076756,
+        48.605548989144154,
+        18.891254992922768,
+        19.449775994871743,
+        17.141728007118218
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 0,
+      "version": "candidate",
+      "startupMs": 24410.45767099422,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 53.84313300601207,
+          "MiBPerSecond": 13.943876795869617
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 112.8098330082139,
+          "MiBPerSecond": 6.655288753816232
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 109.88452800665982,
+          "MiBPerSecond": 6.832463373678505
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 36.716198999783956,
+          "MiBPerSecond": 20.448249911268615
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 34.27049198944587,
+          "MiBPerSecond": 21.907535298024552
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 43.82955000619404,
+          "MiBPerSecond": 17.129585241768435
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 42.08993900101632,
+          "MiBPerSecond": 17.83756476628119
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 37.40860799734946,
+          "MiBPerSecond": 20.06976610818154
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 31.751103000715375,
+          "MiBPerSecond": 23.64585611159831
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 34.58785200200509,
+          "MiBPerSecond": 21.706523229483274
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 40.629135008202866,
+          "MiBPerSecond": 18.478907138630273
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 36.225075004040264,
+          "MiBPerSecond": 20.725478493991158
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 40.59596199658699,
+          "MiBPerSecond": 18.49400718728068
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 34.8036619980121,
+          "MiBPerSecond": 21.571925764085858
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 31.226384002366103,
+          "MiBPerSecond": 24.043194142573935
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 35.09504099201877,
+          "MiBPerSecond": 21.392823365278137
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 29.56639298645314,
+          "MiBPerSecond": 25.393087796791775
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 31.16471400426235,
+          "MiBPerSecond": 24.090771788785542
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 34.24528100003954,
+          "MiBPerSecond": 21.923663378279368
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 31.379058011225425,
+          "MiBPerSecond": 23.926212592834087
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        16.502134007168934,
+        17.15522099402733,
+        17.59312700596638,
+        18.612322994158603,
+        16.320965994964354,
+        15.878030986641534,
+        22.734434009180404,
+        22.818943005404435,
+        26.87791698554065,
+        17.281006003031507,
+        17.829470001743175,
+        15.105583996046335
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 1,
+      "version": "candidate",
+      "startupMs": 21621.299133999855,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 51.82265699841082,
+          "MiBPerSecond": 14.487524500383614
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 58.34438400052022,
+          "MiBPerSecond": 12.868111058174149
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 34.74026899493765,
+          "MiBPerSecond": 21.611289568565432
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 36.38782999769319,
+          "MiBPerSecond": 20.63277785421799
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 33.7013070093235,
+          "MiBPerSecond": 22.277534005780502
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 139.01953300228342,
+          "MiBPerSecond": 5.400550532184002
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 36.89355200913269,
+          "MiBPerSecond": 20.349952012037313
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 37.642392999259755,
+          "MiBPerSecond": 19.945119136135087
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 35.30933799629565,
+          "MiBPerSecond": 21.262987513904072
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 33.25676699751057,
+          "MiBPerSecond": 22.57531566419709
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 35.69276799680665,
+          "MiBPerSecond": 21.03456960823615
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 31.019394999020733,
+          "MiBPerSecond": 24.20363172663925
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 33.51727599510923,
+          "MiBPerSecond": 22.399851737623475
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 32.5158189953072,
+          "MiBPerSecond": 23.08974634924031
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 33.42878699186258,
+          "MiBPerSecond": 22.459146158136477
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 47.30321500392165,
+          "MiBPerSecond": 15.871691023056465
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 40.180083000450395,
+          "MiBPerSecond": 18.685427128934435
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 30.028134991880506,
+          "MiBPerSecond": 25.00261881540301
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 30.65545098797884,
+          "MiBPerSecond": 24.490979213904343
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 29.49985399027355,
+          "MiBPerSecond": 25.45036369288454
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        17.495990003226325,
+        16.52288800687529,
+        16.514925999217667,
+        21.327772992663085,
+        16.77801900950726,
+        23.788985999999568,
+        25.366007001139224,
+        19.006032001925632,
+        17.136725000455044,
+        16.63658999314066,
+        16.408907002187334,
+        15.580866995151155
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 1,
+      "version": "upstream",
+      "startupMs": 20563.970788003644,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 53.27308700361755,
+          "MiBPerSecond": 14.093082551954812
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 56.21991099906154,
+          "MiBPerSecond": 13.354379251009233
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 54.38866600161418,
+          "MiBPerSecond": 13.804015949153284
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 52.528366999467835,
+          "MiBPerSecond": 14.29288698327628
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 39.51563499867916,
+          "MiBPerSecond": 18.999619086585565
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 40.07723099493887,
+          "MiBPerSecond": 18.733380383346972
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 45.41039900504984,
+          "MiBPerSecond": 16.533261750374905
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 46.81316699134186,
+          "MiBPerSecond": 16.03783852261717
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 41.91140900366008,
+          "MiBPerSecond": 17.91354742747704
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 35.910275997594,
+          "MiBPerSecond": 20.90716353697075
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 37.5111140019726,
+          "MiBPerSecond": 20.01492178824579
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 35.027688994887285,
+          "MiBPerSecond": 21.433957948211738
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 38.238583991187625,
+          "MiBPerSecond": 19.63414788352196
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 38.21525600505993,
+          "MiBPerSecond": 19.646133283525437
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 35.335340988240205,
+          "MiBPerSecond": 21.247340253184976
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 35.303982003824785,
+          "MiBPerSecond": 21.266213337014346
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 33.76055399712641,
+          "MiBPerSecond": 22.238438770979805
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 33.235276001505554,
+          "MiBPerSecond": 22.589913587762677
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 34.88500299863517,
+          "MiBPerSecond": 21.5216267279331
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 34.15376300108619,
+          "MiBPerSecond": 21.982409754250973
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        20.358595007564873,
+        19.549760007066652,
+        18.884379998780787,
+        20.771078998222947,
+        20.993803002056666,
+        20.822272999794222,
+        30.504053996992297,
+        24.105033997329883,
+        18.206357999588363,
+        19.933749004849233,
+        18.51771200017538,
+        17.389840999385342
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 2,
+      "version": "upstream",
+      "startupMs": 20374.03836500016,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 59.0900820097886,
+          "MiBPerSecond": 12.705719596311981
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 56.188724003732204,
+          "MiBPerSecond": 13.361791467084823
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 59.93299999681767,
+          "MiBPerSecond": 12.527022057619646
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 58.6990390002029,
+          "MiBPerSecond": 12.790362938256246
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 39.197809994220734,
+          "MiBPerSecond": 19.153672438591524
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 37.364607997005805,
+          "MiBPerSecond": 20.0933999628637
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 38.646829008939676,
+          "MiBPerSecond": 19.42674294871086
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 40.752133005298674,
+          "MiBPerSecond": 18.42313414225054
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 37.183927997830324,
+          "MiBPerSecond": 20.19103557276846
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 36.61925900087226,
+          "MiBPerSecond": 20.502381354072995
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 34.65091400721576,
+          "MiBPerSecond": 21.667019022445096
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 34.01682199910283,
+          "MiBPerSecond": 22.070904006237104
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 36.72653599642217,
+          "MiBPerSecond": 20.442494577016273
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 37.24063900881447,
+          "MiBPerSecond": 20.1602881401082
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 62.5230760051636,
+          "MiBPerSecond": 12.008078631279245
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 36.41615899687167,
+          "MiBPerSecond": 20.616727123910817
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 36.838561994954944,
+          "MiBPerSecond": 20.380328989016267
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 33.23690300749149,
+          "MiBPerSecond": 22.58880777099567
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 34.825238995836116,
+          "MiBPerSecond": 21.558560245034368
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 39.34028799994849,
+          "MiBPerSecond": 19.084303931390544
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        21.60981800989248,
+        19.55689600436017,
+        20.40833400678821,
+        19.507517004967667,
+        21.344769003917463,
+        19.29596699483227,
+        27.47595099208411,
+        23.4206000022823,
+        18.255328002851456,
+        21.137410003575496,
+        17.984970996621996,
+        16.910179998376407
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 2,
+      "version": "candidate",
+      "startupMs": 20614.718721000827,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 52.310031998786144,
+          "MiBPerSecond": 14.352543560991801
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 56.47908800165169,
+          "MiBPerSecond": 13.293097312716824
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 52.21204599365592,
+          "MiBPerSecond": 14.379478885594288
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 42.397973011247814,
+          "MiBPerSecond": 17.707969499869183
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 34.746406992780976,
+          "MiBPerSecond": 21.60747190624452
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 158.25695100647863,
+          "MiBPerSecond": 4.744069743317107
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 34.80744900298305,
+          "MiBPerSecond": 21.569578766749324
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 37.528407003264874,
+          "MiBPerSecond": 20.005698959567802
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 43.04442700231448,
+          "MiBPerSecond": 17.442025953768276
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 36.480433991528116,
+          "MiBPerSecond": 20.580402445700287
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 37.635824002791196,
+          "MiBPerSecond": 19.948600378293104
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 37.86525400937535,
+          "MiBPerSecond": 19.82772947339958
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 34.25241800141521,
+          "MiBPerSecond": 21.919095256528546
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 30.514775004121475,
+          "MiBPerSecond": 24.603884932399104
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 32.25655401183758,
+          "MiBPerSecond": 23.275332283291313
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 32.562250999035314,
+          "MiBPerSecond": 23.056821623348327
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 31.831567990593612,
+          "MiBPerSecond": 23.586083260532845
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 31.826261008973233,
+          "MiBPerSecond": 23.590016204786806
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 33.26548699988052,
+          "MiBPerSecond": 22.569397915086878
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 32.5760099949548,
+          "MiBPerSecond": 23.047083208033463
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        17.175308006699197,
+        17.73418000084348,
+        16.514047005330212,
+        20.265170009224676,
+        16.124611007398926,
+        19.710906999534927,
+        26.061254990054294,
+        19.58121100324206,
+        17.488687008153647,
+        18.188150992500596,
+        15.35593401058577,
+        16.062381997471675
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 3,
+      "version": "candidate",
+      "startupMs": 20136.10713199887,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 53.00107299990486,
+          "MiBPerSecond": 14.165411574607193
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 60.650129002169706,
+          "MiBPerSecond": 12.3789021604982
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 39.42441800609231,
+          "MiBPerSecond": 19.043578850636013
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 46.31715999857988,
+          "MiBPerSecond": 16.20958653256099
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 131.6432489984436,
+          "MiBPerSecond": 5.703156209311801
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 90.34407199942507,
+          "MiBPerSecond": 8.310252087643681
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 37.116082006832585,
+          "MiBPerSecond": 20.227943585242752
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 39.51877499639522,
+          "MiBPerSecond": 18.998109455769747
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 37.53897400747519,
+          "MiBPerSecond": 20.0000674709423
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 32.30413299752399,
+          "MiBPerSecond": 23.24105132296843
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 36.336928998935036,
+          "MiBPerSecond": 20.66168037924881
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 34.397637005895376,
+          "MiBPerSecond": 21.826557818805327
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 32.68400199885946,
+          "MiBPerSecond": 22.970932781293197
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 33.330735997878946,
+          "MiBPerSecond": 22.52521555441291
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 33.00625200790819,
+          "MiBPerSecond": 22.74666062537389
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 33.41810801066458,
+          "MiBPerSecond": 22.466323129360262
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 34.597454010508955,
+          "MiBPerSecond": 21.70049890698326
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 30.70357300748583,
+          "MiBPerSecond": 24.45259425528114
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 33.50422299990896,
+          "MiBPerSecond": 22.408578552664636
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 30.88935199775733,
+          "MiBPerSecond": 24.305528098937213
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        16.700534004485235,
+        16.39392800279893,
+        16.93883299594745,
+        21.124721999512985,
+        16.068886005086824,
+        19.055244003538974,
+        26.928702005534433,
+        22.490474992082454,
+        15.453790008905344,
+        16.947702009929344,
+        16.81409501179587,
+        15.680565004004166
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 3,
+      "version": "upstream",
+      "startupMs": 20577.82608200796,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 53.95681501249783,
+          "MiBPerSecond": 13.914498340303298
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 66.2938579916954,
+          "MiBPerSecond": 11.325061411171804
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 54.31258800672367,
+          "MiBPerSecond": 13.82335183229548
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 38.62803398806136,
+          "MiBPerSecond": 19.436195307571047
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 45.32564099645242,
+          "MiBPerSecond": 16.564178606943823
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 39.55064200272318,
+          "MiBPerSecond": 18.98280217266156
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 42.642323998734355,
+          "MiBPerSecond": 17.60649848638026
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 42.62297700915951,
+          "MiBPerSecond": 17.614490249663064
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 47.642709003412165,
+          "MiBPerSecond": 15.758591999579247
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 39.86311500193551,
+          "MiBPerSecond": 18.834002633838317
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 38.13355500460602,
+          "MiBPerSecond": 19.68822505136929
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 40.15987199090887,
+          "MiBPerSecond": 18.694830827882377
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 39.039123003021814,
+          "MiBPerSecond": 19.23152866116739
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 43.1597110000439,
+          "MiBPerSecond": 17.395436520385633
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 41.01934299978893,
+          "MiBPerSecond": 18.303121357729115
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 38.760594004997984,
+          "MiBPerSecond": 19.369724128650958
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 36.698240000987425,
+          "MiBPerSecond": 20.458256660789512
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 36.1673029983649,
+          "MiBPerSecond": 20.75858443117518
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 38.048766989959404,
+          "MiBPerSecond": 19.732098365699343
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 37.918931993772276,
+          "MiBPerSecond": 19.79966136869994
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        21.525345000554807,
+        19.59121899562888,
+        19.56209499621764,
+        20.714831989607774,
+        23.6252750037238,
+        22.123468996142037,
+        29.886231990531087,
+        24.495431993273087,
+        18.6559689900605,
+        22.266924002906308,
+        19.848656011163257,
+        18.963832000736147
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 4,
+      "version": "upstream",
+      "startupMs": 20549.797683997895,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 54.32686200947501,
+          "MiBPerSecond": 13.819719843353205
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 88.33621199300978,
+          "MiBPerSecond": 8.499142039267701
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 58.252525006537326,
+          "MiBPerSecond": 12.888402912237666
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 42.626000999007374,
+          "MiBPerSecond": 17.613240635848914
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 40.061973995761946,
+          "MiBPerSecond": 18.74051470900751
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 40.12699599843472,
+          "MiBPerSecond": 18.710147476993786
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 42.96403599437326,
+          "MiBPerSecond": 17.474662134576427
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 41.10240600130055,
+          "MiBPerSecond": 18.26613295863257
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 47.460236004553735,
+          "MiBPerSecond": 15.819179931330657
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 37.79037199274171,
+          "MiBPerSecond": 19.867018326351847
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 36.32739699969534,
+          "MiBPerSecond": 20.667101828015632
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 36.21558099985123,
+          "MiBPerSecond": 20.730911729471835
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 35.85813099925872,
+          "MiBPerSecond": 20.937566794961338
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 36.558782987413,
+          "MiBPerSecond": 20.53629665949065
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 44.2536629998358,
+          "MiBPerSecond": 16.965420759457558
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 40.79559099045582,
+          "MiBPerSecond": 18.403508681001814
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 35.14721199462656,
+          "MiBPerSecond": 21.361068782759656
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 36.33305600669701,
+          "MiBPerSecond": 20.663882850951676
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 37.206635999609716,
+          "MiBPerSecond": 20.178712554054297
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 36.185199991450645,
+          "MiBPerSecond": 20.748317353968968
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        20.092902006581426,
+        20.392662001540884,
+        19.47047299472615,
+        21.187531005125493,
+        21.723286001360975,
+        22.051053994800895,
+        30.74669600755442,
+        23.45969100133516,
+        18.476974000805058,
+        21.38567100337241,
+        19.064762003836222,
+        17.291759999352507
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 4,
+      "version": "candidate",
+      "startupMs": 20154.680648003705,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 51.41581399948336,
+          "MiBPerSecond": 14.602161369009876
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 56.03291098668706,
+          "MiBPerSecond": 13.3989471494321
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 38.80630599451251,
+          "MiBPerSecond": 19.34690751151679
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 56.40747200231999,
+          "MiBPerSecond": 13.309974481901513
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 47.500625005341135,
+          "MiBPerSecond": 15.805729142617231
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 156.90247699967586,
+          "MiBPerSecond": 4.785023329752813
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 36.583943001460284,
+          "MiBPerSecond": 20.522173154202786
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 43.09382200881373,
+          "MiBPerSecond": 17.42203355241733
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 39.077991008525714,
+          "MiBPerSecond": 19.21240047308608
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 36.22621300746687,
+          "MiBPerSecond": 20.724827427716598
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 35.099107000860386,
+          "MiBPerSecond": 21.390345142429098
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 31.852583997533657,
+          "MiBPerSecond": 23.57052140566009
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 33.21428799245041,
+          "MiBPerSecond": 22.60418808646765
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 32.29496099811513,
+          "MiBPerSecond": 23.247651947412848
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 32.15772198745981,
+          "MiBPerSecond": 23.346865590548585
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 30.744963994948193,
+          "MiBPerSecond": 24.419674489220952
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 30.49981899675913,
+          "MiBPerSecond": 24.61594978708661
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 32.35390801273752,
+          "MiBPerSecond": 23.205296023091716
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 32.92828700796235,
+          "MiBPerSecond": 22.800518373698193
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 29.761732002953067,
+          "MiBPerSecond": 25.226422066597394
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        17.629802008741535,
+        17.61017699027434,
+        15.500745997997,
+        20.745791000081226,
+        16.081060995929874,
+        19.515879001119174,
+        24.836283002514392,
+        19.211299004382454,
+        20.055126005900092,
+        19.382341008167714,
+        15.713135988335125,
+        15.83542799926363
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 5,
+      "version": "candidate",
+      "startupMs": 20683.068914004252,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 53.481126989936456,
+          "MiBPerSecond": 14.038260881838331
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 64.82873999630101,
+          "MiBPerSecond": 11.58100578512387
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 55.78458000672981,
+          "MiBPerSecond": 13.458593985091925
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 52.32077700202353,
+          "MiBPerSecond": 14.349596010594725
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 38.123480990179814,
+          "MiBPerSecond": 19.6934276052296
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 35.06511000159662,
+          "MiBPerSecond": 21.411083920890814
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 38.545044997590594,
+          "MiBPerSecond": 19.478042196769614
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 36.24808898894116,
+          "MiBPerSecond": 20.712319845840902
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 34.515594990807585,
+          "MiBPerSecond": 21.751964963646323
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 33.72219199081883,
+          "MiBPerSecond": 22.263736981980895
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 37.25953800312709,
+          "MiBPerSecond": 20.150062324348788
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 34.19522999320179,
+          "MiBPerSecond": 21.95575269090785
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 35.312209991388954,
+          "MiBPerSecond": 21.26125816318307
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 33.44422299414873,
+          "MiBPerSecond": 22.44878025932332
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 33.91216199088376,
+          "MiBPerSecond": 22.139019421447614
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 34.26227899035439,
+          "MiBPerSecond": 21.912786745762457
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 34.375910996459424,
+          "MiBPerSecond": 21.84035247871047
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 33.058696004445665,
+          "MiBPerSecond": 22.7105755423169
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 35.031866005738266,
+          "MiBPerSecond": 21.43140227861325
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 74.32170500396751,
+          "MiBPerSecond": 10.101786724340812
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        15.854851008043624,
+        17.445846999180503,
+        16.91958899027668,
+        21.858729000086896,
+        16.9065980007872,
+        22.73552300175652,
+        19.65710699732881,
+        17.11109498864971,
+        25.948175010853447,
+        18.839051001123153,
+        21.18203300051391,
+        16.901709997910075
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 5,
+      "version": "upstream",
+      "startupMs": 20118.890195997665,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 55.459487994085066,
+          "MiBPerSecond": 13.537485470827399
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 54.55077700025868,
+          "MiBPerSecond": 13.762993933814966
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 39.71079101029318,
+          "MiBPerSecond": 18.906246736431108
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 43.15580800175667,
+          "MiBPerSecond": 17.397009758429093
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 49.73085501114838,
+          "MiBPerSecond": 15.096905387432955
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 47.64398199040443,
+          "MiBPerSecond": 15.758170949914762
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 42.70777400233783,
+          "MiBPerSecond": 17.579516387305862
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 40.946363005787134,
+          "MiBPerSecond": 18.33574358810187
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 43.71600900776684,
+          "MiBPerSecond": 17.17407489796392
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 38.22784099611454,
+          "MiBPerSecond": 19.63966557817802
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 35.70578400103841,
+          "MiBPerSecond": 21.026901773606724
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 37.9490320046898,
+          "MiBPerSecond": 19.783956883186647
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 37.10652999870945,
+          "MiBPerSecond": 20.233150687104537
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 36.64012800436467,
+          "MiBPerSecond": 20.49070387663542
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 34.10102800989989,
+          "MiBPerSecond": 22.01640410140988
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 39.119231994845904,
+          "MiBPerSecond": 19.192146027774044
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 60.8907379937591,
+          "MiBPerSecond": 12.32998708303393
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 36.988010004279204,
+          "MiBPerSecond": 20.297983396581593
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 36.41614400839899,
+          "MiBPerSecond": 20.616735609522344
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 34.085453997249715,
+          "MiBPerSecond": 22.0264636346059
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        23.613862998900004,
+        19.082736005657353,
+        21.139018004760146,
+        20.75474899902474,
+        22.558901997399516,
+        19.947378008509986,
+        32.844365006894805,
+        25.379113998496905,
+        22.96181999554392,
+        32.04453700163867,
+        39.360675000352785,
+        51.65583699999843
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    }
+  ],
+  "summary": {
+    "upstream": {
+      "uploadMedianMs": 38.67363100289367,
+      "bulkCheckMedianMs": 20.762913998623844
+    },
+    "candidate": {
+      "uploadMedianMs": 35.20422249857802,
+      "bulkCheckMedianMs": 17.467267003667075
+    }
+  },
+  "status": "behavior_passed"
+}

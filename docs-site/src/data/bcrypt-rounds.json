@@ -1,0 +1,39 @@
+{
+  "type": "bar",
+  "title": "Event-loop callback delay in each round",
+  "unit": "ms",
+  "better": "lower",
+  "xLabel": "Round",
+  "x": [
+    "Round 1",
+    "Round 2",
+    "Round 3",
+    "Round 4",
+    "Round 5",
+    "Round 6"
+  ],
+  "series": [
+    {
+      "name": "Before (256eb55)",
+      "values": [
+        189.35,
+        250.05,
+        307.7,
+        183.46,
+        208.26,
+        352.85
+      ]
+    },
+    {
+      "name": "After",
+      "values": [
+        0.19,
+        0.33,
+        0.22,
+        0.16,
+        0.18,
+        0.1
+      ]
+    }
+  ]
+}

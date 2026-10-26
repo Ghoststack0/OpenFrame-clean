@@ -1,0 +1,208 @@
+{
+  "benchmark": "bcrypt verification event-loop responsiveness",
+  "recordedAt": "2026-10-25T10:42:22.354Z",
+  "provenance": "Raw values transcribed without rounding from the successful six-round console.table run in this session; platform details collected afterward on the same host.",
+  "cwd": "~/code/immich/server",
+  "command": "RUN_BCRYPT_BENCHMARK=1 ~/.local/share/mise/installs/node/24.13.1/bin/corepack pnpm --config.verify-deps-before-run=false test run src/repositories/crypto.repository.benchmark.spec.ts --reporter=verbose --disableConsoleIntercept",
+  "baselineRef": "256eb55dbe92ac77e02794442f9487e88ffed2b1",
+  "source": "server/src/repositories/crypto.repository.benchmark.spec.ts",
+  "platform": {
+    "os": "linux",
+    "kernel": "7.2.8-9-omarchy",
+    "architecture": "x64",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13420H",
+    "logicalCpus": 12,
+    "totalMemoryBytes": 16372883456,
+    "node": "v26.10.0",
+    "bcrypt": "6.0.0",
+    "vitest": "5.0.4",
+    "uvThreadpoolSize": "unset; Node default applies",
+    "note": "Local development host, not the remote Ubuntu Linux box. Other verification and agent work could run concurrently; no CPU affinity, network throttling, or low-end hardware emulation."
+  },
+  "method": {
+    "original": "git show loads the complete original CryptoRepository source at baselineRef, SWC transpiles it, and the benchmark imports and invokes its compareBcrypt method using real bcrypt.compareSync.",
+    "modified": "Imports the working-tree CryptoRepository and invokes its compareBcrypt method using real bcrypt.compare.",
+    "input": {
+      "password": "password",
+      "bcryptCost": 10,
+      "comparisonsPerBatch": 4,
+      "expectedComparisonResult": true
+    },
+    "warmup": "One four-comparison batch per version; warmup samples excluded.",
+    "rounds": 6,
+    "order": "Original then modified on even rounds; modified then original on odd rounds.",
+    "checkpointMs": "Elapsed performance.now milliseconds until a setImmediate callback queued before starting the four comparisons runs.",
+    "totalMs": "Elapsed milliseconds until all four comparison promises complete, measured before awaiting the checkpoint.",
+    "completedAtCheckpoint": "Number of comparisons completed when the queued callback runs. Asserted to equal 4 for original and 0 for modified in every measured round.",
+    "assertions": "Every batch must return [true, true, true, true]. No timing threshold is asserted."
+  },
+  "results": [
+    {
+      "round": 0,
+      "version": "original",
+      "checkpointMs": 189.345733,
+      "totalMs": 189.3156009999999,
+      "completedAtCheckpoint": 4
+    },
+    {
+      "round": 0,
+      "version": "modified",
+      "checkpointMs": 0.18531199999983983,
+      "totalMs": 57.380574000000024,
+      "completedAtCheckpoint": 0
+    },
+    {
+      "round": 1,
+      "version": "modified",
+      "checkpointMs": 0.33466999999996005,
+      "totalMs": 59.15301700000009,
+      "completedAtCheckpoint": 0
+    },
+    {
+      "round": 1,
+      "version": "original",
+      "checkpointMs": 250.0452459999999,
+      "totalMs": 249.97747200000003,
+      "completedAtCheckpoint": 4
+    },
+    {
+      "round": 2,
+      "version": "original",
+      "checkpointMs": 307.70059100000003,
+      "totalMs": 307.6468540000001,
+      "completedAtCheckpoint": 4
+    },
+    {
+      "round": 2,
+      "version": "modified",
+      "checkpointMs": 0.21659699999986515,
+      "totalMs": 62.02003500000001,
+      "completedAtCheckpoint": 0
+    },
+    {
+      "round": 3,
+      "version": "modified",
+      "checkpointMs": 0.16195300000003954,
+      "totalMs": 59.9652779999999,
+      "completedAtCheckpoint": 0
+    },
+    {
+      "round": 3,
+      "version": "original",
+      "checkpointMs": 183.45710099999997,
+      "totalMs": 183.42164100000014,
+      "completedAtCheckpoint": 4
+    },
+    {
+      "round": 4,
+      "version": "original",
+      "checkpointMs": 208.26060500000017,
+      "totalMs": 208.2194790000001,
+      "completedAtCheckpoint": 4
+    },
+    {
+      "round": 4,
+      "version": "modified",
+      "checkpointMs": 0.176466999999775,
+      "totalMs": 70.64908100000002,
+      "completedAtCheckpoint": 0
+    },
+    {
+      "round": 5,
+      "version": "modified",
+      "checkpointMs": 0.09500599999955739,
+      "totalMs": 334.0359599999997,
+      "completedAtCheckpoint": 0
+    },
+    {
+      "round": 5,
+      "version": "original",
+      "checkpointMs": 352.8470729999999,
+      "totalMs": 352.81804999999986,
+      "completedAtCheckpoint": 4
+    }
+  ],
+  "summary": {
+    "original": {
+      "medianCheckpointMs": 229.15292550000004,
+      "medianTotalMs": 229.09847550000006,
+      "completedAtCheckpointEveryRound": 4
+    },
+    "modified": {
+      "medianCheckpointMs": 0.1808894999998074,
+      "medianTotalMs": 60.99265649999995,
+      "completedAtCheckpointEveryRound": 0
+    }
+  },
+  "invalidHashBehavior": {
+    "method": "Directly invoked installed bcrypt.compareSync and awaited bcrypt.compare with password=\"password\" and the encrypted values below.",
+    "results": [
+      {
+        "encrypted": "invalid-hash",
+        "sync": {
+          "outcome": "returned",
+          "value": false
+        },
+        "async": {
+          "outcome": "resolved",
+          "value": false
+        }
+      },
+      {
+        "encrypted": "",
+        "sync": {
+          "outcome": "returned",
+          "value": false
+        },
+        "async": {
+          "outcome": "resolved",
+          "value": false
+        }
+      },
+      {
+        "encrypted": "$2b$10$invalid",
+        "sync": {
+          "outcome": "returned",
+          "value": false
+        },
+        "async": {
+          "outcome": "resolved",
+          "value": false
+        }
+      },
+      {
+        "encrypted": null,
+        "sync": {
+          "outcome": "threw",
+          "name": "Error",
+          "message": "data and hash arguments required"
+        },
+        "async": {
+          "outcome": "rejected",
+          "name": "Error",
+          "message": "data and hash arguments required"
+        }
+      },
+      {
+        "encrypted": 42,
+        "sync": {
+          "outcome": "threw",
+          "name": "Error",
+          "message": "data must be a string or Buffer and hash must be a string"
+        },
+        "async": {
+          "outcome": "rejected",
+          "name": "Error",
+          "message": "data and hash must be strings"
+        }
+      }
+    ],
+    "propagation": "All AuthService compareBcrypt and validateSecret/validatePinCode call sites await verification. Async bcrypt rejection propagates to the async service caller, with no catch converting it into successful authentication. Malformed string hashes return/resolve false in both APIs; invalid argument types throw/reject."
+  },
+  "limitations": [
+    "Measures event-loop responsiveness in a repository-level workload, not deployed HTTP latency or poor-network performance.",
+    "Does not demonstrate lower total CPU work; bcrypt cost and hash quality are unchanged.",
+    "Concurrent asynchronous verification uses the shared libuv worker pool and can queue or saturate CPU under load.",
+    "Timing values depend on hardware and concurrent load; the per-round completion counts are the scheduling regression check."
+  ]
+}

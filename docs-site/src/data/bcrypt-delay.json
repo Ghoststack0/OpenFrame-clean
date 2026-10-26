@@ -1,0 +1,22 @@
+{
+  "type": "compare",
+  "title": "Four bcrypt checks at cost 10, median of 6 rounds",
+  "better": "lower",
+  "unit": "ms",
+  "labels": [
+    "compareSync (before)",
+    "compare (after)"
+  ],
+  "rows": [
+    {
+      "label": "Delay before a queued callback runs",
+      "before": 229.15,
+      "after": 0.18
+    },
+    {
+      "label": "Time until all four checks finish",
+      "before": 229.1,
+      "after": 60.99
+    }
+  ]
+}

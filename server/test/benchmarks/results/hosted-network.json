@@ -1,0 +1,36 @@
+{
+  "recordedAt": "2026-10-25T11:01:39Z",
+  "origin": "https://immich-perf.yash0.in",
+  "rateLimitBytesPerSecond": 131072,
+  "originalBytes": 787252,
+  "sha256": "1cdc20d9c31f32d9058e016f3483994470f2bc21e24bd01c0cb97ae1f28671b5",
+  "results": [
+    {
+      "http_code": 200,
+      "size_download": 787252,
+      "time_starttransfer": 0.345849,
+      "time_total": 6.339535,
+      "speed_download": 124181,
+      "scenario": "full download at 128 KiB/s"
+    },
+    {
+      "http_code": 304,
+      "size_download": 0,
+      "time_starttransfer": 0.322666,
+      "time_total": 0.322707,
+      "speed_download": 0,
+      "scenario": "conditional download at 128 KiB/s"
+    },
+    {
+      "http_code": 206,
+      "size_download": 8192,
+      "time_starttransfer": 0.331523,
+      "time_total": 0.392915,
+      "speed_download": 20849,
+      "scenario": "8 KiB range at 128 KiB/s"
+    }
+  ],
+  "websocketStatus": 101,
+  "method": "Authenticated curl HTTPS through Worker and tunnel, bytes compared with synthetic PNG. curl --limit-rate 128k; one sample per scenario. Auth passed via stdin config.",
+  "limitations": "Correctness smoke, not before/after latency benchmark. No added RTT, packet loss, CPU throttle or outage simulation."
+}

@@ -1,0 +1,26 @@
+{
+  "type": "compare",
+  "title": "fs.access calls per 1,000 media requests",
+  "better": "lower",
+  "labels": [
+    "Before",
+    "After"
+  ],
+  "rows": [
+    {
+      "label": "Thumbnail (200)",
+      "before": 1000,
+      "after": 0
+    },
+    {
+      "label": "Conditional (304)",
+      "before": 1000,
+      "after": 0
+    },
+    {
+      "label": "Range (206)",
+      "before": 1000,
+      "after": 0
+    }
+  ]
+}

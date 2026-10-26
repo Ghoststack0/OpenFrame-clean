@@ -1,0 +1,2382 @@
+{
+  "benchmark": "Isolated HTTP upload and bulk preflight with real PostgreSQL, Redis, and disposable storage",
+  "recordedAt": "2026-10-26T05:59:03Z",
+  "host": {
+    "hostname": "yvm",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           48 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  2\nOn-line CPU(s) list:                     0,1\nVendor ID:                               AuthenticAMD\nModel name:                              AMD A4-9125 RADEON R3, 4 COMPUTE CORES 2C+2G\nCPU family:                              21\nModel:                                   112\nThread(s) per core:                      1\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                0\nFrequency boost:                         enabled\nCPU(s) scaling MHz:                      113%\nCPU max MHz:                             2300.0000\nCPU min MHz:                             1300.0000\nBogoMIPS:                                4591.43\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good acc_power nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm perfctr_core perfctr_nb bpext ptsc mwaitx cpb hw_pstate ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 xsaveopt arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov\nVirtualization:                          AMD-V\nL1d cache:                               64 KiB (2 instances)\nL1i cache:                               192 KiB (2 instances)\nL2 cache:                                2 MiB (2 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0,1\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; untrained return thunk; SMT disabled\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Retpolines; IBPB conditional; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+    "memory": "               total        used        free      shared  buff/cache   available\nMem:      7149137920  1738870784   584978432    18448384  5156208640  5410267136\nSwap:     4294963200    47714304  4247248896\n",
+    "storage": "Filesystem     Type 1K-blocks      Used Available Use% Mounted on\n/dev/nvme0n1p2 ext4 243937628 198511412  32962040  86% /\n",
+    "docker": "29.8.2"
+  },
+  "baselineRelease": {
+    "tag_name": "v3.3.5",
+    "published_at": "2026-10-21T18:12:57Z",
+    "html_url": "https://github.com/immich-app/immich/releases/tag/v3.3.5",
+    "prerelease": false,
+    "commit": "8303cb117e197c700332b33b61b45314c9cc5bb4"
+  },
+  "candidateBuild": {
+    "head": "62a489eaf996267ec8c246412a2d13f6010d7b42",
+    "sourceTreeSha256": "739ff34582320d749c7ecb7411a098718bbfbc836d30e096bd32c819e7a4e926",
+    "distTreeSha256": "9514b598569a8d3e9ddbdd7442ee5431ce6484272b6ea96c14a2d774e3fbceb2",
+    "diff": "diff --git i/server/src/services/asset-media.service.spec.ts w/server/src/services/asset-media.service.spec.ts\nindex 729b64325..70381cf6e 100644\n--- i/server/src/services/asset-media.service.spec.ts\n+++ w/server/src/services/asset-media.service.spec.ts\n@@ -780,6 +780,44 @@ describe(AssetMediaService.name, () => {\n   });\n \n   describe('bulkUploadCheck', () => {\n+    it('should preserve order and trashed status for repeated checksums with mixed encodings', async () => {\n+      const checksum = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');\n+      mocks.asset.getByChecksums.mockResolvedValue([{ id: 'trashed', checksum, deletedAt: new Date() }]);\n+\n+      await expect(\n+        sut.bulkUploadCheck(authStub.admin, {\n+          assets: [\n+            { id: 'hex', checksum: checksum.toString('hex').toUpperCase() },\n+            { id: 'new', checksum: Buffer.alloc(20).toString('base64') },\n+            { id: 'base64', checksum: checksum.toString('base64') },\n+          ],\n+        }),\n+      ).resolves.toEqual({\n+        results: [\n+          {\n+            id: 'hex',\n+            action: AssetUploadAction.REJECT,\n+            reason: AssetRejectReason.DUPLICATE,\n+            assetId: 'trashed',\n+            isTrashed: true,\n+          },\n+          { id: 'new', action: AssetUploadAction.ACCEPT },\n+          {\n+            id: 'base64',\n+            action: AssetUploadAction.REJECT,\n+            reason: AssetRejectReason.DUPLICATE,\n+            assetId: 'trashed',\n+            isTrashed: true,\n+          },\n+        ],\n+      });\n+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [\n+        checksum,\n+        Buffer.alloc(20),\n+        checksum,\n+      ]);\n+    });\n+\n     it('should accept hex and base64 checksums', async () => {\n       const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');\n       const file2 = Buffer.from('53be335e99f18a66ff12e9a901c7a6171dd76573', 'hex');\ndiff --git i/server/src/services/asset-media.service.ts w/server/src/services/asset-media.service.ts\nindex 5328d98f4..e2fe7d645 100644\n--- i/server/src/services/asset-media.service.ts\n+++ w/server/src/services/asset-media.service.ts\n@@ -315,8 +315,8 @@ export class AssetMediaService extends BaseService {\n     }\n \n     return {\n-      results: dto.assets.map(({ id, checksum }) => {\n-        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];\n+      results: dto.assets.map(({ id }, index) => {\n+        const duplicate = checksumMap[checksums[index].toString('hex')];\n         if (duplicate) {\n           return {\n             id,\n",
+    "buildCommand": "Node 24.13.1 node_modules/@nestjs/cli/bin/nest.js build, from server/",
+    "packaging": "Full freshly compiled server/dist over existing immich-perf:local production dependencies/native codecs. No web/CLI rebuild. No native build or dependency installation."
+  },
+  "images": {
+    "upstream": {
+      "id": "sha256:fb31598c03fbb3d68f6409548ab7b18148ee651bf7d6b40e1d907308edbf0dc2",
+      "repoDigests": [
+        "ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6"
+      ],
+      "labels": {
+        "org.opencontainers.image.created": "2026-10-21T18:13:42.816Z",
+        "org.opencontainers.image.description": "High performance self-hosted photo and video management solution.",
+        "org.opencontainers.image.licenses": "AGPL-3.0",
+        "org.opencontainers.image.revision": "8303cb117e197c700332b33b61b45314c9cc5bb4",
+        "org.opencontainers.image.source": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.title": "immich",
+        "org.opencontainers.image.url": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.version": "v3.3.5"
+      }
+    },
+    "candidate": {
+      "id": "sha256:0bb71185d49546fd049b5c6d33d3c08184ba7385bd4d4adb02229580f5689a27",
+      "repoDigests": [],
+      "labels": {
+        "com.docker.compose.project": "immich-perf",
+        "com.docker.compose.service": "server",
+        "com.docker.compose.version": "5.6.0",
+        "openframe.server-source-sha256": "739ff34582320d749c7ecb7411a098718bbfbc836d30e096bd32c819e7a4e926",
+        "org.opencontainers.image.created": "2026-10-21T18:13:42.816Z",
+        "org.opencontainers.image.description": "High performance self-hosted photo and video management solution.",
+        "org.opencontainers.image.licenses": "AGPL-3.0",
+        "org.opencontainers.image.revision": "62a489eaf996267ec8c246412a2d13f6010d7b42-working-tree",
+        "org.opencontainers.image.source": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.title": "OpenFrame disposable HTTP benchmark",
+        "org.opencontainers.image.url": "https://github.com/immich-app/immich",
+        "org.opencontainers.image.version": "openframe-benchmark-20261026"
+      }
+    }
+  },
+  "behaviorStatus": "passed",
+  "performanceGate": {
+    "status": "within_5_percent_budget",
+    "metrics": {
+      "elapsedMs": {
+        "status": "within_5_percent_budget",
+        "strictZeroPercentReference": "interval_entirely_faster_or_equal",
+        "pairedDeploymentMediansMs": [
+          {
+            "round": 0,
+            "upstream": 41.47798950725701,
+            "candidate": 40.93369349720888
+          },
+          {
+            "round": 1,
+            "candidate": 37.78735100058839,
+            "upstream": 50.03403349837754
+          },
+          {
+            "round": 2,
+            "upstream": 75.41464900714345,
+            "candidate": 39.87260350550059
+          },
+          {
+            "round": 3,
+            "candidate": 41.6011034976691,
+            "upstream": 40.35253899928648
+          },
+          {
+            "round": 4,
+            "upstream": 40.73262599558802,
+            "candidate": 38.770129503973294
+          },
+          {
+            "round": 5,
+            "candidate": 37.15003350225743,
+            "upstream": 41.678092995425686
+          }
+        ],
+        "geometricMeanIncreasePercent": -16.266250084558724,
+        "exploratory95PercentBlockBootstrapInterval": [
+          -31.581982153304867,
+          -2.1411497265296795
+        ]
+      },
+      "mediaReadyMs": {
+        "status": "within_5_percent_budget",
+        "strictZeroPercentReference": "interval_entirely_faster_or_equal",
+        "pairedDeploymentMediansMs": [
+          {
+            "round": 0,
+            "upstream": 311.73073999525513,
+            "candidate": 300.18764099804685
+          },
+          {
+            "round": 1,
+            "candidate": 298.52662500343286,
+            "upstream": 423.1886034976924
+          },
+          {
+            "round": 2,
+            "upstream": 573.3980755030643,
+            "candidate": 308.89049499091925
+          },
+          {
+            "round": 3,
+            "candidate": 324.08803750149673,
+            "upstream": 309.17831850092625
+          },
+          {
+            "round": 4,
+            "upstream": 321.20402500004275,
+            "candidate": 309.5464220023132
+          },
+          {
+            "round": 5,
+            "candidate": 291.92081600194797,
+            "upstream": 298.01661200326635
+          }
+        ],
+        "geometricMeanIncreasePercent": -15.574755265463313,
+        "exploratory95PercentBlockBootstrapInterval": [
+          -31.598764756872928,
+          -0.37601426128481463
+        ]
+      }
+    }
+  },
+  "controlled": false,
+  "mediaReady": true,
+  "predeclaredGate": {
+    "pairs": 6,
+    "uploadsPerDeployment": 20,
+    "budgetPercent": 5,
+    "metrics": [
+      "elapsedMs",
+      "mediaReadyMs"
+    ],
+    "method": "Geometric mean of paired deployment medians; 10000 whole-block bootstrap draws seed 0, exploratory 95% interval. Regression if lower bound >5%; budget met if upper bound <=5%; otherwise inconclusive. Both metrics must meet budget. No added samples after results."
+  },
+  "workload": {
+    "rounds": 6,
+    "warmupUploadsPerRound": 1,
+    "measuredUploadsPerRound": 20,
+    "workersInclude": "api,microservices",
+    "fixture": "512x512 RGB seeded random PNG, different bytes each round/index, identical between versions",
+    "fixtureSha256": {
+      "0-0": "1cdc20d9c31f32d9058e016f3483994470f2bc21e24bd01c0cb97ae1f28671b5",
+      "0-1": "6338e9839faf6d1e8930552406221d4587410f4798938af449601c7c163f3529",
+      "0-2": "5ef0e66c11cf836f57a6750be91c81e288f84307b10e9190d37256e837355c1f",
+      "0-3": "fb83936512e85b7c98b98d98d3078e2a87f60453f3db826f4381786d18bf7b9d",
+      "0-4": "a53600f42183f3d9d7caa938fc0851453bba39908da811e5a15519c81eba8539",
+      "0-5": "cd81016372dd90e7da946e12fa0e9e70621eb017b687103a868e49f566790221",
+      "0-6": "7d85014e60486e40ce0b67d85a5c245d3e781ed2dbc2e6844a5210ee21f708f6",
+      "0-7": "ea4138612c3fb79d30bf4f92dc00ebee3980ad69e073591a1b08115530d8de92",
+      "0-8": "1be780281d46a0ffbd3f154fc76cb7df7fcc200a8e06cd660f5f02d3cc952dd1",
+      "0-9": "b62e6c6d97bc07bc66450edcbb7debfafec5a37b013c783ccc8e31acd8463ef0",
+      "0-10": "95192e416327071f417f9c22c267071390d6093f252edcad736ac2b898a7e0d7",
+      "0-11": "61120f766dc0e9d536a8e7525784fb96dc56b3c94af5ac9c72d82cfe97a910c3",
+      "0-12": "a037442f540a897960164f29d8b3592e860d6d9c55b9374ed610547b50fc3495",
+      "0-13": "4ec9a256a399b1c79b85cd3f54a14017d21de4a5a3b942aaf6c7bf0434c2c5c7",
+      "0-14": "5c37e68f576a62aee9d8fff4b0bd3d71288000ff675531c1bf38ed156d535079",
+      "0-15": "0f3ff769f86682d550f5ca9e64a5ad7205b0c804411b423bd2de47de78672fb0",
+      "0-16": "95948cfc15a0eb9f1bc41e00fa375e62abdaba4d154d99382c4090c0ba20baa4",
+      "0-17": "70301c68a7cacffa33c50959aa04f423ad86a4c86b5791882b2e2f4e1d666dc8",
+      "0-18": "faa14d4e6d8485688c751ac5d5e652292e9c4b25131c095efb1ba6b5e3cf44d6",
+      "0-19": "cce983ddaab17c7a63617b639cc3598eae49dcc315cbc4589dd675e155ef77ff",
+      "0-20": "64da9514329bf64562aa7f77dcb4657c52622ff4af447201ad4ea50127bd5678",
+      "1-0": "faefc9f7bd00a97741a57248043d5d92b5d6e1d77fe0937b6a6cdd42fed01d0e",
+      "1-1": "8b1a768a5d46a7fbaa4275d39a1aafeb03239591e86908201f4a5f63a21ec9ce",
+      "1-2": "3458233092ee3ec4f2c58a3341a3196b629ea5425c3e36948c6fa9920fc1b3e6",
+      "1-3": "5d0143b0d054e6d39750e5a9ef0f0ac0d4071084175cd19ba389d097a2905ad5",
+      "1-4": "cdd2f1c51b1c21b8d0aebd718a19ef04e5fa01c886c09258c7291679ed6c2c99",
+      "1-5": "084a55e9e064b50469c5c349e6eb4a162655cd54eb8c3db826c98753416a5ae4",
+      "1-6": "19546b1525d88b4a6852bc75c459b79846cd818fec2f74ca0add10e214642a3e",
+      "1-7": "29728a7a954d49c070248669049057f93a10b9553dadf999d708dedef0d07d04",
+      "1-8": "dfa42054c4e019dd229ab0c3fe50ba7398931bc20d57dd72da1ec4504f8eedcc",
+      "1-9": "24431dbeb1e76bb1fdfeeb1bd9e15c5df1df5a61731caa13cf9f41049704ad5a",
+      "1-10": "1b667a3cdb2444fc48179ce84ff4d41a2f5bda257244be92377639b5c6fa1ab7",
+      "1-11": "1ea4c521a1e702825b2fc34eed373edee46fd84d3abb5c69edd5f45163963e3c",
+      "1-12": "4232a2d9aae498964eec3f20af121585ceb2fefda97e00f2c248ff0ba1efd6c2",
+      "1-13": "4e36964c7f0cafeb032cde671af42781a9c2949b03f728e4dd87d2946e9195a0",
+      "1-14": "1cbfa5abdc93b751e31e877befde68f3eb7cd10764d7896f0bdc49a419208aa7",
+      "1-15": "1a21fee2d825d11160983d6547c64a99ba13656a653387f8158cd233bea31e67",
+      "1-16": "c845a97b7c44602dcd2d897a4609ccd37d237ec7dfa7b81de020289d44425fb0",
+      "1-17": "f57e8ccc2757e3c70afdc37b72dfb0206bab7160ad34f5f1829835a4565d8319",
+      "1-18": "ff90b12100e19a2357820183d3bb698ba6d885684f28de22d4f7b14af4d53514",
+      "1-19": "ea3ffeef72e37ff113aafe2a77dcae1987fbfdf9737448b7205de46347de8c11",
+      "1-20": "68188a3b4fb4c1f8c745108df72d11d6525d9dc00b316b7e4cd48418777436ef",
+      "2-0": "5f2f8d6bf982f24063ba0bfbcbce2c11ba9da235fba1dc2329bb55d9734afe4c",
+      "2-1": "8b94ed306f179f8bfc15a875d4836291e52f6e5efd87aa23cc38e67fb41d7b0c",
+      "2-2": "8bd6d45117b2221ad3473253132094942a71e794b761d71987b4adbe245e63c7",
+      "2-3": "0bac7ef6f0ac25c29e554e935f9af2e6c6d53dff49575c8f4f2b6f2b524d9667",
+      "2-4": "c1058b2572a23f4da91c94465caa9f69996feeb2736c5d50eaa5cdb9f51cf07d",
+      "2-5": "5809e5e2e4bc46d0988428b07fcd0825031dbfc464733eaf814a195977d7ec70",
+      "2-6": "3a17d5f34e1e9f85b8fc3bc2a66b54cfc9b78046137b14d4cf8bf9677cc07270",
+      "2-7": "4fa8b2131d92129d55b07ea12f3a9902101ab00111b869226a2dfcac003af22e",
+      "2-8": "d033c4b38e9f581f01f9ffc9ae9254c32a9510e07699f51a2a57aaa280496fce",
+      "2-9": "5fa7543bfade2739a9a3f4a95defc48bcdd0e5d8ce55f1faa208578130a57d87",
+      "2-10": "f8d80dba8d42fcea7e43865d81d65d4fdb46ceb3e68c592a1b26460ce66d2922",
+      "2-11": "d2cfeccefa14b29b7fb1fd39dd1581f6aba07c854325d71a717250c402e8e69f",
+      "2-12": "fb0f9f02fe889cfe0397829903cd725a5d1400009eb74e0d69f5d3340ec3f769",
+      "2-13": "352eb9b2461b7f167f4a9dca40708f61e7bd4a1e179e573df036eb173dd2c78e",
+      "2-14": "176b0e2c24fa7b251b8cd42445126585bc8cc81a3b60d4a7b21e4770dfd7d515",
+      "2-15": "41e90f588c1f74dc6cf663d281f349d764c1d544cf1e991b8cc92cff80921ff3",
+      "2-16": "e1327cbe0f5ef5382a38883215a8d5f00bf6ac05cb1e9b6624c4b1c283d223b1",
+      "2-17": "57af007b09c563ed4e87c1891a8f0c1e7e28ed8cb29a61a1bcb478c487e1301d",
+      "2-18": "b9a16f592f8a97c60be7c2bf7270cf2a296c0a1a4d5dd1c81f2c41b5fe244921",
+      "2-19": "50fab9890b816ea4d1939db1ff30603e166de43d382fa2c6156471b5bc40b577",
+      "2-20": "91448a45dda1fd27d3adf40e229f8447acc68f791b436eaaca49586df209df6e",
+      "3-0": "31d6ccd9d45eb15ef9534ead83d7032ca231556981d36e28ea0474910627b1ca",
+      "3-1": "99715bd499323054673f793f818d0c3cb14e90800158cbe6d7c4477283b3c7b5",
+      "3-2": "20e16d8d5d053885a5ce6b2e3e5c8577e8885d471fbaadac1fe33ca204434fd3",
+      "3-3": "3489c9c00129dd962ba0927eac76d070827aede314972b2df6aefd5e90ee8c92",
+      "3-4": "396f2f486bd42c18a5a288c7ff626a04a4457c21f4ad1a6029d7838ec531a8cb",
+      "3-5": "83096d55ea9382913b1af06f145295239e7355f5a6d09f220f0f214fed7736f0",
+      "3-6": "a9b820d58d27a347ad327d9261f2a5d30cc445be54bf9c787f619f59f7091855",
+      "3-7": "ce369bc68df316cec8ab82fe16714a6cdb6d78765b3ca1c3f1d9fbf85557e00e",
+      "3-8": "77e8fdeb928e3989df6e72351f9360e27a53cbb5bfed904d1d3bf442c0d10f16",
+      "3-9": "8c009a2171db4c3d9f9a03f0e134042349aa333ad540e97882d9464233afc4f4",
+      "3-10": "9c11133ab05879101dd2525507ba65b90409da30a5c43c841904da73c1dce93d",
+      "3-11": "8bea6ed4186f3a3c75fde402e269ecd1e4173c30f2b5b1291e9e1eed5d58554a",
+      "3-12": "6da19fe1ce907efd27ed57099945642a3bd4d1d58dba42a986ee28fdc32ca5bf",
+      "3-13": "d85f97772f75013d3fa453d22cf47fd434f3ce713a2c7660882c8070799c1640",
+      "3-14": "4bfb93d5df0596a8cf8bd94511e6defa12410de3aa1eed1658a4811141eabba2",
+      "3-15": "0c2d0691f306de7deea8525bc4a9ec5f3ad2ea31a26014e10b5dac8a32e7b850",
+      "3-16": "219e753438a17b2a5ddd9fb23389179b0445818778a42b636362b0dfe9554e02",
+      "3-17": "ab5ec3dc1e697c49967e735545bd19ef623fe665344070d5afbf2f3787897a76",
+      "3-18": "4f7d2a3fc18b9bfa10a8235671b9c0449cda11046b06ae64bdec0973df51e461",
+      "3-19": "cd0212d9f62dbdcd7d2289ea7db001fa61c9a664117b569bd401f1ae67ee9a70",
+      "3-20": "eeb13010194439a776d1dc954608e6cc1caf69a15e216479dcf49a9c1c935b58",
+      "4-0": "5b0af287f6568ebcec587a35ee5018b029b63df2d49d2775762495716a9e3ec8",
+      "4-1": "425e98548e4e425e8da877a46cb62e9ba68991e6c0c3d332fecdad4f8c701570",
+      "4-2": "032291a03915439d666fb2d762afa0be2a166c3b6e20a7d58f84c298fd2b88e8",
+      "4-3": "49c8f30de42ef03ba8547db9c4401d231f2acd0e58a3d9a392ed0f7932ca5155",
+      "4-4": "6ea3f87394d0874b4916506a1cb31b3965131b7123df7a0e25f68bebc53e6590",
+      "4-5": "d3a86a358366ebec58e3d7c1efb98a9f81c77509f1441a62c4687713efc992a2",
+      "4-6": "a81f283b89e01923e71fb7064e06c19b70983bc73eea1bf2cd03287e6789513c",
+      "4-7": "0f5c389e81e4e74da5b2f503898ca8ce9458eacb68c1c3520231eb2c70717920",
+      "4-8": "5886aba2cd70b23089c78146d7cb34ca2bc6791b92e9cb7db916ece57c0db7fa",
+      "4-9": "3e85ca239ee32d17e0eaea23363afef82a60146683004764d7154b297cd36c3b",
+      "4-10": "881b5885f28286ff010f390c3f1caa8490a230058a9bb73f0374b2e103b11d2c",
+      "4-11": "b3f3d32fdef9cb58e6d3fb69d07406e334375a9eece3dd23e9e24c8a23d2d15d",
+      "4-12": "d8eaec1970053fd3a9e541bef7c2e59d33a4f26036c6845ce420e428cd7aea89",
+      "4-13": "4a9431647dc7ac50e81c9bb4ba2f4462c8d2ca4b943ddeab08299d3570c65dd0",
+      "4-14": "a6f0ba174bd3015443e1894759769b4ff95f215fefee59165224ac278242e1a1",
+      "4-15": "dd4300c7021aec282d857d487c0583570119a622c707060d4319287789f8319e",
+      "4-16": "226ef913b1de1f63ef9bd7c63960c913b0ae95a2b89519d9f6951c7acb1da69f",
+      "4-17": "1b2b1856cafedceee7ebccd1b3a9669f906430f270e3666261eabe11adffb723",
+      "4-18": "fc9379eab0f9006c907035b7d348dcc311c15632a7adfb402ea8392069f315ef",
+      "4-19": "fd7008daddce452a3401d45eb61974e95f28b7b287fc9769f202c7510006a470",
+      "4-20": "5da8c407ed0fdbac780955b9040a5441e3fbfdd1b0244e28289c73063091b180",
+      "5-0": "663ab2669e1f64321552eca8520d38884c4da6da9436cc8b0a7b64d56d03b426",
+      "5-1": "8d962b0f5ecb06a2423fac858c349d94f13465d67b992c76c23b4d718d11ef8a",
+      "5-2": "89b8cef274167e76a368d56b4f0640b26c5c14472c3b0f3469a3ac74b632391b",
+      "5-3": "bfb1e1e1739bb1013f4c48f63805e458e07c2ab73b4e74b9913b5623c90cd778",
+      "5-4": "23ff711c178e6dcd1005bd5535a118311af4e6eb009c061c9ee11f6c8e502044",
+      "5-5": "33e260ed87f6e2d7154c97d3704e1474881b567108b4f9ed3d933ae48c10380c",
+      "5-6": "051994a4d8759d32c812f7705529b0f4527347404c9eebbc8232c4dc259eddad",
+      "5-7": "f03647d3f343d1c2b88dc560e02be6facda13aee510ca4ee1226aecb179c5141",
+      "5-8": "5ed12569deb40f003ad46492f42e1495f41019fb175ab1a4896b707d5a6f899c",
+      "5-9": "94261f1d873f929ceddf2875bfb02d2549633ed47f55b0a7d5caf2ce19b0124f",
+      "5-10": "68d45f7a4b16af9e62e496a5645b18c5fb1c9bae1ff563f75c8939819d0129a3",
+      "5-11": "a1ce72c6ad5ac7e92bde9a568459ef0d289b0e0e6f352a1c124f486efaedb67f",
+      "5-12": "6313401e379263565a0f1334408d926103876777b418702e330eb2bd897d443c",
+      "5-13": "88e72be59705eb358af576901aa8e913e0dfabb0e1b1437b533cb6306874f943",
+      "5-14": "7e0422a25918192f70e06dfff01bc6985009a35f10e0928cc7f6b9cf94cef3cc",
+      "5-15": "2832eb9e975f5953b30dcdfef0e9ebbbb5246881777d4191aa24a45c7bee2092",
+      "5-16": "6b6e16973f145d9b86997f3fd7db7527447fb4eaf76fed0ed5d5db6a563a3eaa",
+      "5-17": "dacdd43a515fe0383dd7b919c5e4374b9cfd8c76f6c27a0fd62c36fbee34a748",
+      "5-18": "99531cfb211a17f42e418276b36fec03ff3d890186a51f2c72ddd0b2cc18c49a",
+      "5-19": "4c5c7befafb5e3e42fa88bcc168426cf1a3fea60bb323126da7fdf369f73dd10",
+      "5-20": "ce64fa776fdba3b732233cbf01b812362485fc97f447276895e5f2dc8586dca8"
+    },
+    "preflight": "1000 entries, alternating existing/new, mixed hex/base64; 3 warmups and 12 measured requests per round",
+    "volumeLifecycle": "Fresh volumes before every deployment, removed after each deployment",
+    "mediaReadyPollSleepMs": 50
+  },
+  "limitations": "One shared two-core host; six alternating deployment pairs, fresh disposable durable database/storage per deployment. Default API/microservices workers; ML disabled. API and geodata startup plus one media-ready warmup finish before measurement. Sequential synthetic PNGs over loopback HTTP; no concurrent backlog, video, ML, WAN/TLS/mobile or populated-library claim. Media-ready means thumbnail and preview HTTP image responses, not completion of every background queue; 50 ms unsuccessful-poll sleep plus HTTP observer cost. Candidate reuses recorded production dependencies/native codecs with freshly compiled server dist, not a release image. Exploratory bootstrap interval cannot certify the whole application.",
+  "controlledLimitations": null,
+  "rounds": [
+    {
+      "round": 0,
+      "version": "upstream",
+      "startupMs": 29609.1801369912,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 73939.256853002,
+        "warmupMediaReadyMs": 1046.1599189875415
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 64.9319420044776,
+          "mediaReadyMs": 407.0936179923592,
+          "MiBPerSecond": 11.562599080860393
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 77.14014900557231,
+          "mediaReadyMs": 390.75494499411434,
+          "MiBPerSecond": 9.73270109816899
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 50.533553992863744,
+          "mediaReadyMs": 376.3092739973217,
+          "MiBPerSecond": 14.857098969240857
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 42.30879800161347,
+          "mediaReadyMs": 279.0294299920788,
+          "MiBPerSecond": 17.745292903637246
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 38.28875000181142,
+          "mediaReadyMs": 313.4848210029304,
+          "MiBPerSecond": 19.608423176623262
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 43.58439600036945,
+          "mediaReadyMs": 263.89295000990387,
+          "MiBPerSecond": 17.225935927461034
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 45.10625700640958,
+          "mediaReadyMs": 273.2050810009241,
+          "MiBPerSecond": 16.64474205502725
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 41.13321300246753,
+          "mediaReadyMs": 269.76912400277797,
+          "MiBPerSecond": 18.25245241344056
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 40.98766201059334,
+          "mediaReadyMs": 258.27805799781345,
+          "MiBPerSecond": 18.3172685659751
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 49.807895004050806,
+          "mediaReadyMs": 398.43843200651463,
+          "MiBPerSecond": 15.073554360777404
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 40.13628698885441,
+          "mediaReadyMs": 319.2138409940526,
+          "MiBPerSecond": 18.705816338913973
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 41.01986100431532,
+          "mediaReadyMs": 338.518925011158,
+          "MiBPerSecond": 18.302890223359615
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 40.56330199819058,
+          "mediaReadyMs": 282.7577510033734,
+          "MiBPerSecond": 18.508897844976808
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 41.822766012046486,
+          "mediaReadyMs": 327.31497900385875,
+          "MiBPerSecond": 17.951515036647756
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 37.640754992025904,
+          "mediaReadyMs": 247.45335899933707,
+          "MiBPerSecond": 19.945987084969584
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 37.29217300133314,
+          "mediaReadyMs": 298.48146699077915,
+          "MiBPerSecond": 20.132428671094434
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 44.11107600026298,
+          "mediaReadyMs": 421.79303999000695,
+          "MiBPerSecond": 17.020260692234693
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 36.15116100991145,
+          "mediaReadyMs": 486.76647200773004,
+          "MiBPerSecond": 20.767853423396655
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 43.85314900719095,
+          "mediaReadyMs": 249.78601999464445,
+          "MiBPerSecond": 17.120367178565477
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 36.826117007876746,
+          "mediaReadyMs": 309.97665898757987,
+          "MiBPerSecond": 20.387216300292213
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        20.552464993670583,
+        17.640604011830874,
+        19.69312599976547,
+        18.75158300390467,
+        23.731053006486036,
+        24.34936599456705,
+        18.472773997928016,
+        23.57104400289245,
+        19.67608400445897,
+        20.062520998180844,
+        30.679095012601465,
+        20.4540559934685
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 0,
+      "version": "candidate",
+      "startupMs": 30409.92636998999,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 73191.95920698985,
+        "warmupMediaReadyMs": 1077.2747020091629
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 109.94989900791552,
+          "mediaReadyMs": 772.307561011985,
+          "MiBPerSecond": 6.828401114633155
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 86.83135299361311,
+          "mediaReadyMs": 476.82044999965,
+          "MiBPerSecond": 8.646439184181283
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 39.02064499561675,
+          "mediaReadyMs": 332.36904999648686,
+          "MiBPerSecond": 19.24063564361352
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 42.60795199661516,
+          "mediaReadyMs": 289.2694789916277,
+          "MiBPerSecond": 17.620701717817756
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 40.649993999977596,
+          "mediaReadyMs": 308.45981898892205,
+          "MiBPerSecond": 18.469424938657234
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 44.08008600876201,
+          "mediaReadyMs": 363.0202219937928,
+          "MiBPerSecond": 17.032226588446687
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 41.63916999823414,
+          "mediaReadyMs": 229.60207400319632,
+          "MiBPerSecond": 18.030667109149697
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 43.03217299457174,
+          "mediaReadyMs": 291.44087599706836,
+          "MiBPerSecond": 17.44699281242804
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 41.51555000862572,
+          "mediaReadyMs": 325.6506489997264,
+          "MiBPerSecond": 18.084356651506784
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 40.297501007444225,
+          "mediaReadyMs": 289.1776390024461,
+          "MiBPerSecond": 18.63098192616857
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 37.81307299504988,
+          "mediaReadyMs": 297.15313400083687,
+          "MiBPerSecond": 19.85509120186392
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 37.977482003043406,
+          "mediaReadyMs": 306.86881800647825,
+          "MiBPerSecond": 19.76913616545951
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 44.52756600221619,
+          "mediaReadyMs": 398.0998129991349,
+          "MiBPerSecond": 16.861061143609014
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 33.388708005077206,
+          "mediaReadyMs": 271.43031200102996,
+          "MiBPerSecond": 22.486105566746893
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 35.169195994967595,
+          "mediaReadyMs": 660.2467669872567,
+          "MiBPerSecond": 21.3477161390577
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 41.21739299444016,
+          "mediaReadyMs": 284.7928089904599,
+          "MiBPerSecond": 18.215174672515715
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 33.09104099753313,
+          "mediaReadyMs": 285.53027199814096,
+          "MiBPerSecond": 22.68837698383144
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 41.873980007949285,
+          "mediaReadyMs": 303.2221479952568,
+          "MiBPerSecond": 17.929559425612897
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 33.44248700886965,
+          "mediaReadyMs": 224.51910200470593,
+          "MiBPerSecond": 22.449945565960153
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 37.81405100016855,
+          "mediaReadyMs": 289.66549299366307,
+          "MiBPerSecond": 19.854577678971943
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        42.7502210077364,
+        45.812454001861624,
+        47.756931991898455,
+        61.718394004856236,
+        16.516780000529252,
+        18.211501999758184,
+        17.097308998927474,
+        22.795597004005685,
+        16.327159013599157,
+        15.293354008463211,
+        14.962372006266378,
+        14.06420100829564
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 1,
+      "version": "candidate",
+      "startupMs": 29495.0352320011,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 72703.22967300308,
+        "warmupMediaReadyMs": 1163.1853669969132
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 73.0747670022538,
+          "mediaReadyMs": 380.6277349940501,
+          "MiBPerSecond": 10.27416225516391
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 63.92626999877393,
+          "mediaReadyMs": 332.5246479944326,
+          "MiBPerSecond": 11.744498982247089
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 37.322306001442485,
+          "mediaReadyMs": 300.22309299965855,
+          "MiBPerSecond": 20.11617430365733
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 39.3929199926788,
+          "mediaReadyMs": 291.531713999575,
+          "MiBPerSecond": 19.058805822949566
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 39.18444100418128,
+          "mediaReadyMs": 296.83015700720716,
+          "MiBPerSecond": 19.160207309307765
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 39.1792720038211,
+          "mediaReadyMs": 334.6109070116654,
+          "MiBPerSecond": 19.162735154094502
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 43.326435989001766,
+          "mediaReadyMs": 300.3970020072302,
+          "MiBPerSecond": 17.328496928065718
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 37.46995300753042,
+          "mediaReadyMs": 286.0686530038947,
+          "MiBPerSecond": 20.036908313938017
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 43.617817005724646,
+          "mediaReadyMs": 263.9430459967116,
+          "MiBPerSecond": 17.212737007010606
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 36.51129799254704,
+          "mediaReadyMs": 287.90997598844115,
+          "MiBPerSecond": 20.563005267375274
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 34.08763199695386,
+          "mediaReadyMs": 304.301744006807,
+          "MiBPerSecond": 22.025056272801365
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 35.838996001984924,
+          "mediaReadyMs": 287.8400640038308,
+          "MiBPerSecond": 20.94874568745931
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 34.86504600732587,
+          "mediaReadyMs": 358.8870330131613,
+          "MiBPerSecond": 21.533945854587376
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 38.10474899364635,
+          "mediaReadyMs": 282.1662189962808,
+          "MiBPerSecond": 19.70310874018983
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 33.89884800708387,
+          "mediaReadyMs": 285.14680900843814,
+          "MiBPerSecond": 22.147714659287583
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 36.25497699249536,
+          "mediaReadyMs": 282.05077099846676,
+          "MiBPerSecond": 20.708384757625474
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 32.504098999197595,
+          "mediaReadyMs": 368.47316499915905,
+          "MiBPerSecond": 23.098071814203713
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 72.51952300430275,
+          "mediaReadyMs": 381.92464600433595,
+          "MiBPerSecond": 10.352826133383523
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 50.76393899798859,
+          "mediaReadyMs": 335.5667750001885,
+          "MiBPerSecond": 14.789672112898907
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 33.63749900017865,
+          "mediaReadyMs": 287.7367009932641,
+          "MiBPerSecond": 22.319792947016236
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        23.427679014275782,
+        26.619051001034677,
+        43.77538299013395,
+        43.07074399548583,
+        43.45508600817993,
+        69.08049101184588,
+        33.59077499771956,
+        21.598579012788832,
+        21.211165003478527,
+        19.805030009592883,
+        15.115261994651519,
+        13.668409999809228
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 1,
+      "version": "upstream",
+      "startupMs": 28947.578459003125,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 75689.16179500229,
+        "warmupMediaReadyMs": 1599.8875579971354
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 77.20547400822397,
+          "mediaReadyMs": 428.99616199429147,
+          "MiBPerSecond": 9.724466076841642
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 72.13080399378669,
+          "mediaReadyMs": 430.7643590000225,
+          "MiBPerSecond": 10.408618390058777
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 60.991938997176476,
+          "mediaReadyMs": 469.40376500424463,
+          "MiBPerSecond": 12.309528525961593
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 56.50624699774198,
+          "mediaReadyMs": 526.3438039983157,
+          "MiBPerSecond": 13.286708157585739
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 63.515410001855344,
+          "mediaReadyMs": 467.515860000276,
+          "MiBPerSecond": 11.82047022789465
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 53.706620004959404,
+          "mediaReadyMs": 462.1127919963328,
+          "MiBPerSecond": 13.979319735074075
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 46.7600370029686,
+          "mediaReadyMs": 417.3810450010933,
+          "MiBPerSecond": 16.05606113809938
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 54.58209299831651,
+          "mediaReadyMs": 449.7259150084574,
+          "MiBPerSecond": 13.75509753652374
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 56.808385998010635,
+          "mediaReadyMs": 492.8966189909261,
+          "MiBPerSecond": 13.216041958413404
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 50.6647790025454,
+          "mediaReadyMs": 354.60708300524857,
+          "MiBPerSecond": 14.81861813512961
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 48.259760995279066,
+          "mediaReadyMs": 434.1195190063445,
+          "MiBPerSecond": 15.557101764612908
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 49.40328799420968,
+          "mediaReadyMs": 387.1606419997988,
+          "MiBPerSecond": 15.197004965083472
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 37.668457996915095,
+          "mediaReadyMs": 342.4423050018959,
+          "MiBPerSecond": 19.931317947789086
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 53.40965199866332,
+          "mediaReadyMs": 338.0898729956243,
+          "MiBPerSecond": 14.057047459478726
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 35.8170789986616,
+          "mediaReadyMs": 249.67506100074388,
+          "MiBPerSecond": 20.96156453650249
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 36.12152099958621,
+          "mediaReadyMs": 334.4145640003262,
+          "MiBPerSecond": 20.784894770850144
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 38.25576200324576,
+          "mediaReadyMs": 605.303799995454,
+          "MiBPerSecond": 19.625331548114346
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 35.470730988890864,
+          "mediaReadyMs": 307.1094449987868,
+          "MiBPerSecond": 21.16624022139808
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 37.518785989959724,
+          "mediaReadyMs": 337.24206099577714,
+          "MiBPerSecond": 20.010829058817823
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 37.01124299550429,
+          "mediaReadyMs": 247.2961640014546,
+          "MiBPerSecond": 20.285241785331277
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        18.47279600042384,
+        18.680716006201692,
+        19.372573995497078,
+        18.44492800591979,
+        21.96868100145366,
+        26.10620799532626,
+        18.62875399820041,
+        25.66124199074693,
+        19.79037100682035,
+        20.220178994350135,
+        18.560167998657562,
+        17.312575000687502
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 2,
+      "version": "upstream",
+      "startupMs": 38517.43681800144,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 128982.41705799592,
+        "warmupMediaReadyMs": 2150.0509930046974
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 95.80116599681787,
+          "mediaReadyMs": 538.5727999964729,
+          "MiBPerSecond": 7.836877611326683
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 125.59980699734297,
+          "mediaReadyMs": 752.0894839981338,
+          "MiBPerSecond": 5.977572982698419
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 505.4850750020705,
+          "mediaReadyMs": 1113.1082490028348,
+          "MiBPerSecond": 1.4852703869374932
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 69.66854698839597,
+          "mediaReadyMs": 705.3562499932013,
+          "MiBPerSecond": 10.776484445190219
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 162.3374939954374,
+          "mediaReadyMs": 619.3107989965938,
+          "MiBPerSecond": 4.6248219955924315
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 73.0485650128685,
+          "mediaReadyMs": 494.231246993877,
+          "MiBPerSecond": 10.27784752249675
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 69.39657998736948,
+          "mediaReadyMs": 553.4776459971908,
+          "MiBPerSecond": 10.818717767879903
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 95.5611190001946,
+          "mediaReadyMs": 582.4883970053634,
+          "MiBPerSecond": 7.8565636400503465
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 82.83528999891132,
+          "mediaReadyMs": 547.1218570019118,
+          "MiBPerSecond": 9.06355265913019
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 69.3328850029502,
+          "mediaReadyMs": 533.8303070020629,
+          "MiBPerSecond": 10.828656746470399
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 90.97087199916132,
+          "mediaReadyMs": 581.9251920038369,
+          "MiBPerSecond": 8.252993474069093
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 66.00804299523588,
+          "mediaReadyMs": 546.6741010022815,
+          "MiBPerSecond": 11.374098956299017
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 70.07810300274286,
+          "mediaReadyMs": 654.67462700326,
+          "MiBPerSecond": 10.713503659054062
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 67.8004749934189,
+          "mediaReadyMs": 564.8709590022918,
+          "MiBPerSecond": 11.073403438727063
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 65.82338000589516,
+          "mediaReadyMs": 528.3762559993193,
+          "MiBPerSecond": 11.406008212768972
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 89.49252100137528,
+          "mediaReadyMs": 709.1225820040563,
+          "MiBPerSecond": 8.389326890544467
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 77.78073300141841,
+          "mediaReadyMs": 1102.8383869997924,
+          "MiBPerSecond": 9.652544839423946
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 69.83121199300513,
+          "mediaReadyMs": 608.553910991759,
+          "MiBPerSecond": 10.751381674639381
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 97.31989000283647,
+          "mediaReadyMs": 497.54262299393304,
+          "MiBPerSecond": 7.71457934156698
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 68.73545600683428,
+          "mediaReadyMs": 510.2959009964252,
+          "MiBPerSecond": 10.922776345075878
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        30.09205100534018,
+        31.99204099655617,
+        48.21564299345482,
+        31.824279998545535,
+        42.02021099627018,
+        47.42377200454939,
+        29.381196000031196,
+        57.41380600375123,
+        52.38306400133297,
+        48.42936099157669,
+        25.76629699615296,
+        26.839634010684676
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 2,
+      "version": "candidate",
+      "startupMs": 37540.349856994,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 83920.50761499559,
+        "warmupMediaReadyMs": 1121.9754310004646
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 59.38337299448904,
+          "mediaReadyMs": 354.7293419978814,
+          "MiBPerSecond": 12.642966794916282
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 69.0826559875859,
+          "mediaReadyMs": 362.1146109944675,
+          "MiBPerSecond": 10.867879965043153
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 74.63009399361908,
+          "mediaReadyMs": 526.8208479974419,
+          "MiBPerSecond": 10.06004378077891
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 40.260262991068885,
+          "mediaReadyMs": 306.70016798831057,
+          "MiBPerSecond": 18.64821432254435
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 39.913287007948384,
+          "mediaReadyMs": 304.54972299048677,
+          "MiBPerSecond": 18.810327818652006
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 35.38841099361889,
+          "mediaReadyMs": 294.4976660073735,
+          "MiBPerSecond": 21.21547681456597
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 41.6163920017425,
+          "mediaReadyMs": 300.6832520040916,
+          "MiBPerSecond": 18.040535876056182
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 39.62218300148379,
+          "mediaReadyMs": 314.2730340041453,
+          "MiBPerSecond": 18.9485272154575
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 39.8319200030528,
+          "mediaReadyMs": 360.2908900065813,
+          "MiBPerSecond": 18.848752781234538
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 33.324640011414886,
+          "mediaReadyMs": 281.6155279870145,
+          "MiBPerSecond": 22.529336031305466
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 42.79274599684868,
+          "mediaReadyMs": 289.28044499480166,
+          "MiBPerSecond": 17.5446093829721
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 35.55128400330432,
+          "mediaReadyMs": 278.47730299981777,
+          "MiBPerSecond": 21.118281209468318
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 47.9181250120746,
+          "mediaReadyMs": 293.02133999590296,
+          "MiBPerSecond": 15.668017326434791
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 36.38094099005684,
+          "mediaReadyMs": 303.6414959933609,
+          "MiBPerSecond": 20.636684827493795
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 35.782323000603355,
+          "mediaReadyMs": 311.08082199352793,
+          "MiBPerSecond": 20.981924871864624
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 41.583146987250075,
+          "mediaReadyMs": 311.16749699867796,
+          "MiBPerSecond": 18.0549589757998
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 34.820872999262065,
+          "mediaReadyMs": 490.45870199915953,
+          "MiBPerSecond": 21.561263353602993
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 53.27573099930305,
+          "mediaReadyMs": 329.8394259909401,
+          "MiBPerSecond": 14.09238313312444
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 37.11707898764871,
+          "mediaReadyMs": 279.91221599222627,
+          "MiBPerSecond": 20.227400253917814
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 31.125724999583326,
+          "mediaReadyMs": 328.4207190008601,
+          "MiBPerSecond": 24.120948602787685
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        17.399261996615678,
+        18.008915008977056,
+        16.605504002654925,
+        15.590065988362767,
+        15.570720002870075,
+        21.80994499940425,
+        16.546906001167372,
+        17.313285992713645,
+        19.013526994967833,
+        22.695823994581588,
+        15.5920909892302,
+        13.960714000859298
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 3,
+      "version": "candidate",
+      "startupMs": 29617.200603999663,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 80033.15393999219,
+        "warmupMediaReadyMs": 1194.0761970035965
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 66.80671698995866,
+          "mediaReadyMs": 351.955550009734,
+          "MiBPerSecond": 11.23812165552603
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 66.34422100614756,
+          "mediaReadyMs": 342.9391129902797,
+          "MiBPerSecond": 11.316464366502766
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 38.619045008090325,
+          "mediaReadyMs": 320.11205099115614,
+          "MiBPerSecond": 19.440719281954575
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 39.56603800179437,
+          "mediaReadyMs": 306.41561800439376,
+          "MiBPerSecond": 18.97541555475947
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 43.95611801010091,
+          "mediaReadyMs": 307.7662299911026,
+          "MiBPerSecond": 17.080262018746218
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 55.05504501343239,
+          "mediaReadyMs": 382.672214997001,
+          "MiBPerSecond": 13.636933958664033
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 39.69524599961005,
+          "mediaReadyMs": 300.11618899879977,
+          "MiBPerSecond": 18.913650590471928
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 41.13427699485328,
+          "mediaReadyMs": 327.9809100058628,
+          "MiBPerSecond": 18.25198028965942
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 36.190346989315,
+          "mediaReadyMs": 280.90416599297896,
+          "MiBPerSecond": 20.745366524424796
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 34.83715200854931,
+          "mediaReadyMs": 287.91508098947816,
+          "MiBPerSecond": 21.551188017757745
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 43.63589099375531,
+          "mediaReadyMs": 298.60277600528207,
+          "MiBPerSecond": 17.20560749056085
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 33.7398590054363,
+          "mediaReadyMs": 328.8661620026687,
+          "MiBPerSecond": 22.25207914527693
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 65.14279400289524,
+          "mediaReadyMs": 320.19516499713063,
+          "MiBPerSecond": 11.525173650152079
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 36.5214010089403,
+          "mediaReadyMs": 277.25560299586505,
+          "MiBPerSecond": 20.55731686623042
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 37.432844008435495,
+          "mediaReadyMs": 317.1704340056749,
+          "MiBPerSecond": 20.05677187579614
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 38.84617298899684,
+          "mediaReadyMs": 505.30692499887664,
+          "MiBPerSecond": 19.327052195131596
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 42.06793000048492,
+          "mediaReadyMs": 1103.1797529867617,
+          "MiBPerSecond": 17.846896981401244
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 49.524019996169955,
+          "mediaReadyMs": 636.3144740025746,
+          "MiBPerSecond": 15.159956986478813
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 52.16112799826078,
+          "mediaReadyMs": 378.5083569964627,
+          "MiBPerSecond": 14.393515664854613
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 47.8057589934906,
+          "mediaReadyMs": 1016.5934079996077,
+          "MiBPerSecond": 15.70484453644345
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        24.982048009405844,
+        21.65894898644183,
+        25.055032994714566,
+        22.686748998239636,
+        21.97044600325171,
+        30.378975992789492,
+        26.847537999856286,
+        34.04465100902598,
+        21.34633499372285,
+        30.311577997053973,
+        25.055383011931553,
+        19.65775700227823
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 3,
+      "version": "upstream",
+      "startupMs": 28896.982540012687,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 82193.89470100577,
+        "warmupMediaReadyMs": 954.7219589876477
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 66.12646399298683,
+          "mediaReadyMs": 380.0041579961544,
+          "MiBPerSecond": 11.35372992300146
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 62.567507004132494,
+          "mediaReadyMs": 424.6297920035431,
+          "MiBPerSecond": 11.99955134683351
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 48.306255994248204,
+          "mediaReadyMs": 339.6002150111599,
+          "MiBPerSecond": 15.542127980873705
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 55.10883100214414,
+          "mediaReadyMs": 412.5106770079583,
+          "MiBPerSecond": 13.62362436812064
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 40.10418000689242,
+          "mediaReadyMs": 310.31873800384346,
+          "MiBPerSecond": 18.72079201745109
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 40.60089799168054,
+          "mediaReadyMs": 266.2280969962012,
+          "MiBPerSecond": 18.491758805268162
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 39.76139299629722,
+          "mediaReadyMs": 266.82504000200424,
+          "MiBPerSecond": 18.882185868321308
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 42.835644009755924,
+          "mediaReadyMs": 391.1329099937575,
+          "MiBPerSecond": 17.527039228556028
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 41.56143999716733,
+          "mediaReadyMs": 277.92320000298787,
+          "MiBPerSecond": 18.064388841931937
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 38.84059100528248,
+          "mediaReadyMs": 319.0682410058798,
+          "MiBPerSecond": 19.329829786507208
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 50.201359001221135,
+          "mediaReadyMs": 267.5556619942654,
+          "MiBPerSecond": 14.955412121835
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 40.93146299419459,
+          "mediaReadyMs": 286.06500299065374,
+          "MiBPerSecond": 18.34241822839165
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 39.1348369885236,
+          "mediaReadyMs": 379.86021500546485,
+          "MiBPerSecond": 19.184493170614765
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 38.67436699511018,
+          "mediaReadyMs": 391.04141799907666,
+          "MiBPerSecond": 19.412910185042687
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 37.06296499876771,
+          "mediaReadyMs": 299.2974770022556,
+          "MiBPerSecond": 20.256933382540105
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 37.86342700186651,
+          "mediaReadyMs": 245.56447000941262,
+          "MiBPerSecond": 19.828686212223808
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 35.694194011739455,
+          "mediaReadyMs": 393.28287000535056,
+          "MiBPerSecond": 21.033729258392235
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 87.34205798828043,
+          "mediaReadyMs": 308.03789899800904,
+          "MiBPerSecond": 8.595881872169684
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 37.169893010286614,
+          "mediaReadyMs": 242.8089789900696,
+          "MiBPerSecond": 20.198659510041562
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 34.06644800270442,
+          "mediaReadyMs": 268.851098997402,
+          "MiBPerSecond": 22.038752407643177
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        20.842565994826145,
+        27.340140004525892,
+        23.54818899766542,
+        19.890963012585416,
+        24.972414001240395,
+        40.917983002145775,
+        23.96759200200904,
+        22.39949200884439,
+        23.225028009619564,
+        40.50863700103946,
+        19.69519599515479,
+        18.008362996624783
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 4,
+      "version": "upstream",
+      "startupMs": 28902.801895004814,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 76008.09112100978,
+        "warmupMediaReadyMs": 1086.034102991107
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 63.785705002374016,
+          "mediaReadyMs": 366.57945399929304,
+          "MiBPerSecond": 11.77038041535341
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 60.540548991411924,
+          "mediaReadyMs": 342.5668819982093,
+          "MiBPerSecond": 12.401308304058434
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 44.46765600005165,
+          "mediaReadyMs": 332.5090230064234,
+          "MiBPerSecond": 16.883777569444657
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 51.66791399824433,
+          "mediaReadyMs": 424.71491200558376,
+          "MiBPerSecond": 14.530913962676422
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 40.76985199935734,
+          "mediaReadyMs": 334.3475540023064,
+          "MiBPerSecond": 18.41512725999809
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 41.249737987527624,
+          "mediaReadyMs": 266.19118300732225,
+          "MiBPerSecond": 18.20089168000198
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 41.63170699030161,
+          "mediaReadyMs": 329.40899999812245,
+          "MiBPerSecond": 18.033899333369945
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 43.89075799554121,
+          "mediaReadyMs": 267.8548980038613,
+          "MiBPerSecond": 17.105697126846703
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 40.695399991818704,
+          "mediaReadyMs": 298.6613179964479,
+          "MiBPerSecond": 18.44881763271496
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 38.894305005669594,
+          "mediaReadyMs": 374.59959399711806,
+          "MiBPerSecond": 19.303134811896296
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 40.004937996855006,
+          "mediaReadyMs": 252.32880099792965,
+          "MiBPerSecond": 18.767233509985093
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 43.94020600011572,
+          "mediaReadyMs": 252.18925699300598,
+          "MiBPerSecond": 17.086447271946696
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 37.922240007901564,
+          "mediaReadyMs": 316.3261989975581,
+          "MiBPerSecond": 19.79793421440871
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 38.467916994704865,
+          "mediaReadyMs": 328.79026800219435,
+          "MiBPerSecond": 19.51709558494677
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 38.59635799017269,
+          "mediaReadyMs": 245.2690650097793,
+          "MiBPerSecond": 19.452146576384624
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 35.257404000731185,
+          "mediaReadyMs": 326.0818510025274,
+          "MiBPerSecond": 21.29430779770068
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 50.83252998883836,
+          "mediaReadyMs": 403.8821949943667,
+          "MiBPerSecond": 14.769715634935098
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 37.145242997212335,
+          "mediaReadyMs": 307.79265001183376,
+          "MiBPerSecond": 20.212063574218575
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 36.0929979942739,
+          "mediaReadyMs": 243.20773899671622,
+          "MiBPerSecond": 20.801320329737184
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 35.745811997912824,
+          "mediaReadyMs": 254.15993000206072,
+          "MiBPerSecond": 21.003355945118575
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        18.296394002391025,
+        17.67696300521493,
+        20.02520300447941,
+        17.67829000891652,
+        21.550071993260644,
+        24.38064300804399,
+        18.081978996633552,
+        24.02374798839446,
+        18.174380995333195,
+        19.88824299769476,
+        19.34130600420758,
+        16.396962004364468
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 4,
+      "version": "candidate",
+      "startupMs": 30861.925139994128,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 74743.17629900179,
+        "warmupMediaReadyMs": 961.9303270010278
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 145.3825539938407,
+          "mediaReadyMs": 476.22712700103875,
+          "MiBPerSecond": 5.164182306023189
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 96.16938399267383,
+          "mediaReadyMs": 483.9123019919498,
+          "MiBPerSecond": 7.8068713947117265
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 39.382087998092175,
+          "mediaReadyMs": 309.79513000056613,
+          "MiBPerSecond": 19.06404792391465
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 41.4589900028659,
+          "mediaReadyMs": 311.80267898889724,
+          "MiBPerSecond": 18.109028051275594
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 39.77648798900191,
+          "mediaReadyMs": 327.23211699340027,
+          "MiBPerSecond": 18.875020166361654
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 36.294425997766666,
+          "mediaReadyMs": 296.9961670023622,
+          "MiBPerSecond": 20.685876475513115
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 40.541123002185486,
+          "mediaReadyMs": 296.3112229917897,
+          "MiBPerSecond": 18.519023582523356
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 59.25894799293019,
+          "mediaReadyMs": 355.3030229959404,
+          "MiBPerSecond": 12.669513016481902
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 39.16103699884843,
+          "mediaReadyMs": 291.0110250086291,
+          "MiBPerSecond": 19.17165811930697
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 36.04858099424746,
+          "mediaReadyMs": 280.24566201202106,
+          "MiBPerSecond": 20.826950527102884
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 38.37922200909816,
+          "mediaReadyMs": 249.3006020085886,
+          "MiBPerSecond": 19.56219989976538
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 35.68833399913274,
+          "mediaReadyMs": 244.06102699867915,
+          "MiBPerSecond": 21.037182989760684
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 35.234779003076255,
+          "mediaReadyMs": 296.7103720002342,
+          "MiBPerSecond": 21.30798132362074
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 35.03321300377138,
+          "mediaReadyMs": 274.9182250117883,
+          "MiBPerSecond": 21.43057825894046
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 59.11213900253642,
+          "mediaReadyMs": 330.09376999689266,
+          "MiBPerSecond": 12.700978607917369
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 32.33157099748496,
+          "mediaReadyMs": 323.2552239933284,
+          "MiBPerSecond": 23.22132793973592
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 35.77403200324625,
+          "mediaReadyMs": 502.25410000712145,
+          "MiBPerSecond": 20.986787647289095
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 66.17906999599654,
+          "mediaReadyMs": 342.01278899854515,
+          "MiBPerSecond": 11.34470479843357
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 36.02727998804767,
+          "mediaReadyMs": 276.0861999995541,
+          "MiBPerSecond": 20.839264390443326
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 37.14007799862884,
+          "mediaReadyMs": 309.29771400406025,
+          "MiBPerSecond": 20.2148744266819
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        16.332290004356764,
+        18.68939900305122,
+        17.002916007186286,
+        15.333823001128621,
+        15.304418993764557,
+        23.569287004647776,
+        15.813710007932968,
+        21.58932499878574,
+        20.525835003354587,
+        16.961568995611742,
+        15.54649299941957,
+        13.777735002804548
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 5,
+      "version": "candidate",
+      "startupMs": 29916.066299003433,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 72431.67120499129,
+        "warmupMediaReadyMs": 1373.4080360009102
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 161.70996900473256,
+          "mediaReadyMs": 553.8067539891927,
+          "MiBPerSecond": 4.642768887782552
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 62.917506002122536,
+          "mediaReadyMs": 339.0734999993583,
+          "MiBPerSecond": 11.93279995736203
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 38.3316619991092,
+          "mediaReadyMs": 323.2401629938977,
+          "MiBPerSecond": 19.58647169947655
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 38.80428599950392,
+          "mediaReadyMs": 403.9403070055414,
+          "MiBPerSecond": 19.347914633683796
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 42.25862000021152,
+          "mediaReadyMs": 301.3960520038381,
+          "MiBPerSecond": 17.76636371314764
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 37.84744499716908,
+          "mediaReadyMs": 291.9183710037032,
+          "MiBPerSecond": 19.837059357523614
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 37.04390799975954,
+          "mediaReadyMs": 291.9232610001927,
+          "MiBPerSecond": 20.2673544309722
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 40.53993801062461,
+          "mediaReadyMs": 293.90776201034896,
+          "MiBPerSecond": 18.519564897772906
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 36.80735199304763,
+          "mediaReadyMs": 284.25310099555645,
+          "MiBPerSecond": 20.397610050330837
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 106.66363000927959,
+          "mediaReadyMs": 521.3811050052755,
+          "MiBPerSecond": 7.038781756013143
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 37.25615900475532,
+          "mediaReadyMs": 291.83330399973784,
+          "MiBPerSecond": 20.15188986185142
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 36.02379099174868,
+          "mediaReadyMs": 283.8318120047916,
+          "MiBPerSecond": 20.841282726502083
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 36.57240199390799,
+          "mediaReadyMs": 290.7433439977467,
+          "MiBPerSecond": 20.528649254826465
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 36.554663005517796,
+          "mediaReadyMs": 502.34465800167527,
+          "MiBPerSecond": 20.538611252581518
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 75.22513100411743,
+          "mediaReadyMs": 437.3127430008026,
+          "MiBPerSecond": 9.98046800208775
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 32.655293005518615,
+          "mediaReadyMs": 290.69682898989413,
+          "MiBPerSecond": 22.991127741912283
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 32.77332599100191,
+          "mediaReadyMs": 289.65855299611576,
+          "MiBPerSecond": 22.908325299226092
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 30.12245900754351,
+          "mediaReadyMs": 274.5048519864213,
+          "MiBPerSecond": 24.924326820444378
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 34.23198500240687,
+          "mediaReadyMs": 226.7242840025574,
+          "MiBPerSecond": 21.93217871784722
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 30.562814994482324,
+          "mediaReadyMs": 268.36521799850743,
+          "MiBPerSecond": 24.5652114530352
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        16.546568003832363,
+        19.117464995360933,
+        16.14699899801053,
+        16.316855995683,
+        17.3902639944572,
+        39.33306300314143,
+        15.718376002041623,
+        19.125217004329897,
+        24.25227701314725,
+        15.309169990359806,
+        14.934466002159752,
+        16.211394002311863
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    },
+    {
+      "round": 5,
+      "version": "upstream",
+      "startupMs": 28915.338331993553,
+      "database": {
+        "version": "PostgreSQL 14.19 (Debian 14.19-1.pgdg12+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14+deb12u1) 12.2.0, 64-bit",
+        "fsync": "on",
+        "full_page_writes": "on",
+        "synchronous_commit": "on"
+      },
+      "readiness": {
+        "geodataReadyMs": 77333.64762099518,
+        "warmupMediaReadyMs": 1466.0726399888517
+      },
+      "uploadSamples": [
+        {
+          "index": 1,
+          "bytes": 787252,
+          "elapsedMs": 62.40633399283979,
+          "mediaReadyMs": 379.9099480092991,
+          "MiBPerSecond": 12.03054185213947
+        },
+        {
+          "index": 2,
+          "bytes": 787252,
+          "elapsedMs": 59.478610986843705,
+          "mediaReadyMs": 302.39670700393617,
+          "MiBPerSecond": 12.622722697837066
+        },
+        {
+          "index": 3,
+          "bytes": 787252,
+          "elapsedMs": 38.9913270046236,
+          "mediaReadyMs": 312.60228500468656,
+          "MiBPerSecond": 19.25510288096697
+        },
+        {
+          "index": 4,
+          "bytes": 787252,
+          "elapsedMs": 45.58849800378084,
+          "mediaReadyMs": 410.6544259993825,
+          "MiBPerSecond": 16.468671832030694
+        },
+        {
+          "index": 5,
+          "bytes": 787252,
+          "elapsedMs": 40.189263003412634,
+          "mediaReadyMs": 328.4540620079497,
+          "MiBPerSecond": 18.68115901691706
+        },
+        {
+          "index": 6,
+          "bytes": 787252,
+          "elapsedMs": 41.88503600016702,
+          "mediaReadyMs": 250.99033799779136,
+          "MiBPerSecond": 17.92482673135244
+        },
+        {
+          "index": 7,
+          "bytes": 787252,
+          "elapsedMs": 41.3337700010743,
+          "mediaReadyMs": 263.1275470048422,
+          "MiBPerSecond": 18.16388906504148
+        },
+        {
+          "index": 8,
+          "bytes": 787252,
+          "elapsedMs": 41.47114999068435,
+          "mediaReadyMs": 329.9704800010659,
+          "MiBPerSecond": 18.10371820188495
+        },
+        {
+          "index": 9,
+          "bytes": 787252,
+          "elapsedMs": 43.155189996468835,
+          "mediaReadyMs": 265.6561210023938,
+          "MiBPerSecond": 17.39725889286748
+        },
+        {
+          "index": 10,
+          "bytes": 787252,
+          "elapsedMs": 37.00486999878194,
+          "mediaReadyMs": 271.49690000806004,
+          "MiBPerSecond": 20.28873531954486
+        },
+        {
+          "index": 11,
+          "bytes": 787252,
+          "elapsedMs": 58.12897799478378,
+          "mediaReadyMs": 333.47545099968556,
+          "MiBPerSecond": 12.915795853263148
+        },
+        {
+          "index": 12,
+          "bytes": 787252,
+          "elapsedMs": 48.04066399810836,
+          "mediaReadyMs": 272.8194349911064,
+          "MiBPerSecond": 15.62805237182017
+        },
+        {
+          "index": 13,
+          "bytes": 787252,
+          "elapsedMs": 47.40886999934446,
+          "mediaReadyMs": 281.8952430097852,
+          "MiBPerSecond": 15.836319510459424
+        },
+        {
+          "index": 14,
+          "bytes": 787252,
+          "elapsedMs": 36.20692000549752,
+          "mediaReadyMs": 261.5169130003778,
+          "MiBPerSecond": 20.735870734805864
+        },
+        {
+          "index": 15,
+          "bytes": 787252,
+          "elapsedMs": 46.84342700056732,
+          "mediaReadyMs": 410.4650840017712,
+          "MiBPerSecond": 16.027478368104035
+        },
+        {
+          "index": 16,
+          "bytes": 787252,
+          "elapsedMs": 41.337262009619735,
+          "mediaReadyMs": 267.103815000155,
+          "MiBPerSecond": 18.16235465147005
+        },
+        {
+          "index": 17,
+          "bytes": 787252,
+          "elapsedMs": 56.68358999537304,
+          "mediaReadyMs": 578.7943779869238,
+          "MiBPerSecond": 13.24513872534781
+        },
+        {
+          "index": 18,
+          "bytes": 787252,
+          "elapsedMs": 36.140639989753254,
+          "mediaReadyMs": 293.6365170025965,
+          "MiBPerSecond": 20.773899221273282
+        },
+        {
+          "index": 19,
+          "bytes": 787252,
+          "elapsedMs": 37.81259700190276,
+          "mediaReadyMs": 265.2628389914753,
+          "MiBPerSecond": 19.855341142045155
+        },
+        {
+          "index": 20,
+          "bytes": 787252,
+          "elapsedMs": 37.600415002088994,
+          "mediaReadyMs": 327.6285260071745,
+          "MiBPerSecond": 19.967386341287494
+        }
+      ],
+      "bulkCheckSamplesMs": [
+        20.079684996744618,
+        21.496996996575035,
+        19.24374200461898,
+        18.487068999093026,
+        22.25576399359852,
+        25.361865002196282,
+        23.544776006019674,
+        19.33767899754457,
+        20.112302008783445,
+        19.895441000699066,
+        17.60887099953834,
+        16.569687009905465
+      ],
+      "behavior": "upload/download bytes, unauthorized=401, range=206, ETag=304, duplicate upload identity, mixed preflight output passed"
+    }
+  ],
+  "summary": {
+    "upstream": {
+      "uploadMedianMs": 43.87195350136608,
+      "bulkCheckMedianMs": 20.50326049356954,
+      "mediaReadyMedianMs": 335.8283124980517
+    },
+    "candidate": {
+      "uploadMedianMs": 39.18185650400119,
+      "bulkCheckMedianMs": 19.065495995164383,
+      "mediaReadyMedianMs": 305.48267049744027
+    }
+  },
+  "status": "behavior_passed"
+}

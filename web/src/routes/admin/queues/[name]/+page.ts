@@ -1,0 +1,29 @@
+import { getQueue, getQueueJobs, QueueJobStatus } from '@immich/sdk';
+import { redirect } from '@sveltejs/kit';
+import { fromQueueSlug, Route } from '$lib/route';
+import { authenticate } from '$lib/utils/auth';
+import { getFormatter } from '$lib/utils/i18n';
+import type { PageLoad } from './$types';
+
+export const load = (async ({ params, url }) => {
+  await authenticate(url, { admin: true });
+
+  const name = fromQueueSlug(params.name);
+  if (!name) {
+    redirect(307, Route.queues());
+  }
+
+  const [queue, failedJobs] = await Promise.all([
+    getQueue({ name }),
+    getQueueJobs({ name, status: [QueueJobStatus.Failed] }),
+  ]);
+  const $t = await getFormatter();
+
+  return {
+    queue,
+    failedJobs,
+    meta: {
+      title: $t('admin.queue_details'),
+    },
+  };
+}) satisfies PageLoad;

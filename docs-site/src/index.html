@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <title>OpenFrame · a self-hosted photo library, forked from Immich</title>
+  <meta name="description" content="OpenFrame is an unofficial fork of Immich working toward faster uploads, a better mobile-to-desktop connection and a redesigned UI. What's a goal, what has shipped, and how to contribute, including with AI tools.">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="site.config.js"></script>
+  <script src="assets/site.js" defer></script>
+</head>
+<body>
+  <main class="doc-main">
+    <header class="doc-head">
+      <p class="eyebrow cap">OpenFrame · fork of Immich</p>
+      <h1>Immich, reworked for speed and clarity</h1>
+      <p class="lede">OpenFrame is an unofficial fork of Immich, the self-hosted photo and video library. It keeps Immich's features, API and app compatibility, and works toward faster uploads and a clearer interface. Most of that is still ahead. This page says plainly which parts are goals and which have shipped.</p>
+      <div class="doc-meta"><span>Forked at <b>256eb55</b></span><span>AGPLv3</span><span class="badge warn">Early: goals ahead of results</span></div>
+    </header>
+
+    <article class="doc-body">
+      <h2>Goals</h2>
+      <p>These are targets, not features. A goal only moves to shipped with a change you can run, and a speed claim only counts with a before-and-after measurement.</p>
+      <table>
+        <thead><tr><th>Goal</th><th>Status</th><th>What exists today</th></tr></thead>
+        <tbody>
+          <tr><td>Faster uploads</td><td><span class="badge warn">Partly measured</span></td><td>The default-worker experiment showed 16.27% lower paired HTTP completion latency and 15.57% lower thumbnail/preview readiness latency. One shared host, ML disabled. See the <a href="http-comparison.html">HTTP comparison</a>.</td></tr>
+          <tr><td>Better mobile-to-desktop connection</td><td><span class="badge">Not started</span></td><td>Nothing yet.</td></tr>
+          <tr><td>Redesigned UI</td><td><span class="badge warn">In progress</span></td><td>OpenFrame identity, self-hosted Geist typography, favicons, loading screen, page titles and app name.</td></tr>
+          <tr><td>Better UX</td><td><span class="badge warn">In progress</span></td><td>Size-weighted upload progress with bytes processed and combined speed.</td></tr>
+          <tr><td>Outperform current upstream without regressions</td><td><span class="badge warn">Partly measured</span></td><td>Three server changes measured against the fork's base commit. Upload-preflight CPU work is also measured against Immich v3.3.5. Default-worker HTTP completion and thumbnail/preview readiness are measured separately. Broader workloads remain unmeasured.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>What has shipped</h2>
+      <p>Each change is small and measured on its own, never as a speedup for the whole app.</p>
+      <div class="stats">
+        <div class="stat" data-label="Face query, 10,000 faces" data-value="3.9" data-before="300.3" data-unit="ms" data-better="lower" data-note="median of 12, one query"></div>
+        <div class="stat" data-label="Event-loop delay, 4 bcrypt checks" data-value="0.18" data-before="229.2" data-unit="ms" data-better="lower" data-note="CPU cost unchanged"></div>
+      </div>
+      <table>
+        <thead><tr><th>Change</th><th>Area</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td><code>LIMIT 1</code> on the random-face query, async bcrypt checks, one fewer <code>fs.access</code> per media request</td><td>Server</td><td>Focused benchmarks against base <code>256eb55</code>. See <a href="performance.html">Server performance</a>.</td></tr>
+          <tr><td>OpenFrame branding</td><td>Web</td><td>Visual only. Identifiers that clients and existing installs rely on keep their <code>immich</code> names.</td></tr>
+          <tr><td>Self-hosted Geist and Geist Mono typography</td><td>Web</td><td>Font preload file bytes: 4,971,652 → 69,560. Other scripts use platform fallback. Static sizes, not measured page-load time. <a href="data/raw/font-payload.json">Evidence and limits</a>.</td></tr>
+          <tr><td>Overall upload progress: one size-weighted bar with bytes processed and combined speed, and a progress ring on the minimized upload button</td><td>Web</td><td>Unit tests for the progress maths. The progress UI itself does not make uploads faster. You can see how far along they are, and the bar doesn't jump back when finished files are cleared.</td></tr>
+          <tr><td>OpenFrame app names, in-app mark, launcher and splash assets</td><td>Android / iOS</td><td>Asset dimensions and resource references checked. Full native builds have not been run.</td></tr>
+          <tr><td><code>openframe</code> CLI command, with <code>immich</code> retained</td><td>CLI</td><td>Production build, type-check, lint, formatting and 45 tests pass on Node 24.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Two kinds of comparison</h2>
+      <p>OpenFrame reports two kinds of result and keeps them apart, because they answer different questions.</p>
+      <div class="cards">
+        <a class="card" href="performance.html"><b>Against the base commit</b><span>OpenFrame next to the upstream commit it forked from, <code>256eb55</code>. Shows what each change removed.</span></a>
+        <a class="card" href="release-comparison.html"><b>Against the latest release</b><span>OpenFrame next to Immich v3.3.5. Upload-check method time is 16.5–37.9% lower across nine synthetic workloads. This times one method with an in-memory repository, not end-to-end uploads.</span></a>
+      </div>
+      <div class="callout warn">
+        <p class="cap">Not end to end</p>
+        <p>The HTTP comparison measures authenticated loopback uploads with real database and storage writes. It excludes WAN, TLS and mobile clients. The API-only run excludes background processing; the later default-worker experiment includes it, with ML disabled. No result establishes whole-app performance.</p>
+      </div>
+
+      <h2>Contribute, with or without AI</h2>
+      <p>Pull requests are welcome, and <strong>AI-assisted pull requests are explicitly welcome</strong>, for performance, implementations, UX and tests. You stay the author: understand the change, run the checks, and measure any speed claim. See <a href="contributing.html">Contributing</a>.</p>
+
+      <h2>Built on Immich</h2>
+      <p>OpenFrame exists because of the Immich team and its contributors. It uses the same <a href="https://github.com/immich-app/immich/blob/main/LICENSE">AGPLv3 license</a> and isn't affiliated with or endorsed by FUTO or the Immich team. For installation and the full documentation, use <a href="https://docs.immich.app/">docs.immich.app</a>. Please don't report OpenFrame bugs upstream.</p>
+    </article>
+  </main>
+</body>
+</html>

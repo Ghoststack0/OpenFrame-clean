@@ -1,0 +1,120 @@
+<!doctype html>
+<html class="dark">
+  <head>
+    <!-- (used for SSR) -->
+    <!-- metadata:tags -->
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png" />
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
+    <link rel="icon" type="image/png" sizes="144x144" href="/favicon-144.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-icon-180.png" />
+    <link rel="preload" as="font" type="font/woff2" href="%app.font%" crossorigin="anonymous" />
+
+    <script>
+      try {
+        const preference = JSON.parse(localStorage.getItem('immich-ui-theme'));
+        const prefersDark = globalThis.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (preference === 'light' || (preference !== 'dark' && !prefersDark)) {
+          document.documentElement.classList.remove('dark');
+          document.documentElement.classList.add('light');
+        }
+      } catch {
+        // noop
+      }
+    </script>
+
+    %sveltekit.head%
+
+    <style>
+      /* prevent FOUC */
+      html {
+        height: 100%;
+        width: 100%;
+      }
+
+      html.dark {
+        background-color: black;
+      }
+
+      html.light {
+        background-color: white;
+      }
+
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+      }
+
+      @keyframes delayedVisibility {
+        to {
+          visibility: visible;
+        }
+      }
+
+      @keyframes loadpulse {
+        50% {
+          opacity: 0.55;
+        }
+      }
+
+      #stencil {
+        --stencil-width: 96px;
+        display: flex;
+        width: var(--stencil-width);
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: calc(50vh - var(--stencil-width) / 2);
+        margin-bottom: 100vh;
+        place-items: center;
+        justify-content: center;
+        overflow: hidden;
+        visibility: hidden;
+        animation:
+          0s linear 0.3s forwards delayedVisibility,
+          loadpulse 1.6s ease-in-out infinite;
+      }
+    </style>
+    <link rel="stylesheet" href="/custom.css" />
+  </head>
+
+  <noscript style="position: absolute; top: 0px; z-index: 1000; color: black; background-color: white">
+    To use OpenFrame, you must enable JavaScript or use a JavaScript compatible browser.
+  </noscript>
+
+  <body class="bg-light text-dark">
+    <div id="stencil">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+        <defs>
+          <linearGradient id="of-bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#232325" />
+            <stop offset="1" stop-color="#0b0b0c" />
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="64" height="64" rx="14" fill="url(#of-bg)" />
+        <rect x="0.5" y="0.5" width="63" height="63" rx="13.5" fill="none" stroke="#fff" stroke-opacity=".1" />
+        <g fill="#f2f1ec">
+          <rect x="10.4" y="10.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="17.6" y="10.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="10.4" y="17.6" width="6.4" height="6.4" rx="1.02" />
+          <rect x="46.4" y="10.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="39.2" y="10.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="46.4" y="17.6" width="6.4" height="6.4" rx="1.02" />
+          <rect x="10.4" y="46.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="17.6" y="46.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="10.4" y="39.2" width="6.4" height="6.4" rx="1.02" />
+          <rect x="46.4" y="46.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="39.2" y="46.4" width="6.4" height="6.4" rx="1.02" />
+          <rect x="46.4" y="39.2" width="6.4" height="6.4" rx="1.02" />
+        </g>
+        <rect x="24.8" y="24.8" width="13.600000000000001" height="13.600000000000001" rx="2.18" fill="#ef5a00" />
+      </svg>
+    </div>
+    <div>%sveltekit.body%</div>
+  </body>
+</html>

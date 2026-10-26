@@ -1,0 +1,39 @@
+{
+  "sourcePackage": "geist@1.8.2",
+  "sourceUrl": "https://www.npmjs.com/package/geist/v/1.8.2",
+  "license": "SIL OFL 1.1",
+  "baselineCommit": "06844a9156d99b496b7099e16a8b30f66badc915",
+  "before": [
+    {
+      "path": "web/src/lib/assets/fonts/GoogleSans/GoogleSans.ttf",
+      "bytes": 4845504,
+      "gzip9Bytes": 2161374,
+      "sha256": "d3224ef61c2411ce6d2eb2b1caca78e4bd48f7371b01b73d246bb2373033fba9",
+      "preloaded": true
+    },
+    {
+      "path": "web/src/lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf",
+      "bytes": 126148,
+      "gzip9Bytes": 74242,
+      "sha256": "88be64849506a7a70a57668a8d580c999718bdac0a85a59ff47e1ab2173f77b4",
+      "preloaded": true
+    }
+  ],
+  "after": [
+    {
+      "path": "web/src/lib/assets/fonts/Geist/Geist-Variable.woff2",
+      "bytes": 69560,
+      "gzip9Bytes": 69603,
+      "sha256": "206f01ed08e05c98a51daa7472331c3c71bbb8c1f9d55ea8c70074f3c528a706",
+      "preloaded": true
+    },
+    {
+      "path": "web/src/lib/assets/fonts/GeistMono/GeistMono-Variable.woff2",
+      "bytes": 71104,
+      "gzip9Bytes": 71147,
+      "sha256": "55419aa06f58adcd7f145c6c920e56936416f17e528f60efc6032ffa4269972b",
+      "preloaded": false
+    }
+  ],
+  "note": "Static file bytes and optional gzip-9 reference only. HTTP encoding varies; no LCP, page-load time or whole-app speed claim. Greek, Hebrew, Armenian, Georgian, Thai, Khmer and Indic scripts use platform fonts. Arabic and CJK already used system fallback."
+}

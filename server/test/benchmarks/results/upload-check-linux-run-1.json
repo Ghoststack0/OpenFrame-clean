@@ -1,0 +1,2919 @@
+{
+  "benchmark": "AssetMediaService.bulkUploadCheck CPU with an in-memory repository",
+  "recordedAt": "2026-10-26T05:34:06.623Z",
+  "baseline": {
+    "image": "ghcr.io/immich-app/immich-server:v3.3.5",
+    "imageId": "sha256:fb31598c03fbb3d68f6409548ab7b18148ee651bf7d6b40e1d907308edbf0dc2",
+    "repoDigests": [
+      "ghcr.io/immich-app/immich-server@sha256:485d546a2e31d6a8b4db8423fcba5c109de8c218d93410af115fd1ccfc4352a6"
+    ],
+    "labels": {
+      "org.opencontainers.image.created": "2026-10-21T18:13:42.816Z",
+      "org.opencontainers.image.description": "High performance self-hosted photo and video management solution.",
+      "org.opencontainers.image.licenses": "AGPL-3.0",
+      "org.opencontainers.image.revision": "8303cb117e197c700332b33b61b45314c9cc5bb4",
+      "org.opencontainers.image.source": "https://github.com/immich-app/immich",
+      "org.opencontainers.image.title": "immich",
+      "org.opencontainers.image.url": "https://github.com/immich-app/immich",
+      "org.opencontainers.image.version": "v3.3.5"
+    }
+  },
+  "release": {
+    "tag_name": "v3.3.5",
+    "published_at": "2026-10-21T18:12:57Z",
+    "html_url": "https://github.com/immich-app/immich/releases/tag/v3.3.5",
+    "prerelease": false,
+    "commit": "8303cb117e197c700332b33b61b45314c9cc5bb4"
+  },
+  "candidate": {
+    "source": "server/src/services/asset-media.service.ts",
+    "head": "62a489eaf996267ec8c246412a2d13f6010d7b42",
+    "diff": "diff --git i/server/src/services/asset-media.service.ts w/server/src/services/asset-media.service.ts\nindex 5328d98f4..e2fe7d645 100644\n--- i/server/src/services/asset-media.service.ts\n+++ w/server/src/services/asset-media.service.ts\n@@ -315,8 +315,8 @@ export class AssetMediaService extends BaseService {\n     }\n \n     return {\n-      results: dto.assets.map(({ id, checksum }) => {\n-        const duplicate = checksumMap[fromChecksum(checksum).toString('hex')];\n+      results: dto.assets.map(({ id }, index) => {\n+        const duplicate = checksumMap[checksums[index].toString('hex')];\n         if (duplicate) {\n           return {\n             id,\n",
+    "sourceSha256": "39371ec88ba6a917af0651bf1829f63ee1b61a2fef899cca3165c1be04ba22b3",
+    "methodSha256": "34e1f807990822a2d8103e798e9f0a6032ebf8c3124710df29c45e63f396abee",
+    "methodSource": "async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {\n    const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));\n    const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);\n    const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};\n\n    for (const { id, deletedAt, checksum } of results) {\n      checksumMap[checksum.toString('hex')] = { id, isTrashed: !!deletedAt };\n    }\n\n    return {\n      results: dto.assets.map(({ id }, index) => {\n        const duplicate = checksumMap[checksums[index].toString('hex')];\n        if (duplicate) {\n          return {\n            id,\n            action: AssetUploadAction.REJECT,\n            reason: AssetRejectReason.DUPLICATE,\n            assetId: duplicate.id,\n            isTrashed: duplicate.isTrashed,\n          };\n        }\n\n        return {\n          id,\n          action: AssetUploadAction.ACCEPT,\n        };\n      }),\n    };\n  }",
+    "compilerVersion": "6.0.3",
+    "compiledSha256": "9e3540ffe3aa7c3eafa4db885d576bb0901fb524175520efc4ac63a77b26140c"
+  },
+  "host": {
+    "hostname": "yvm",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           48 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  2\nOn-line CPU(s) list:                     0,1\nVendor ID:                               AuthenticAMD\nModel name:                              AMD A4-9125 RADEON R3, 4 COMPUTE CORES 2C+2G\nCPU family:                              21\nModel:                                   112\nThread(s) per core:                      1\nCore(s) per socket:                      2\nSocket(s):                               1\nStepping:                                0\nFrequency boost:                         enabled\nCPU(s) scaling MHz:                      113%\nCPU max MHz:                             2300.0000\nCPU min MHz:                             1300.0000\nBogoMIPS:                                4591.43\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good acc_power nopl nonstop_tsc cpuid extd_apicid aperfmperf pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 movbe popcnt aes xsave avx f16c lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs xop skinit wdt lwp fma4 tce nodeid_msr tbm perfctr_core perfctr_nb bpext ptsc mwaitx cpb hw_pstate ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 xsaveopt arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold avic v_vmsave_vmload vgif overflow_recov\nVirtualization:                          AMD-V\nL1d cache:                               64 KiB (2 instances)\nL1i cache:                               192 KiB (2 instances)\nL2 cache:                                2 MiB (2 instances)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0,1\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Mitigation; untrained return thunk; SMT disabled\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Retpolines; IBPB conditional; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+    "memory": "               total        used        free      shared  buff/cache   available\nMem:      7149137920  1727901696   596660224    18419712  5155467264  5421236224\nSwap:     4294963200    47714304  4247248896\n",
+    "storage": "Filesystem     Type 1K-blocks      Used Available Use% Mounted on\n/dev/nvme0n1p2 ext4 243937628 198511240  32962212  86% /\n",
+    "docker": "29.8.2"
+  },
+  "runtime": {
+    "node": "v24.22.1",
+    "kernel": "7.0.0-38-generic",
+    "cpu": "AMD A4-9125 RADEON R3, 4 COMPUTE CORES 2C+2G",
+    "totalMemoryBytes": 7149137920
+  },
+  "behavior": "Passed mixed encodings, uppercase hex, repeated checksum, original request order, active/trashed duplicates, empty request, owner/checksum repository arguments, and differential output checks for every workload.",
+  "method": {
+    "warmupRounds": 5,
+    "measuredRounds": 30,
+    "order": "Alternates baseline/candidate first each round",
+    "timing": "Batch mean per invocation; medians across batches. Assertions and fixture generation excluded.",
+    "limitations": "CPU microbenchmark only. Repository returns synthetic rows without SQL/network/I/O. No HTTP upload throughput, mobile connectivity, TLS, database, decoding, or whole-app speed claim. Warm process, shared host, no resource reservation or confidence interval. Candidate is the actual working-tree method compiled in isolation with upstream helper/enums; baseline is the actual stable image service method."
+  },
+  "decodeCounts": {
+    "baseline": 6,
+    "candidate": 3
+  },
+  "results": [
+    {
+      "count": 100,
+      "duplicateFraction": 0,
+      "iterations": 20,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 0.2381874500000322
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 0.18262770000001183
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 0.1605784500000027
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 0.18911605000002965
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 0.17789590000002137
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 0.11733894999997574
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 0.11776844999999411
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 0.18416425000000344
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 0.18564139999998588
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 0.11706654999998137
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 0.11981479999999464
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 0.1828512000000046
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 0.19516444999999294
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 0.11763574999999946
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 0.11785574999998971
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 1.8564945499999794
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 0.1508877499999926
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 0.09668650000003254
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 0.09897729999997865
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 0.1493757000000187
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 0.1512230499999987
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 0.09549219999998967
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 0.09449345000002722
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 0.14853060000000368
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 0.15133479999999508
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 0.09566680000002634
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 0.09489155000001119
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 0.268760999999995
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 0.1786222500000349
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 0.0964525500000036
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 0.1005069000000276
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 0.14955724999999803
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 0.14621535000001132
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 0.09450040000001536
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 0.09480775000001813
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 0.1516316000000188
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 0.14798584999998637
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 0.09467154999997547
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 0.09417215000003125
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 0.15287829999997485
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 0.15536120000001574
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 0.09813225000002604
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 0.12003485000000183
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 0.1730418500000269
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 0.1538980000000265
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 0.09854080000000068
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 0.09648395000003802
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 0.15294464999997218
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 0.15571044999996958
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 0.09706014999997023
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 0.09715094999996836
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 0.15626569999999446
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 0.15193895000002158
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 0.09919730000001437
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 0.09792270000002645
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 0.15387355000002573
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 0.1535801999999876
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 0.09711954999997943
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 0.09636519999999109
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 0.15791395000001102
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 0.15462960000002113
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 0.09753682499999741
+        }
+      ]
+    },
+    {
+      "count": 100,
+      "duplicateFraction": 0.5,
+      "iterations": 20,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 0.21150410000000192
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 0.18846655000002102
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 0.2109558499999821
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 0.211469199999965
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 0.2070795999999973
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 0.14134030000000167
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 0.14167554999999082
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 0.20373414999999112
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 0.20116039999998064
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 0.1436975000000075
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 0.1444902000000184
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 0.19775909999998476
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 0.19688609999998335
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 0.13934635000000525
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 0.13921710000004167
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 0.2049144999999953
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 0.20212424999999712
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 0.1397653999999875
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 0.14553435000002538
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 0.19809780000000501
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 1.6136870000000272
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 0.13382175000001553
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 0.13509989999997743
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 0.18822559999998703
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 0.19417270000003556
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 0.1350999000000229
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 0.13483794999997373
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 0.19108214999996562
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 0.1842585500000041
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 0.1365002000000004
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 0.136632950000012
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 0.18499190000002272
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 0.18797764999999345
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 0.1344677999999931
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 0.13431759999998577
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 0.18922780000002604
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 0.18524680000000443
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 0.13418494999996256
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 0.1331267999999909
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 0.18590330000001815
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 0.18757605000000693
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 0.13332940000000235
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 0.1358995500000219
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 0.18550525000000562
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 0.18753415000001042
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 0.1386269500000253
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 0.1352256000000125
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 0.1877786500000184
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 0.18889260000000832
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 0.13531639999996514
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 0.1361055999999735
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 0.18734560000002604
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 0.1853271500000119
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 0.13412905000000136
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 0.13571449999999458
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 0.18659130000000915
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 0.18667159999999966
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 0.13559229999996206
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 0.13517320000000838
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 0.18572174999999333
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 0.18855909999999768
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 0.13580702500000824
+        }
+      ]
+    },
+    {
+      "count": 100,
+      "duplicateFraction": 1,
+      "iterations": 20,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 0.24620884999999362
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 0.21983985000001666
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 0.22612914999999703
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 0.2804457000000184
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 0.28758359999997085
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 0.21559339999998883
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 0.2165606999999909
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 0.30277085000002446
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 0.28756610000000365
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 0.226845000000003
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 0.2617767500000355
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 0.20993964999997844
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 0.21306854999997996
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 0.2008356499999991
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 0.2187746999999945
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 0.2168261000000257
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 0.2131104999999934
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 0.1790238500000214
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 0.24222784999997202
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 0.21333745000001728
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 0.21457720000003064
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 0.17776315000000978
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 0.17736504999998032
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 0.2150486000000001
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 0.21388575000000856
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 0.2332530499999848
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 0.18910909999999603
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 0.21465405000003557
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 0.21484255000000302
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 0.17147039999999833
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 0.17335964999997486
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 0.21413364999998521
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 0.2168296000000282
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 0.17249360000000707
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 0.17478439999999865
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 0.21549559999998563
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 0.21431179999999586
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 0.18287215000000287
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 0.17136559999999007
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 0.21666895000003022
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 0.21550259999999072
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 0.17157164999998714
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 0.17319899999997687
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 0.2137286000000131
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 0.2133095499999854
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 0.174567849999994
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 0.17067764999997054
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 0.22020649999999478
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 0.22192110000000867
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 0.17096405000002052
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 0.17678890000001957
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 0.21413014999998267
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 0.21497875000000022
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 0.17535014999998566
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 0.1722456500000135
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 0.23558579999998983
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 0.2179819999999836
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 0.17130274999999529
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 0.18398965000001227
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 0.2788008499999705
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 0.21527209999999286
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 0.17756409999999506
+        }
+      ]
+    },
+    {
+      "count": 1000,
+      "duplicateFraction": 0,
+      "iterations": 2,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 1.5892315000000963
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 1.1006130000000667
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 1.1350459999998748
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 1.6183559999999488
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 1.5880089999996017
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 1.1283409999996366
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 1.1369314999997187
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 1.5996729999997115
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 1.5823875000000953
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 1.1136740000001737
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 1.1447189999998955
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 1.624536999999691
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 1.5875554999997803
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 1.1291089999999713
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 1.1010675000002266
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 1.640670499999942
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 2.876184999999623
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 1.3713229999998475
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 1.1066900000000714
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 1.60278100000005
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 1.5650660000001153
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 1.0693584999999075
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 1.111089500000162
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 1.6928780000002916
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 1.5901045000000522
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 1.1216009999998278
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 1.2256314999999631
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 1.6749979999999596
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 1.578615500000069
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 1.0586379999999735
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 1.085631999999805
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 1.5850760000002992
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 1.691410999999789
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 1.1151404999995975
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 1.1175499999999374
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 1.5818985000000794
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 1.5527390000002015
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 1.0624095000002853
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 1.0878319999997075
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 1.5805015000000822
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 1.5884980000000724
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 1.0696035000000848
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 1.0664255000001504
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 1.576694999999745
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 1.7385549999999057
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 1.151598500000091
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 1.0970514999999068
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 1.5645775000002686
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 1.5567550000000665
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 1.097365500000251
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 1.0745269999997618
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 1.5745299999998679
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 1.5700600000000122
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 1.0751905000001898
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 1.0682765000001382
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 1.548757999999907
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 1.562865999999758
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 1.0783684999996694
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 1.0543074999995952
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 1.6454545000001417
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 1.587782249999691
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 1.1008402500001466
+        }
+      ]
+    },
+    {
+      "count": 1000,
+      "duplicateFraction": 0.5,
+      "iterations": 2,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 2.1715085000000727
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 1.7095005000001038
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 1.7192435000001751
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 2.2363580000001093
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 2.148949499999617
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 1.7157859999997527
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 1.7278340000002572
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 2.1806579999997666
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 2.1605435000001307
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 1.672624000000269
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 1.6814935000002151
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 2.1987475000000813
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 2.1745120000000497
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 1.695776499999738
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 1.7387644999998884
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 2.19822350000004
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 2.171543500000098
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 1.6649060000004283
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 1.7063575000001947
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 2.2086649999996553
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 2.2215860000001157
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 1.7507774999999128
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 1.7327230000000782
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 2.2789615000001504
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 2.269812500000171
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 1.7328279999996994
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 1.726367499999924
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 2.2841300000000047
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 2.335149999999885
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 1.780006499999672
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 1.7299644999998236
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 2.2611515000003237
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 2.250326000000314
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 1.7104435000001104
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 1.7666315000001305
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 2.2517574999997123
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 2.2550054999996973
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 1.754304499999762
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 1.7732664999998633
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 2.281650500000069
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 2.272954999999911
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 2.702381999999943
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 1.8058829999999944
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 2.2574150000000373
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 2.267193000000134
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 1.7384500000002845
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 1.7694950000000063
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 2.2379640000003747
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 2.2354150000001027
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 1.777771500000199
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 1.7395680000004177
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 2.2641899999998714
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 2.250081499999851
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 1.8004354999998213
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 1.767608999999993
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 2.261500999999953
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 2.3273275000001377
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 1.7823115000001053
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 1.7621615000002748
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 2.255739000000176
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 2.251041750000013
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 1.7386072500000864
+        }
+      ]
+    },
+    {
+      "count": 1000,
+      "duplicateFraction": 1,
+      "iterations": 2,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 2.7613985000002685
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 2.306374499999947
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 2.340178499999638
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 2.79764699999987
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 3.4820684999999685
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 2.7988694999999097
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 2.8154569999996966
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 3.4200135000000955
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 3.334770500000104
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 2.9529419999998936
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 2.7477100000000974
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 2.7434840000000804
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 2.577887500000088
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 2.083402500000375
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 2.1316640000000007
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 2.598176500000136
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 2.618535999999949
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 2.090806000000157
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 2.1232474999997066
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 2.6193739999998797
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 2.5996085000001585
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 2.1285905000004277
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 2.1411975000000893
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 2.6120755000001736
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 2.614415000000008
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 2.0565129999999954
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 2.10267900000008
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 2.622447000000193
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 2.8027805000001536
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 2.1378795000000537
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 2.149718000000121
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 2.6824420000002647
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 3.320488000000296
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 2.1036564999999428
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 2.1001995000001443
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 2.613192999999683
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 2.652443999999832
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 2.1011075000001256
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 2.1382290000001376
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 2.6537715000004027
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 2.7098550000000614
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 2.1492990000001555
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 2.126879000000372
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 2.667250999999851
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 2.5716714999998658
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 2.103796500000044
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 2.107218499999817
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 2.6258695000001353
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 2.60418350000009
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 2.0952760000000126
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 2.1159490000000005
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 2.635332500000004
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 2.6091770000002725
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 2.1373210000001563
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 2.1370065000000977
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 2.622971000000234
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 2.6407110000000102
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 2.1001995000001443
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 2.1155994999999166
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 2.642037999999957
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 2.638021750000007
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 2.1277347500004
+        }
+      ]
+    },
+    {
+      "count": 10000,
+      "duplicateFraction": 0,
+      "iterations": 2,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 17.257738000000245
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 16.640959000000294
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 12.191815500000303
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 17.145361500000035
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 17.137888499999917
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 12.238470000000234
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 12.269829500000014
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 17.297408500000074
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 18.479458499999964
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 12.400086000000101
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 12.302515500000482
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 18.256451000000197
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 17.278306499999417
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 12.173516500000005
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 12.18633299999965
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 17.398435500000232
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 17.497856500000125
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 12.2791885000006
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 12.192025000000285
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 17.339732999999796
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 17.27170650000062
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 12.211999999999534
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 13.745532500000081
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 17.354191000000355
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 17.367145999999593
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 12.339148000000023
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 12.229076499999792
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 17.36166400000002
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 17.384117999999944
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 12.229564999999639
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 12.253066999999646
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 17.37626099999943
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 17.883876499999133
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 12.209345999999641
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 12.289281000000301
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 17.351746000000276
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 17.442157500000576
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 12.23420999999962
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 12.287848999999369
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 17.32471699999951
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 17.432833500000015
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 12.336983499999405
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 13.29169550000006
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 17.308897500000057
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 17.22236299999986
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 12.297032999999828
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 12.247969000000012
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 17.272893500000464
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 17.372384499999498
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 12.219787499999256
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 12.265080499999385
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 17.13883149999947
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 18.29322349999984
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 12.120646000000306
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 12.131890999999996
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 17.369660500000464
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 17.422217500000443
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 12.226387499999873
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 12.40357800000038
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 17.318011999999726
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 17.357927500000187
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 12.250517999999829
+        }
+      ]
+    },
+    {
+      "count": 10000,
+      "duplicateFraction": 0.5,
+      "iterations": 2,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 22.719458499999746
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 17.921102499999506
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 17.87654250000014
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 22.662780999999995
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 22.92804299999989
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 19.415452999999616
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 18.012141999999585
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 23.76765499999965
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 23.669176999999763
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 18.233508000000256
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 18.052685999999994
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 22.94187199999942
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 24.516506500000105
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 17.902664000000186
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 18.156785999999556
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 22.75623049999922
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 22.67315299999973
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 17.859152500000164
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 17.910486499999934
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 24.47233099999994
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 22.696655000000646
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 17.871619499999724
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 17.812042999999903
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 22.701194499999474
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 22.63980300000003
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 17.860584000000017
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 17.844205999999758
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 24.2756545000002
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 22.60002749999967
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 18.811734500000057
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 17.8940034999996
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 22.58853900000031
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 22.635612500000207
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 17.76479449999988
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 19.587579999999434
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 22.821952000000238
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 22.705629499999304
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 17.918867999999748
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 18.159091000000444
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 22.815841499999806
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 22.8904679999996
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 19.415767500000584
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 17.89253699999972
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 22.709680500000104
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 22.87768649999998
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 17.960738499999934
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 18.00910449999992
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 22.744531999999708
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 24.689994999999726
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 17.96436949999952
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 17.853005999999368
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 22.575477999999748
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 22.60009749999972
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 17.91495649999979
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 18.133179499999642
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 22.758780000000115
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 24.58554600000025
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 17.872317499999554
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 17.962414499999795
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 22.83225399999992
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 22.757505249999667
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 17.919985249999627
+        }
+      ]
+    },
+    {
+      "count": 10000,
+      "duplicateFraction": 1,
+      "iterations": 2,
+      "samples": [
+        {
+          "round": 0,
+          "version": "baseline",
+          "elapsedMs": 28.1866614999999
+        },
+        {
+          "round": 0,
+          "version": "candidate",
+          "elapsedMs": 23.50274250000075
+        },
+        {
+          "round": 1,
+          "version": "candidate",
+          "elapsedMs": 23.740521499999886
+        },
+        {
+          "round": 1,
+          "version": "baseline",
+          "elapsedMs": 31.533096000000114
+        },
+        {
+          "round": 2,
+          "version": "baseline",
+          "elapsedMs": 28.445079000000078
+        },
+        {
+          "round": 2,
+          "version": "candidate",
+          "elapsedMs": 23.689186999999947
+        },
+        {
+          "round": 3,
+          "version": "candidate",
+          "elapsedMs": 23.859777500000746
+        },
+        {
+          "round": 3,
+          "version": "baseline",
+          "elapsedMs": 28.424614999999903
+        },
+        {
+          "round": 4,
+          "version": "baseline",
+          "elapsedMs": 28.55054100000052
+        },
+        {
+          "round": 4,
+          "version": "candidate",
+          "elapsedMs": 25.829021999999895
+        },
+        {
+          "round": 5,
+          "version": "candidate",
+          "elapsedMs": 23.750788000000284
+        },
+        {
+          "round": 5,
+          "version": "baseline",
+          "elapsedMs": 28.39318600000024
+        },
+        {
+          "round": 6,
+          "version": "baseline",
+          "elapsedMs": 28.250812000000224
+        },
+        {
+          "round": 6,
+          "version": "candidate",
+          "elapsedMs": 23.54642899999999
+        },
+        {
+          "round": 7,
+          "version": "candidate",
+          "elapsedMs": 23.609880499999235
+        },
+        {
+          "round": 7,
+          "version": "baseline",
+          "elapsedMs": 29.4994214999997
+        },
+        {
+          "round": 8,
+          "version": "baseline",
+          "elapsedMs": 28.236144499999682
+        },
+        {
+          "round": 8,
+          "version": "candidate",
+          "elapsedMs": 23.51912099999936
+        },
+        {
+          "round": 9,
+          "version": "candidate",
+          "elapsedMs": 23.647351499999786
+        },
+        {
+          "round": 9,
+          "version": "baseline",
+          "elapsedMs": 28.544185499999912
+        },
+        {
+          "round": 10,
+          "version": "baseline",
+          "elapsedMs": 31.0901544999997
+        },
+        {
+          "round": 10,
+          "version": "candidate",
+          "elapsedMs": 23.6405064999999
+        },
+        {
+          "round": 11,
+          "version": "candidate",
+          "elapsedMs": 23.775966499999413
+        },
+        {
+          "round": 11,
+          "version": "baseline",
+          "elapsedMs": 28.30829200000062
+        },
+        {
+          "round": 12,
+          "version": "baseline",
+          "elapsedMs": 28.154813500000273
+        },
+        {
+          "round": 12,
+          "version": "candidate",
+          "elapsedMs": 23.762416999999914
+        },
+        {
+          "round": 13,
+          "version": "candidate",
+          "elapsedMs": 23.853282000000036
+        },
+        {
+          "round": 13,
+          "version": "baseline",
+          "elapsedMs": 30.542834000000767
+        },
+        {
+          "round": 14,
+          "version": "baseline",
+          "elapsedMs": 28.34646100000009
+        },
+        {
+          "round": 14,
+          "version": "candidate",
+          "elapsedMs": 23.906920999999784
+        },
+        {
+          "round": 15,
+          "version": "candidate",
+          "elapsedMs": 23.552505499999825
+        },
+        {
+          "round": 15,
+          "version": "baseline",
+          "elapsedMs": 28.19507749999957
+        },
+        {
+          "round": 16,
+          "version": "baseline",
+          "elapsedMs": 29.320764500000223
+        },
+        {
+          "round": 16,
+          "version": "candidate",
+          "elapsedMs": 23.52093650000006
+        },
+        {
+          "round": 17,
+          "version": "candidate",
+          "elapsedMs": 23.603071499999714
+        },
+        {
+          "round": 17,
+          "version": "baseline",
+          "elapsedMs": 28.194099999999708
+        },
+        {
+          "round": 18,
+          "version": "baseline",
+          "elapsedMs": 28.113571500000035
+        },
+        {
+          "round": 18,
+          "version": "candidate",
+          "elapsedMs": 23.521215999999185
+        },
+        {
+          "round": 19,
+          "version": "candidate",
+          "elapsedMs": 25.194956999999704
+        },
+        {
+          "round": 19,
+          "version": "baseline",
+          "elapsedMs": 28.214982500000588
+        },
+        {
+          "round": 20,
+          "version": "baseline",
+          "elapsedMs": 28.233805500000017
+        },
+        {
+          "round": 20,
+          "version": "candidate",
+          "elapsedMs": 23.588160000000244
+        },
+        {
+          "round": 21,
+          "version": "candidate",
+          "elapsedMs": 23.78647799999999
+        },
+        {
+          "round": 21,
+          "version": "baseline",
+          "elapsedMs": 28.217985499999486
+        },
+        {
+          "round": 22,
+          "version": "baseline",
+          "elapsedMs": 31.142781499999728
+        },
+        {
+          "round": 22,
+          "version": "candidate",
+          "elapsedMs": 23.780611000000135
+        },
+        {
+          "round": 23,
+          "version": "candidate",
+          "elapsedMs": 23.678466500000468
+        },
+        {
+          "round": 23,
+          "version": "baseline",
+          "elapsedMs": 28.374468500000148
+        },
+        {
+          "round": 24,
+          "version": "baseline",
+          "elapsedMs": 28.438758500000404
+        },
+        {
+          "round": 24,
+          "version": "candidate",
+          "elapsedMs": 23.85254900000018
+        },
+        {
+          "round": 25,
+          "version": "candidate",
+          "elapsedMs": 26.971645999999964
+        },
+        {
+          "round": 25,
+          "version": "baseline",
+          "elapsedMs": 28.05905949999942
+        },
+        {
+          "round": 26,
+          "version": "baseline",
+          "elapsedMs": 28.045090999999957
+        },
+        {
+          "round": 26,
+          "version": "candidate",
+          "elapsedMs": 23.489402500000324
+        },
+        {
+          "round": 27,
+          "version": "candidate",
+          "elapsedMs": 23.49135799999931
+        },
+        {
+          "round": 27,
+          "version": "baseline",
+          "elapsedMs": 28.276723999999376
+        },
+        {
+          "round": 28,
+          "version": "baseline",
+          "elapsedMs": 29.801840000000084
+        },
+        {
+          "round": 28,
+          "version": "candidate",
+          "elapsedMs": 23.590046000000257
+        },
+        {
+          "round": 29,
+          "version": "candidate",
+          "elapsedMs": 23.549502500000017
+        },
+        {
+          "round": 29,
+          "version": "baseline",
+          "elapsedMs": 28.194099999999708
+        }
+      ],
+      "medians": [
+        {
+          "version": "baseline",
+          "elapsedMs": 28.327376500000355
+        },
+        {
+          "version": "candidate",
+          "elapsedMs": 23.662909000000127
+        }
+      ]
+    }
+  ]
+}
