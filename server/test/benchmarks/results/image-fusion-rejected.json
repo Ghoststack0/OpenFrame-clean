@@ -1,0 +1,29 @@
+{
+  "node": "v24.13.1",
+  "vips": "8.18.7",
+  "timingLimit": "Single baseline-first diagnostic per file on development host; no speed claim.",
+  "results": [
+    {
+      "sample": "photo-0.jpg",
+      "inputSha256": "0988c981fa61f9938e31cfbcaaf470b39462a86355c17dab8a1ce7719ded1197",
+      "encodedEqual": true,
+      "baselineMs": 956.7253540000002,
+      "fusedMs": 846.6485969999999,
+      "differingChannelSamples": 0,
+      "totalChannelSamples": 8294400,
+      "maxChannelDifference": 0,
+      "psnr": "infinity"
+    },
+    {
+      "sample": "10bit-HDR-P3-nclx.avif",
+      "inputSha256": "af145f4853f47ad9a5ce744018fda8c94c39ba96deb779cec516d9353443a4e5",
+      "encodedEqual": false,
+      "baselineMs": 2851.197353,
+      "fusedMs": 2703.117913,
+      "differingChannelSamples": 4165126,
+      "totalChannelSamples": 9452160,
+      "maxChannelDifference": 16,
+      "psnr": 47.71812125247533
+    }
+  ]
+}
