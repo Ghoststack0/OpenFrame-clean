@@ -26,6 +26,7 @@ const resetEnv = () => {
     'DB_USERNAME',
     'DB_PASSWORD',
     'DB_DATABASE_NAME',
+    'DB_BIN_DIRECTORY',
     'DB_SSL_MODE',
     'DB_SKIP_MIGRATIONS',
     'DB_VECTOR_EXTENSION',
@@ -130,6 +131,16 @@ describe('getEnv', () => {
         skipMigrations: false,
         vectorExtension: undefined,
       });
+    });
+
+    it('should accept an absolute PostgreSQL binary directory', () => {
+      process.env.DB_BIN_DIRECTORY = '/home/test/postgresql/bin';
+      expect(getEnv().database.binDirectory).toBe('/home/test/postgresql/bin');
+    });
+
+    it('should reject a relative PostgreSQL binary directory', () => {
+      process.env.DB_BIN_DIRECTORY = 'bin';
+      expect(() => getEnv()).toThrow(/Must be an absolute path/);
     });
 
     it('should validate DB_SSL_MODE', () => {
