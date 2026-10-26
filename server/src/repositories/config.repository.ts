@@ -62,6 +62,7 @@ export interface EnvData {
   };
 
   database: {
+    binDirectory?: string;
     config: DatabaseConnectionParams;
     skipMigrations: boolean;
     vectorExtension?: VectorExtension;
@@ -304,6 +305,7 @@ const getEnv = (): EnvData => {
     },
 
     database: {
+      binDirectory: dto.DB_BIN_DIRECTORY,
       config: databaseConnection,
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
       vectorExtension,
