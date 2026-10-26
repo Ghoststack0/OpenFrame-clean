@@ -1,0 +1,4554 @@
+{
+  "method": "Three serial alternating pairs, fresh Node 24 processes, warmed OS caches. Whole-process CPU includes imports and FFmpeg children. Node workflow CPU excludes FFmpeg children. Peak RSS is the largest individual process, not an aggregate. Database and queue time are not measured.",
+  "rows": [
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 365.45139800000015,
+      "imagesPerSecond": 2.736341974535283,
+      "cpuUsage": {
+        "user": 392518,
+        "system": 25915
+      },
+      "nodeRssPeak": 411394048,
+      "nodeMaxRssKiB": 402648,
+      "repositoryStubMs": 0.04169500000011794,
+      "stages": {
+        "decodeResizeMs": 183.649455,
+        "decodeTotalMs": 307.733248,
+        "previewResizeMs": 0.014758000000028915,
+        "thumbnailResizeMs": 27.18370600000003,
+        "thumbhashResizeMs": 33.42289100000016,
+        "thumbhashTotalMs": 50.27758599999993,
+        "thumbnailTotalMs": 49.79906299999993,
+        "previewTotalMs": 55.4452960000001
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 1.8454890000000002,
+      "wholeProcessMaxRssKiB": 402648
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 344.89635299999986,
+      "imagesPerSecond": 2.899421786579461,
+      "cpuUsage": {
+        "user": 360200,
+        "system": 27991
+      },
+      "nodeRssPeak": 408604672,
+      "nodeMaxRssKiB": 402740,
+      "repositoryStubMs": 0.03327100000001337,
+      "stages": {
+        "decodeTotalMs": 277.505177,
+        "previewResizeMs": 0.015252000000145927,
+        "thumbhashResizeMs": 33.89463000000001,
+        "thumbhashTotalMs": 50.75277200000005,
+        "previewTotalMs": 49.981044999999995,
+        "thumbnailResizeMs": 55.942662000000155,
+        "thumbnailTotalMs": 65.76150699999994
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 1.828597,
+      "wholeProcessMaxRssKiB": 402740
+    },
+    {
+      "variant": "direct",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 171.03180999999995,
+      "imagesPerSecond": 5.84686556261084,
+      "cpuUsage": {
+        "user": 208547,
+        "system": 25015
+      },
+      "nodeRssPeak": 416477184,
+      "nodeMaxRssKiB": 412868,
+      "repositoryStubMs": 0.034538000000111424,
+      "stages": {
+        "decodeResizeMs": 0.04539299999987634,
+        "decodeTotalMs": 105.63034200000016,
+        "previewResizeMs": 0.02000599999996666,
+        "thumbnailResizeMs": 28.189968000000135,
+        "thumbhashResizeMs": 29.344010000000026,
+        "thumbhashTotalMs": 51.15440400000011,
+        "thumbnailTotalMs": 61.785574,
+        "previewTotalMs": 63.447719000000006
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "9d7e9f6078021525157f9bc9fb476f2a2ab541fa8f7e6f674a1cf57e55350ea0"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "188f7b4fdf18829c7e03974d209d48421be9f986377709b113a0e70c489901b5"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 1.681755,
+      "wholeProcessMaxRssKiB": 412868
+    },
+    {
+      "variant": "margin2",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 410.151666,
+      "imagesPerSecond": 2.4381224871094394,
+      "cpuUsage": {
+        "user": 430529,
+        "system": 24030
+      },
+      "nodeRssPeak": 428978176,
+      "nodeMaxRssKiB": 418924,
+      "repositoryStubMs": 0.031868000000031316,
+      "stages": {
+        "decodeResizeMs": 172.67067500000007,
+        "decodeTotalMs": 343.1293619999999,
+        "previewResizeMs": 0.014803000000028987,
+        "thumbhashResizeMs": 16.83390300000019,
+        "thumbhashTotalMs": 32.608964000000014,
+        "previewTotalMs": 46.539243999999826,
+        "thumbnailResizeMs": 55.37383699999987,
+        "thumbnailTotalMs": 65.37727399999994
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "54cd30bd0b75bc07d3bfd733c2f9825df945623d5a9ade78aa0441b1e4fdc287"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "4ee127287473a878a251af55e2a630ae9ed763bc86080e64dc7c1362aed62c50"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 1.8798519999999999,
+      "wholeProcessMaxRssKiB": 418924
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 608.5843889999999,
+      "imagesPerSecond": 1.643157494794038,
+      "cpuUsage": {
+        "user": 683427,
+        "system": 37628
+      },
+      "nodeRssPeak": 492437504,
+      "nodeMaxRssKiB": 484224,
+      "repositoryStubMs": 0.03541400000017347,
+      "stages": {
+        "decodeResizeMs": 354.0581790000001,
+        "decodeTotalMs": 549.8394209999999,
+        "previewResizeMs": 0.015059999999948559,
+        "thumbnailResizeMs": 30.40415199999984,
+        "thumbhashResizeMs": 31.936811000000034,
+        "thumbhashTotalMs": 49.44369199999983,
+        "thumbnailTotalMs": 52.57034799999997,
+        "previewTotalMs": 56.73938599999997
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 2.199058,
+      "wholeProcessMaxRssKiB": 484224
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 497.757576,
+      "imagesPerSecond": 2.00901010495117,
+      "cpuUsage": {
+        "user": 512283,
+        "system": 37824
+      },
+      "nodeRssPeak": 420831232,
+      "nodeMaxRssKiB": 413528,
+      "repositoryStubMs": 0.03550600000016857,
+      "stages": {
+        "decodeTotalMs": 434.25993199999994,
+        "previewResizeMs": 0.01445800000010422,
+        "thumbhashResizeMs": 10.091361000000006,
+        "thumbhashTotalMs": 21.873611999999866,
+        "thumbnailResizeMs": 50.62586600000009,
+        "previewTotalMs": 52.95328100000006,
+        "thumbnailTotalMs": 61.854918
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 2.0642869999999998,
+      "wholeProcessMaxRssKiB": 413528
+    },
+    {
+      "variant": "direct",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 203.51181199999996,
+      "imagesPerSecond": 4.913719700947875,
+      "cpuUsage": {
+        "user": 221075,
+        "system": 32519
+      },
+      "nodeRssPeak": 391237632,
+      "nodeMaxRssKiB": 387316,
+      "repositoryStubMs": 0.03430700000012621,
+      "stages": {
+        "decodeResizeMs": 0.044626000000107524,
+        "decodeTotalMs": 135.63627900000006,
+        "previewResizeMs": 0.014652999999952954,
+        "thumbhashResizeMs": 12.325878999999986,
+        "thumbhashTotalMs": 23.217999999999847,
+        "previewTotalMs": 53.887602000000015,
+        "thumbnailResizeMs": 56.589692000000014,
+        "thumbnailTotalMs": 66.21305399999983
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "e5f786a1d850c770894c543585a4ff40ec9c3a27e20a2f5830cb5e3338750c66"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "866786a95262a69c6482002f53131b5ab9620c53e4c9940ce677183fa3189cd3"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 1.669568,
+      "wholeProcessMaxRssKiB": 387316
+    },
+    {
+      "variant": "margin2",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 468.06067499999995,
+      "imagesPerSecond": 2.1364751482273108,
+      "cpuUsage": {
+        "user": 500999,
+        "system": 23769
+      },
+      "nodeRssPeak": 435642368,
+      "nodeMaxRssKiB": 426584,
+      "repositoryStubMs": 0.03315100000008897,
+      "stages": {
+        "decodeResizeMs": 195.72620600000005,
+        "decodeTotalMs": 407.35674199999994,
+        "previewResizeMs": 0.017972000000099797,
+        "thumbhashResizeMs": 24.98701899999992,
+        "thumbhashTotalMs": 40.58571699999993,
+        "thumbnailResizeMs": 45.20863499999996,
+        "thumbnailTotalMs": 56.9502379999999,
+        "previewTotalMs": 58.813817999999856
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "3a3a61de29856d9e0d3d6981dc1f54ad2de0e25fad217aa381755f9f6c475fa8"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "260eb81d2d0a75ae0ece78d45f57008337f5c36124b45b0b5e12cec3ad0ad9c0"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 1.9901799999999998,
+      "wholeProcessMaxRssKiB": 426584
+    },
+    {
+      "variant": "baseline",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 6093.678357,
+      "imagesPerSecond": 3.282089868925453,
+      "cpuUsage": {
+        "user": 11454819,
+        "system": 464426
+      },
+      "nodeRssPeak": 813744128,
+      "nodeMaxRssKiB": 800560,
+      "repositoryStubMs": 0.339878999996472,
+      "stages": {
+        "decodeResizeMs": 10014.733488000002,
+        "decodeTotalMs": 15233.142874999998,
+        "previewResizeMs": 0.23649399999817433,
+        "thumbhashResizeMs": 1474.454223000002,
+        "previewTotalMs": 1807.833154000002,
+        "thumbnailResizeMs": 1802.413283,
+        "thumbhashTotalMs": 2024.039965,
+        "thumbnailTotalMs": 2389.6074310000004
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20",
+      "round": 0,
+      "wholeProcessCpuSeconds": 13.497004,
+      "wholeProcessMaxRssKiB": 800560
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 4901.331275,
+      "imagesPerSecond": 4.080524020486659,
+      "cpuUsage": {
+        "user": 9248957,
+        "system": 359126
+      },
+      "nodeRssPeak": 838676480,
+      "nodeMaxRssKiB": 820852,
+      "repositoryStubMs": 0.33100899999817557,
+      "stages": {
+        "decodeTotalMs": 12225.277805999995,
+        "previewResizeMs": 0.24704899999960617,
+        "previewTotalMs": 1382.719410999999,
+        "thumbnailResizeMs": 1384.9158509999986,
+        "thumbhashResizeMs": 1455.1747290000012,
+        "thumbnailTotalMs": 1752.2304390000008,
+        "thumbhashTotalMs": 1627.368743
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20",
+      "round": 0,
+      "wholeProcessCpuSeconds": 11.169126,
+      "wholeProcessMaxRssKiB": 820852
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 4861.3468680000005,
+      "imagesPerSecond": 4.114086187029927,
+      "cpuUsage": {
+        "user": 9301387,
+        "system": 329887
+      },
+      "nodeRssPeak": 871436288,
+      "nodeMaxRssKiB": 851012,
+      "repositoryStubMs": 1.8813840000011623,
+      "stages": {
+        "decodeTotalMs": 12442.391798999997,
+        "previewResizeMs": 0.24603100000240374,
+        "previewTotalMs": 1404.248894000001,
+        "thumbnailResizeMs": 1259.0949249999978,
+        "thumbhashResizeMs": 1177.0674909999996,
+        "thumbhashTotalMs": 1468.6606099999995,
+        "thumbnailTotalMs": 1689.6941709999983
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20-threads",
+      "round": 0,
+      "wholeProcessCpuSeconds": 11.211607,
+      "wholeProcessMaxRssKiB": 851012
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 2,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 5013.85267,
+      "imagesPerSecond": 3.988948482604695,
+      "cpuUsage": {
+        "user": 9392376,
+        "system": 442085
+      },
+      "nodeRssPeak": 904335360,
+      "nodeMaxRssKiB": 884060,
+      "repositoryStubMs": 0.3290359999989505,
+      "stages": {
+        "decodeTotalMs": 12036.032736999994,
+        "previewResizeMs": 0.260214999999107,
+        "thumbnailResizeMs": 1206.3237850000019,
+        "thumbhashResizeMs": 1540.0360849999995,
+        "previewTotalMs": 2075.066651,
+        "thumbhashTotalMs": 2111.4652079999996,
+        "thumbnailTotalMs": 2116.889651000002
+      },
+      "vipsThreads": 2,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20-threads",
+      "round": 0,
+      "wholeProcessCpuSeconds": 11.451882,
+      "wholeProcessMaxRssKiB": 884060
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "4k.mp4"
+      ],
+      "milliseconds": 1831.199472,
+      "imagesPerSecond": 0.546090153088467,
+      "cpuUsage": {
+        "user": 69464,
+        "system": 18340
+      },
+      "nodeRssPeak": 328052736,
+      "nodeMaxRssKiB": 320364,
+      "repositoryStubMs": 0.0319649999999001,
+      "stages": {
+        "videoThumbnailsMs": 1779.5714140000002,
+        "decodeResizeMs": 0.04640500000004977,
+        "decodeTotalMs": 28.508221999999932,
+        "thumbhashResizeMs": 13.466664000000037,
+        "thumbhashTotalMs": 21.933508000000074
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "85b937e26ee827fb8bdd4d8f202229a108f658253472181074a01238cf36b96d"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c0da57b1bf2ebec3fcd5d4ffddbd384003f758a450e90941d337055bbbea5e33"
+        }
+      ],
+      "thumbhashes": [
+        "20f809b48c70847d8878878887888f87f79877"
+      ],
+      "phase": "video-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 4.4013,
+      "wholeProcessMaxRssKiB": 320364
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "4k.mp4"
+      ],
+      "milliseconds": 1456.823642,
+      "imagesPerSecond": 0.686424884364967,
+      "cpuUsage": {
+        "user": 63480,
+        "system": 13319
+      },
+      "nodeRssPeak": 330235904,
+      "nodeMaxRssKiB": 325312,
+      "repositoryStubMs": 0.035987000000204716,
+      "stages": {
+        "videoThumbnailsMs": 1405.4539200000002,
+        "decodeResizeMs": 0.05074700000022858,
+        "decodeTotalMs": 28.785655000000133,
+        "thumbhashResizeMs": 12.993179999999938,
+        "thumbhashTotalMs": 21.424399999999878
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "85b937e26ee827fb8bdd4d8f202229a108f658253472181074a01238cf36b96d"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c0da57b1bf2ebec3fcd5d4ffddbd384003f758a450e90941d337055bbbea5e33"
+        }
+      ],
+      "thumbhashes": [
+        "20f809b48c70847d8878878887888f87f79877"
+      ],
+      "phase": "video-single",
+      "round": 0,
+      "wholeProcessCpuSeconds": 4.220461,
+      "wholeProcessMaxRssKiB": 325312
+    },
+    {
+      "variant": "margin2",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 409.834644,
+      "imagesPerSecond": 2.440008463510957,
+      "cpuUsage": {
+        "user": 435039,
+        "system": 26887
+      },
+      "nodeRssPeak": 428679168,
+      "nodeMaxRssKiB": 422052,
+      "repositoryStubMs": 0.04005399999982728,
+      "stages": {
+        "decodeResizeMs": 174.79026700000009,
+        "decodeTotalMs": 346.29252899999983,
+        "previewResizeMs": 0.014726999999993495,
+        "thumbhashResizeMs": 28.180207999999993,
+        "thumbhashTotalMs": 48.04331899999988,
+        "thumbnailResizeMs": 47.603116999999884,
+        "previewTotalMs": 53.692051999999876,
+        "thumbnailTotalMs": 61.88318000000004
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "54cd30bd0b75bc07d3bfd733c2f9825df945623d5a9ade78aa0441b1e4fdc287"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "4ee127287473a878a251af55e2a630ae9ed763bc86080e64dc7c1362aed62c50"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 1.9052209999999998,
+      "wholeProcessMaxRssKiB": 422052
+    },
+    {
+      "variant": "direct",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 163.54940299999998,
+      "imagesPerSecond": 6.114360441902684,
+      "cpuUsage": {
+        "user": 196266,
+        "system": 20049
+      },
+      "nodeRssPeak": 382308352,
+      "nodeMaxRssKiB": 379644,
+      "repositoryStubMs": 0.03400899999996909,
+      "stages": {
+        "decodeResizeMs": 0.05054900000004636,
+        "decodeTotalMs": 105.84178900000006,
+        "previewResizeMs": 0.01392600000008315,
+        "thumbnailResizeMs": 28.56243799999993,
+        "thumbhashResizeMs": 32.58409800000004,
+        "thumbhashTotalMs": 52.16545199999996,
+        "thumbnailTotalMs": 51.727814999999964,
+        "previewTotalMs": 55.8497789999999
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "9d7e9f6078021525157f9bc9fb476f2a2ab541fa8f7e6f674a1cf57e55350ea0"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "188f7b4fdf18829c7e03974d209d48421be9f986377709b113a0e70c489901b5"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 1.6647729999999998,
+      "wholeProcessMaxRssKiB": 379644
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 339.165336,
+      "imagesPerSecond": 2.948414516040047,
+      "cpuUsage": {
+        "user": 362118,
+        "system": 32086
+      },
+      "nodeRssPeak": 419704832,
+      "nodeMaxRssKiB": 410508,
+      "repositoryStubMs": 0.03422599999976228,
+      "stages": {
+        "decodeTotalMs": 279.23359800000003,
+        "previewResizeMs": 0.015257999999903404,
+        "thumbhashResizeMs": 22.814930999999888,
+        "thumbhashTotalMs": 44.23445700000002,
+        "thumbnailResizeMs": 45.62267399999996,
+        "thumbnailTotalMs": 58.21479699999986,
+        "previewTotalMs": 57.92716499999983
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 1.835084,
+      "wholeProcessMaxRssKiB": 410508
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 371.1867299999999,
+      "imagesPerSecond": 2.694061827048613,
+      "cpuUsage": {
+        "user": 392618,
+        "system": 31128
+      },
+      "nodeRssPeak": 418590720,
+      "nodeMaxRssKiB": 413516,
+      "repositoryStubMs": 0.03262799999993149,
+      "stages": {
+        "decodeResizeMs": 184.22008600000004,
+        "decodeTotalMs": 307.0354339999999,
+        "previewResizeMs": 0.01593800000000556,
+        "thumbhashResizeMs": 9.539693999999827,
+        "thumbhashTotalMs": 23.640040999999883,
+        "thumbnailResizeMs": 51.015918000000056,
+        "previewTotalMs": 58.31152700000007,
+        "thumbnailTotalMs": 62.50269299999991
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 1.861124,
+      "wholeProcessMaxRssKiB": 413516
+    },
+    {
+      "variant": "margin2",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 476.693935,
+      "imagesPerSecond": 2.0977820915636363,
+      "cpuUsage": {
+        "user": 504119,
+        "system": 27824
+      },
+      "nodeRssPeak": 473702400,
+      "nodeMaxRssKiB": 466440,
+      "repositoryStubMs": 0.03245399999991605,
+      "stages": {
+        "decodeResizeMs": 197.208936,
+        "decodeTotalMs": 408.249149,
+        "previewResizeMs": 0.014875999999958367,
+        "thumbhashResizeMs": 22.872998000000052,
+        "thumbhashTotalMs": 35.91651999999999,
+        "thumbnailResizeMs": 55.9442610000001,
+        "previewTotalMs": 57.447541,
+        "thumbnailTotalMs": 66.76118900000006
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "3a3a61de29856d9e0d3d6981dc1f54ad2de0e25fad217aa381755f9f6c475fa8"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "260eb81d2d0a75ae0ece78d45f57008337f5c36124b45b0b5e12cec3ad0ad9c0"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 2.0231950000000003,
+      "wholeProcessMaxRssKiB": 466440
+    },
+    {
+      "variant": "direct",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 198.44316600000002,
+      "imagesPerSecond": 5.039226193357548,
+      "cpuUsage": {
+        "user": 223925,
+        "system": 26905
+      },
+      "nodeRssPeak": 438702080,
+      "nodeMaxRssKiB": 428804,
+      "repositoryStubMs": 0.03291799999988143,
+      "stages": {
+        "decodeResizeMs": 0.04920700000002398,
+        "decodeTotalMs": 136.77261799999997,
+        "previewResizeMs": 0.01728899999989153,
+        "thumbhashResizeMs": 13.313732999999957,
+        "thumbhashTotalMs": 24.226167000000032,
+        "thumbnailResizeMs": 43.90545499999985,
+        "thumbnailTotalMs": 58.01792299999988,
+        "previewTotalMs": 59.77298299999984
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "e5f786a1d850c770894c543585a4ff40ec9c3a27e20a2f5830cb5e3338750c66"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "866786a95262a69c6482002f53131b5ab9620c53e4c9940ce677183fa3189cd3"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 1.7102030000000001,
+      "wholeProcessMaxRssKiB": 428804
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 496.38317000000006,
+      "imagesPerSecond": 2.0145727342045054,
+      "cpuUsage": {
+        "user": 517367,
+        "system": 35833
+      },
+      "nodeRssPeak": 419405824,
+      "nodeMaxRssKiB": 415720,
+      "repositoryStubMs": 0.03362799999990784,
+      "stages": {
+        "decodeTotalMs": 436.079342,
+        "previewResizeMs": 0.013915999999881024,
+        "thumbnailResizeMs": 31.349189000000024,
+        "thumbhashResizeMs": 31.475365999999894,
+        "thumbhashTotalMs": 45.80067400000007,
+        "thumbnailTotalMs": 55.28765999999996,
+        "previewTotalMs": 58.318743999999924
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 2.005409,
+      "wholeProcessMaxRssKiB": 415720
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 604.7700130000001,
+      "imagesPerSecond": 1.6535211377949057,
+      "cpuUsage": {
+        "user": 669181,
+        "system": 35965
+      },
+      "nodeRssPeak": 453439488,
+      "nodeMaxRssKiB": 443452,
+      "repositoryStubMs": 0.03547699999990073,
+      "stages": {
+        "decodeResizeMs": 348.11619799999994,
+        "decodeTotalMs": 540.3236469999999,
+        "previewResizeMs": 0.013768000000027314,
+        "thumbnailResizeMs": 31.384710999999925,
+        "thumbhashResizeMs": 31.195762999999943,
+        "thumbhashTotalMs": 47.87944800000014,
+        "thumbnailTotalMs": 47.4034180000001,
+        "previewTotalMs": 62.512755999999854
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 2.147583,
+      "wholeProcessMaxRssKiB": 443452
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 4985.318386,
+      "imagesPerSecond": 4.011779880732376,
+      "cpuUsage": {
+        "user": 9262555,
+        "system": 384473
+      },
+      "nodeRssPeak": 801968128,
+      "nodeMaxRssKiB": 785604,
+      "repositoryStubMs": 0.2619049999989329,
+      "stages": {
+        "decodeTotalMs": 12294.935107999998,
+        "previewResizeMs": 0.2745659999993677,
+        "previewTotalMs": 1333.1833780000002,
+        "thumbnailResizeMs": 1395.1625840000027,
+        "thumbhashResizeMs": 1349.5443049999994,
+        "thumbhashTotalMs": 1577.2601910000003,
+        "thumbnailTotalMs": 1834.5804169999983
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20",
+      "round": 1,
+      "wholeProcessCpuSeconds": 11.219393,
+      "wholeProcessMaxRssKiB": 785604
+    },
+    {
+      "variant": "baseline",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 6173.251318,
+      "imagesPerSecond": 3.239783862627444,
+      "cpuUsage": {
+        "user": 11511164,
+        "system": 547155
+      },
+      "nodeRssPeak": 719605760,
+      "nodeMaxRssKiB": 703796,
+      "repositoryStubMs": 0.508281999999781,
+      "stages": {
+        "decodeResizeMs": 9520.406156999998,
+        "decodeTotalMs": 15834.586728,
+        "previewResizeMs": 0.24691699999880257,
+        "thumbnailResizeMs": 1420.9786559999993,
+        "previewTotalMs": 1577.9587269999997,
+        "thumbhashResizeMs": 1562.1100909999996,
+        "thumbhashTotalMs": 1820.2787320000025,
+        "thumbnailTotalMs": 1909.406723999998
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20",
+      "round": 1,
+      "wholeProcessCpuSeconds": 13.639597,
+      "wholeProcessMaxRssKiB": 703796
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 2,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 5143.388813,
+      "imagesPerSecond": 3.8884868959254395,
+      "cpuUsage": {
+        "user": 9608150,
+        "system": 472801
+      },
+      "nodeRssPeak": 890228736,
+      "nodeMaxRssKiB": 882548,
+      "repositoryStubMs": 0.9686640000024909,
+      "stages": {
+        "decodeTotalMs": 12416.559237999998,
+        "previewResizeMs": 0.2436049999998886,
+        "thumbhashResizeMs": 1637.4857080000015,
+        "thumbnailResizeMs": 1326.0714089999976,
+        "previewTotalMs": 2047.3194309999994,
+        "thumbhashTotalMs": 2140.239663000002,
+        "thumbnailTotalMs": 2225.518979000002
+      },
+      "vipsThreads": 2,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20-threads",
+      "round": 1,
+      "wholeProcessCpuSeconds": 11.696814,
+      "wholeProcessMaxRssKiB": 882548
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 5306.259706,
+      "imagesPerSecond": 3.7691332705380405,
+      "cpuUsage": {
+        "user": 9934988,
+        "system": 404510
+      },
+      "nodeRssPeak": 826662912,
+      "nodeMaxRssKiB": 808824,
+      "repositoryStubMs": 0.37006899999960297,
+      "stages": {
+        "decodeTotalMs": 13515.920595,
+        "previewResizeMs": 0.303530999998884,
+        "thumbnailResizeMs": 1256.6015159999968,
+        "previewTotalMs": 1359.4720110000023,
+        "thumbhashResizeMs": 1458.885238,
+        "thumbhashTotalMs": 1557.9444469999996,
+        "thumbnailTotalMs": 1641.1830250000014
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20-threads",
+      "round": 1,
+      "wholeProcessCpuSeconds": 11.985759999999999,
+      "wholeProcessMaxRssKiB": 808824
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "4k.mp4"
+      ],
+      "milliseconds": 1477.1559459999999,
+      "imagesPerSecond": 0.6769765932350653,
+      "cpuUsage": {
+        "user": 58345,
+        "system": 12940
+      },
+      "nodeRssPeak": 330190848,
+      "nodeMaxRssKiB": 322452,
+      "repositoryStubMs": 0.03011500000002343,
+      "stages": {
+        "videoThumbnailsMs": 1429.2935819999998,
+        "decodeResizeMs": 0.04631199999994351,
+        "decodeTotalMs": 28.805460999999923,
+        "thumbhashResizeMs": 13.145653000000038,
+        "thumbhashTotalMs": 17.92540599999984
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "85b937e26ee827fb8bdd4d8f202229a108f658253472181074a01238cf36b96d"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c0da57b1bf2ebec3fcd5d4ffddbd384003f758a450e90941d337055bbbea5e33"
+        }
+      ],
+      "thumbhashes": [
+        "20f809b48c70847d8878878887888f87f79877"
+      ],
+      "phase": "video-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 4.229794,
+      "wholeProcessMaxRssKiB": 322452
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "4k.mp4"
+      ],
+      "milliseconds": 1824.861564,
+      "imagesPerSecond": 0.5479867732038001,
+      "cpuUsage": {
+        "user": 75105,
+        "system": 14950
+      },
+      "nodeRssPeak": 324857856,
+      "nodeMaxRssKiB": 323120,
+      "repositoryStubMs": 0.03489799999965726,
+      "stages": {
+        "videoThumbnailsMs": 1769.979069,
+        "decodeResizeMs": 0.047348000000056345,
+        "decodeTotalMs": 29.151678000000175,
+        "thumbhashResizeMs": 14.122730000000047,
+        "thumbhashTotalMs": 24.50366699999995
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "85b937e26ee827fb8bdd4d8f202229a108f658253472181074a01238cf36b96d"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c0da57b1bf2ebec3fcd5d4ffddbd384003f758a450e90941d337055bbbea5e33"
+        }
+      ],
+      "thumbhashes": [
+        "20f809b48c70847d8878878887888f87f79877"
+      ],
+      "phase": "video-single",
+      "round": 1,
+      "wholeProcessCpuSeconds": 4.39363,
+      "wholeProcessMaxRssKiB": 323376
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 374.71747000000005,
+      "imagesPerSecond": 2.6686772837145805,
+      "cpuUsage": {
+        "user": 400025,
+        "system": 27037
+      },
+      "nodeRssPeak": 429817856,
+      "nodeMaxRssKiB": 423840,
+      "repositoryStubMs": 0.036522999999988315,
+      "stages": {
+        "decodeResizeMs": 190.195645,
+        "decodeTotalMs": 313.72727299999997,
+        "previewResizeMs": 0.015134999999872889,
+        "thumbhashResizeMs": 23.051561999999876,
+        "thumbhashTotalMs": 48.1474189999999,
+        "thumbnailResizeMs": 49.328228999999965,
+        "previewTotalMs": 57.19359600000007,
+        "thumbnailTotalMs": 59.28263500000003
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 1.87493,
+      "wholeProcessMaxRssKiB": 423840
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 335.94670900000006,
+      "imagesPerSecond": 2.976662587279579,
+      "cpuUsage": {
+        "user": 361632,
+        "system": 26060
+      },
+      "nodeRssPeak": 440102912,
+      "nodeMaxRssKiB": 429788,
+      "repositoryStubMs": 0.03603300000008858,
+      "stages": {
+        "decodeTotalMs": 277.72245799999996,
+        "previewResizeMs": 0.014460000000099171,
+        "thumbhashResizeMs": 26.995492000000013,
+        "thumbhashTotalMs": 40.83743900000013,
+        "thumbnailResizeMs": 42.551079999999956,
+        "previewTotalMs": 56.17367400000012,
+        "thumbnailTotalMs": 56.53199700000005
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 1.870946,
+      "wholeProcessMaxRssKiB": 429788
+    },
+    {
+      "variant": "direct",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 182.64059700000007,
+      "imagesPerSecond": 5.475233964549512,
+      "cpuUsage": {
+        "user": 208379,
+        "system": 30866
+      },
+      "nodeRssPeak": 438181888,
+      "nodeMaxRssKiB": 427912,
+      "repositoryStubMs": 0.04785200000014811,
+      "stages": {
+        "decodeResizeMs": 0.044421000000056665,
+        "decodeTotalMs": 105.94054499999993,
+        "previewResizeMs": 0.015221999999994296,
+        "thumbhashResizeMs": 26.74058500000001,
+        "thumbhashTotalMs": 58.44241499999998,
+        "thumbnailResizeMs": 57.98189000000002,
+        "previewTotalMs": 74.71844400000009,
+        "thumbnailTotalMs": 75.0490000000002
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "9d7e9f6078021525157f9bc9fb476f2a2ab541fa8f7e6f674a1cf57e55350ea0"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "188f7b4fdf18829c7e03974d209d48421be9f986377709b113a0e70c489901b5"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 1.6760359999999999,
+      "wholeProcessMaxRssKiB": 427912
+    },
+    {
+      "variant": "margin2",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg"
+      ],
+      "milliseconds": 411.6636840000001,
+      "imagesPerSecond": 2.4291673977245942,
+      "cpuUsage": {
+        "user": 440301,
+        "system": 20120
+      },
+      "nodeRssPeak": 428552192,
+      "nodeMaxRssKiB": 418508,
+      "repositoryStubMs": 0.03732000000013613,
+      "stages": {
+        "decodeResizeMs": 173.299039,
+        "decodeTotalMs": 343.61201400000004,
+        "previewResizeMs": 0.015471000000161439,
+        "thumbhashResizeMs": 13.471379999999954,
+        "thumbhashTotalMs": 28.78736499999991,
+        "previewTotalMs": 51.841572999999926,
+        "thumbnailResizeMs": 56.80396100000007,
+        "thumbnailTotalMs": 66.42398800000001
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "54cd30bd0b75bc07d3bfd733c2f9825df945623d5a9ade78aa0441b1e4fdc287"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "4ee127287473a878a251af55e2a630ae9ed763bc86080e64dc7c1362aed62c50"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8"
+      ],
+      "phase": "photo12-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 1.9150639999999999,
+      "wholeProcessMaxRssKiB": 418508
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 618.8757889999999,
+      "imagesPerSecond": 1.6158331247952569,
+      "cpuUsage": {
+        "user": 676940,
+        "system": 44000
+      },
+      "nodeRssPeak": 459632640,
+      "nodeMaxRssKiB": 448860,
+      "repositoryStubMs": 0.039569999999685024,
+      "stages": {
+        "decodeResizeMs": 356.70847500000013,
+        "decodeTotalMs": 552.0611289999999,
+        "previewResizeMs": 0.01565600000003542,
+        "thumbhashResizeMs": 28.82134400000018,
+        "thumbhashTotalMs": 42.85690999999997,
+        "thumbnailResizeMs": 42.62234000000012,
+        "thumbnailTotalMs": 54.572554999999966,
+        "previewTotalMs": 64.87942300000009
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 2.1597910000000002,
+      "wholeProcessMaxRssKiB": 448860
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 509.51791100000014,
+      "imagesPerSecond": 1.9626395430091166,
+      "cpuUsage": {
+        "user": 526980,
+        "system": 41550
+      },
+      "nodeRssPeak": 466452480,
+      "nodeMaxRssKiB": 455520,
+      "repositoryStubMs": 0.034243999999716834,
+      "stages": {
+        "decodeTotalMs": 433.5021959999999,
+        "previewResizeMs": 0.016524000000117667,
+        "thumbhashResizeMs": 21.403695999999854,
+        "thumbhashTotalMs": 37.87545300000011,
+        "thumbnailResizeMs": 64.05874699999981,
+        "previewTotalMs": 64.97831799999994,
+        "thumbnailTotalMs": 74.26651700000002
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 2.0085319999999998,
+      "wholeProcessMaxRssKiB": 455520
+    },
+    {
+      "variant": "direct",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 201.481632,
+      "imagesPerSecond": 4.963231586291697,
+      "cpuUsage": {
+        "user": 223450,
+        "system": 31193
+      },
+      "nodeRssPeak": 406876160,
+      "nodeMaxRssKiB": 397596,
+      "repositoryStubMs": 0.03534500000000662,
+      "stages": {
+        "decodeResizeMs": 0.04630399999996371,
+        "decodeTotalMs": 135.09764700000005,
+        "previewResizeMs": 0.016053000000056272,
+        "thumbhashResizeMs": 29.328486999999996,
+        "thumbnailResizeMs": 31.061218999999937,
+        "thumbhashTotalMs": 51.86846700000001,
+        "thumbnailTotalMs": 57.21066900000005,
+        "previewTotalMs": 64.42197600000009
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "e5f786a1d850c770894c543585a4ff40ec9c3a27e20a2f5830cb5e3338750c66"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "866786a95262a69c6482002f53131b5ab9620c53e4c9940ce677183fa3189cd3"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 1.6925849999999998,
+      "wholeProcessMaxRssKiB": 397596
+    },
+    {
+      "variant": "margin2",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "sony24.jpg"
+      ],
+      "milliseconds": 475.43089499999996,
+      "imagesPerSecond": 2.1033551048465204,
+      "cpuUsage": {
+        "user": 493333,
+        "system": 25806
+      },
+      "nodeRssPeak": 442351616,
+      "nodeMaxRssKiB": 431984,
+      "repositoryStubMs": 0.03408799999988332,
+      "stages": {
+        "decodeResizeMs": 194.56021299999998,
+        "decodeTotalMs": 401.7725109999999,
+        "previewResizeMs": 0.018116999999847394,
+        "thumbhashResizeMs": 22.973756999999978,
+        "thumbhashTotalMs": 39.633835999999974,
+        "previewTotalMs": 54.002459000000044,
+        "thumbnailResizeMs": 62.61008400000014,
+        "thumbnailTotalMs": 72.01867399999992
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "3a3a61de29856d9e0d3d6981dc1f54ad2de0e25fad217aa381755f9f6c475fa8"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "260eb81d2d0a75ae0ece78d45f57008337f5c36124b45b0b5e12cec3ad0ad9c0"
+        }
+      ],
+      "thumbhashes": [
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo24-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 1.9401059999999999,
+      "wholeProcessMaxRssKiB": 431984
+    },
+    {
+      "variant": "baseline",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 6245.3974100000005,
+      "imagesPerSecond": 3.2023582627386395,
+      "cpuUsage": {
+        "user": 11707650,
+        "system": 598343
+      },
+      "nodeRssPeak": 749056000,
+      "nodeMaxRssKiB": 738924,
+      "repositoryStubMs": 0.30861800000093353,
+      "stages": {
+        "decodeResizeMs": 9682.64887,
+        "decodeTotalMs": 15991.926648999999,
+        "previewResizeMs": 0.25267700000063087,
+        "thumbnailResizeMs": 1361.8919950000004,
+        "thumbhashResizeMs": 1608.3797939999977,
+        "previewTotalMs": 1564.9024409999995,
+        "thumbhashTotalMs": 1872.4068799999995,
+        "thumbnailTotalMs": 1971.9908769999988
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20",
+      "round": 2,
+      "wholeProcessCpuSeconds": 13.875391,
+      "wholeProcessMaxRssKiB": 738924
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 4899.010227999999,
+      "imagesPerSecond": 4.082457286104691,
+      "cpuUsage": {
+        "user": 9301464,
+        "system": 435247
+      },
+      "nodeRssPeak": 754626560,
+      "nodeMaxRssKiB": 736940,
+      "repositoryStubMs": 0.47204100000089966,
+      "stages": {
+        "decodeTotalMs": 12516.533417999999,
+        "previewResizeMs": 1.2605310000017198,
+        "thumbnailResizeMs": 1327.3802690000023,
+        "previewTotalMs": 1430.2005719999972,
+        "thumbhashResizeMs": 1330.8590539999989,
+        "thumbhashTotalMs": 1579.4023689999995,
+        "thumbnailTotalMs": 1853.169682999998
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20",
+      "round": 2,
+      "wholeProcessCpuSeconds": 11.314569,
+      "wholeProcessMaxRssKiB": 736940
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 0,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 5035.208761,
+      "imagesPerSecond": 3.9720299493655893,
+      "cpuUsage": {
+        "user": 9327130,
+        "system": 325530
+      },
+      "nodeRssPeak": 806227968,
+      "nodeMaxRssKiB": 787332,
+      "repositoryStubMs": 0.32431900000165115,
+      "stages": {
+        "decodeTotalMs": 12428.436345,
+        "previewResizeMs": 0.22208599999908074,
+        "thumbnailResizeMs": 1202.5732100000002,
+        "previewTotalMs": 1279.3173540000003,
+        "thumbhashResizeMs": 1267.6682149999988,
+        "thumbhashTotalMs": 1463.9106939999988,
+        "thumbnailTotalMs": 1696.4172190000008
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20-threads",
+      "round": 2,
+      "wholeProcessCpuSeconds": 11.208169,
+      "wholeProcessMaxRssKiB": 787332
+    },
+    {
+      "variant": "candidate",
+      "count": 20,
+      "jobs": 3,
+      "threads": 2,
+      "inputs": [
+        "lumix12.jpg",
+        "sony24.jpg"
+      ],
+      "milliseconds": 5136.0809659999995,
+      "imagesPerSecond": 3.8940196099704556,
+      "cpuUsage": {
+        "user": 9630915,
+        "system": 439635
+      },
+      "nodeRssPeak": 935874560,
+      "nodeMaxRssKiB": 914068,
+      "repositoryStubMs": 0.3651339999978518,
+      "stages": {
+        "decodeTotalMs": 12480.307146999996,
+        "previewResizeMs": 0.23908499999993182,
+        "thumbhashResizeMs": 1503.4327029999997,
+        "thumbnailResizeMs": 1194.4652930000013,
+        "previewTotalMs": 2043.0300509999997,
+        "thumbhashTotalMs": 1977.0806090000015,
+        "thumbnailTotalMs": 2143.184254999999
+      },
+      "vipsThreads": 2,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "4f4bfac45ab66d45f3ad950978c7eba51059f85800d1aae07c9d1b2e19561e02"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c8e522f9de19eade72631875af8fade8cecf98fb0a5f47e335f7e03959d9ba38"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        },
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "6c44f3937e52ed93fd3f701786257dcb87c83adccb1d5b2905dea4345bb7b2d4"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "82a15bec9bc6f09942213b8803d32dab5651666bcf7c973de7feee93624ffbd1"
+        }
+      ],
+      "thumbhashes": [
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "56180a1d82427ac7808778a57928878948847f64f8",
+        "1808061d846e4a68995947b18309a8530486545047",
+        "1808061d846e4a68995947b18309a8530486545047"
+      ],
+      "phase": "photo-batch20-threads",
+      "round": 2,
+      "wholeProcessCpuSeconds": 11.696773,
+      "wholeProcessMaxRssKiB": 914068
+    },
+    {
+      "variant": "baseline",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "4k.mp4"
+      ],
+      "milliseconds": 1785.53052,
+      "imagesPerSecond": 0.5600576348591342,
+      "cpuUsage": {
+        "user": 64409,
+        "system": 15621
+      },
+      "nodeRssPeak": 324751360,
+      "nodeMaxRssKiB": 317140,
+      "repositoryStubMs": 0.030606000000034328,
+      "stages": {
+        "videoThumbnailsMs": 1737.8116199999997,
+        "decodeResizeMs": 0.053492000000005646,
+        "decodeTotalMs": 28.095506000000114,
+        "thumbhashResizeMs": 12.962216999999782,
+        "thumbhashTotalMs": 18.445176999999603
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "85b937e26ee827fb8bdd4d8f202229a108f658253472181074a01238cf36b96d"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c0da57b1bf2ebec3fcd5d4ffddbd384003f758a450e90941d337055bbbea5e33"
+        }
+      ],
+      "thumbhashes": [
+        "20f809b48c70847d8878878887888f87f79877"
+      ],
+      "phase": "video-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 4.348427,
+      "wholeProcessMaxRssKiB": 317140
+    },
+    {
+      "variant": "candidate",
+      "count": 1,
+      "jobs": 1,
+      "threads": 0,
+      "inputs": [
+        "4k.mp4"
+      ],
+      "milliseconds": 1488.0992309999997,
+      "imagesPerSecond": 0.6719981968729344,
+      "cpuUsage": {
+        "user": 67412,
+        "system": 6643
+      },
+      "nodeRssPeak": 323198976,
+      "nodeMaxRssKiB": 318440,
+      "repositoryStubMs": 0.03128400000014153,
+      "stages": {
+        "videoThumbnailsMs": 1439.0494659999997,
+        "decodeResizeMs": 0.04514699999981531,
+        "decodeTotalMs": 28.78613499999983,
+        "thumbhashResizeMs": 13.698793999999907,
+        "thumbhashTotalMs": 19.15241700000024
+      },
+      "vipsThreads": 1,
+      "availableCpus": 2,
+      "files": [
+        {
+          "type": "preview",
+          "isEdited": false,
+          "sha256": "85b937e26ee827fb8bdd4d8f202229a108f658253472181074a01238cf36b96d"
+        },
+        {
+          "type": "thumbnail",
+          "isEdited": false,
+          "sha256": "c0da57b1bf2ebec3fcd5d4ffddbd384003f758a450e90941d337055bbbea5e33"
+        }
+      ],
+      "thumbhashes": [
+        "20f809b48c70847d8878878887888f87f79877"
+      ],
+      "phase": "video-single",
+      "round": 2,
+      "wholeProcessCpuSeconds": 4.247865999999999,
+      "wholeProcessMaxRssKiB": 318440
+    }
+  ],
+  "node": "v24.13.1",
+  "vips": "8.18.7",
+  "cpu": "Intel Core i5-13420H, CPU affinity 0,2, two distinct physical cores",
+  "candidateSourceSha256": "cb5db2a1a2fd54c7f2607a0bdccd9bf8ab11e927535d44505977d9ecef7dec12"
+}
