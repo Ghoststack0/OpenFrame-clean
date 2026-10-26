@@ -2,7 +2,8 @@ import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto.js';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto.js';
-import { AssetFileType, SharedLinkType } from 'src/enum.js';
+import { AuthDto } from 'src/dtos/auth.dto.js';
+import { AssetFileType, AssetType, AssetVisibility, Permission, SharedLinkType } from 'src/enum.js';
 import { AccessRepository } from 'src/repositories/access.repository.js';
 import { AlbumRepository } from 'src/repositories/album.repository.js';
 import { AssetRepository } from 'src/repositories/asset.repository.js';
@@ -15,12 +16,21 @@ import { UserRepository } from 'src/repositories/user.repository.js';
 import { DB } from 'src/schema/index.js';
 import { AssetMediaService } from 'src/services/asset-media.service.js';
 import { AssetService } from 'src/services/asset.service.js';
+import { checkAccess } from 'src/utils/access.js';
 import { ImmichFileResponse } from 'src/utils/file.js';
 import { mediumFactory, newMediumService } from 'test/medium.factory.js';
 import { factory } from 'test/small.factory.js';
 import { getKyselyDB } from 'test/utils.js';
 
 let defaultDatabase: Kysely<DB>;
+
+const allowed = (promise: Promise<unknown>) =>
+  promise
+    .then(() => true)
+    .catch((error: Error) => {
+      expect(error.message).toMatch(/Not found or no asset\.(view|download) access/);
+      return false;
+    });
 
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(AssetMediaService, {
@@ -417,6 +427,106 @@ describe(AssetService.name, () => {
       const resultEdited = await sut.viewThumbnail(auth, asset.id, { size: AssetMediaSize.THUMBNAIL, edited: true });
       expect(resultEdited).toBeInstanceOf(ImmichFileResponse);
       expect((resultEdited as ImmichFileResponse).path).toBe('/edited/thumbnail.jpg');
+    });
+  });
+
+  describe('media access', () => {
+    it('should grant exactly what the access check grants for every serving method', async () => {
+      const { sut, ctx } = setup();
+      const access = ctx.get(AccessRepository);
+      const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+      const { user: owner } = await ctx.newUser();
+      const { user: stranger } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      const { user: albumMember } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: owner.id, sharedWithId: partner.id });
+
+      const newVideo = async (dto: { visibility?: AssetVisibility; deletedAt?: Date } = {}) => {
+        const { asset } = await ctx.newAsset({ ownerId: owner.id, type: AssetType.Video, ...dto });
+        await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Thumbnail, path: `/thumbs/${asset.id}.webp` });
+        return asset;
+      };
+      const timeline = await newVideo();
+      const locked = await newVideo({ visibility: AssetVisibility.Locked });
+      const trashed = await newVideo({ deletedAt: new Date() });
+      const inAlbum = await newVideo();
+      const { album } = await ctx.newAlbum({ ownerId: owner.id }, [inAlbum.id]);
+      await ctx.newAlbumUser({ albumId: album.id, userId: albumMember.id });
+      const linked = await newVideo();
+      const sharedLink = await sharedLinkRepo.create({
+        key: randomBytes(50),
+        type: SharedLinkType.Individual,
+        userId: owner.id,
+        allowDownload: true,
+        allowUpload: false,
+        assetIds: [linked.id],
+      });
+      const missing = factory.uuid();
+
+      const auths = {
+        owner: factory.auth({ user: { id: owner.id } }),
+        ownerElevated: factory.auth({ user: { id: owner.id }, session: { hasElevatedPermission: true } }),
+        ownerApiKey: factory.auth({ user: { id: owner.id }, apiKey: {} }),
+        stranger: factory.auth({ user: { id: stranger.id } }),
+        partner: factory.auth({ user: { id: partner.id } }),
+        albumMember: factory.auth({ user: { id: albumMember.id } }),
+        // The link resolves to its owner's user, but grants only the linked asset.
+        sharedLink: factory.auth({ user: { id: owner.id }, sharedLink }),
+      };
+      const assets = { timeline, locked, trashed, inAlbum, linked, missing: { id: missing } };
+
+      const expected: Record<keyof typeof auths, (keyof typeof assets)[]> = {
+        owner: ['timeline', 'trashed', 'inAlbum', 'linked'],
+        ownerElevated: ['timeline', 'locked', 'trashed', 'inAlbum', 'linked'],
+        ownerApiKey: ['timeline', 'trashed', 'inAlbum', 'linked'],
+        stranger: [],
+        partner: ['timeline', 'inAlbum', 'linked'],
+        albumMember: ['inAlbum'],
+        sharedLink: ['linked'],
+      };
+
+      for (const [authName, auth] of Object.entries(auths) as [keyof typeof auths, AuthDto][]) {
+        for (const [assetName, { id }] of Object.entries(assets) as [keyof typeof assets, { id: string }][]) {
+          const reference = async (permission: Permission) => {
+            const granted = await checkAccess(access, { auth, permission, ids: [id] });
+            return granted.has(id);
+          };
+          const view = await reference(Permission.AssetView);
+          const download = await reference(Permission.AssetDownload);
+          const context = `${authName} -> ${assetName}`;
+
+          expect(view, context).toBe(expected[authName].includes(assetName));
+          expect(await allowed(sut.viewThumbnail(auth, id, { size: AssetMediaSize.THUMBNAIL })), context).toBe(view);
+          expect(await allowed(sut.playbackVideo(auth, id)), context).toBe(view);
+          expect(await allowed(sut.downloadOriginal(auth, id, {})), context).toBe(download);
+        }
+      }
+    });
+
+    it('should serve the owner the same file as before', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Thumbnail, path: '/thumbs/a.webp' });
+      await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.EncodedVideo, path: '/encoded/a.mp4' });
+      const auth = factory.auth({ user: { id: user.id } });
+
+      await expect(sut.viewThumbnail(auth, asset.id, { size: AssetMediaSize.THUMBNAIL })).resolves.toMatchObject({
+        path: '/thumbs/a.webp',
+      });
+      await expect(sut.playbackVideo(auth, asset.id)).resolves.toMatchObject({ path: '/encoded/a.mp4' });
+      await expect(sut.downloadOriginal(auth, asset.id, {})).resolves.toMatchObject({ path: asset.originalPath });
+    });
+
+    it('should not play an image asset as video', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Image });
+
+      await expect(sut.playbackVideo(factory.auth({ user: { id: user.id } }), asset.id)).rejects.toThrow(
+        'Asset not found or asset is not a video',
+      );
     });
   });
 });
