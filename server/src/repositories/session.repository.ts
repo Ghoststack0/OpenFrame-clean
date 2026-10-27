@@ -2,16 +2,90 @@ import { Injectable } from '@nestjs/common';
 import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { DateTime } from 'luxon';
 import { InjectKysely } from 'nestjs-kysely';
+import { timingSafeEqual } from 'node:crypto';
 import type { Insertable, Kysely, Updateable } from 'kysely';
 import { columns } from 'src/database.js';
 import { DummyValue, GenerateSql } from 'src/decorators.js';
+import { UserStatus } from 'src/enum.js';
 import { DB } from 'src/schema/index.js';
+import { PairingTable } from 'src/schema/tables/pairing.table.js';
 import { SessionTable } from 'src/schema/tables/session.table.js';
 import { asUuid } from 'src/utils/database.js';
 
 @Injectable()
 export class SessionRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
+
+  async createPairing(dto: Insertable<PairingTable>) {
+    return this.db.transaction().execute(async (tx) => {
+      // Serialize issuance per session so only its latest QR remains valid.
+      await tx.selectFrom('session').select('id').where('id', '=', dto.sessionId).forUpdate().executeTakeFirstOrThrow();
+      await tx
+        .deleteFrom('pairing')
+        .where((eb) => eb.or([eb('expiresAt', '<=', new Date()), eb('sessionId', '=', dto.sessionId)]))
+        .execute();
+      return tx.insertInto('pairing').values(dto).returningAll().executeTakeFirstOrThrow();
+    });
+  }
+
+  getPairing(id: string, sessionId: string) {
+    return this.db
+      .selectFrom('pairing')
+      .select(['expiresAt', 'redeemedAt', 'attempts'])
+      .where('id', '=', id)
+      .where('sessionId', '=', sessionId)
+      .executeTakeFirst();
+  }
+
+  async redeemPairing(
+    id: string,
+    secretHash: Buffer,
+    device: Pick<Insertable<SessionTable>, 'token' | 'deviceType' | 'deviceOS' | 'appVersion'>,
+  ) {
+    return this.db.transaction().execute(async (tx) => {
+      const pairing = await tx.selectFrom('pairing').selectAll().where('id', '=', id).forUpdate().executeTakeFirst();
+      if (!pairing || pairing.redeemedAt || pairing.expiresAt <= new Date()) {
+        return { status: 'invalid' } as const;
+      }
+      if (pairing.attempts >= 5) {
+        return { status: 'locked' } as const;
+      }
+      if (!timingSafeEqual(pairing.secretHash, secretHash)) {
+        await tx
+          .updateTable('pairing')
+          .set({ attempts: pairing.attempts + 1 })
+          .where('id', '=', id)
+          .execute();
+        return { status: 'invalid' } as const;
+      }
+      const source = await tx
+        .selectFrom('session')
+        .innerJoin('user', 'user.id', 'session.userId')
+        .select([
+          'session.userId',
+          'session.expiresAt',
+          'session.parentId',
+          'session.oauthSid',
+          'session.oauthBearerToken',
+        ])
+        .where('session.id', '=', pairing.sessionId)
+        .where('user.deletedAt', 'is', null)
+        .where('user.status', '=', UserStatus.Active)
+        .where((eb) => eb.or([eb('user.shouldChangePassword', '=', false), eb('user.password', 'is', null)]))
+        .where((eb) => eb.or([eb('session.expiresAt', 'is', null), eb('session.expiresAt', '>', new Date())]))
+        .forShare('session')
+        .executeTakeFirst();
+      if (!source) {
+        return { status: 'invalid' } as const;
+      }
+      await tx
+        .insertInto('session')
+        .values({ ...device, ...source, pinExpiresAt: null })
+        .execute();
+      await tx.updateTable('pairing').set({ redeemedAt: new Date() }).where('id', '=', id).execute();
+      return { status: 'redeemed', userId: source.userId } as const;
+    });
+  }
 
   cleanup() {
     return this.db

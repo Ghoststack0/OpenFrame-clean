@@ -157,3 +157,26 @@ export class OAuthConfigDto extends createZodDto(OAuthConfigSchema) {}
 export class OAuthAuthorizeResponseDto extends createZodDto(OAuthAuthorizeResponseSchema) {}
 export class OAuthBackchannelLogoutDto extends createZodDto(OAuthBackchannelLogoutSchema) {}
 export class AuthStatusResponseDto extends createZodDto(AuthStatusResponseSchema) {}
+
+const pairingCode = z
+  .string()
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[A-Za-z0-9_-]{43}$/);
+
+export class PairingRedeemDto extends createZodDto(z.object({ code: pairingCode }).meta({ id: 'PairingRedeemDto' })) {}
+
+export class PairingResponseDto extends createZodDto(
+  z
+    .object({
+      id: z.uuid(),
+      code: pairingCode,
+      expiresAt: z.iso.datetime(),
+      serverUrls: z.array(z.url()).min(1),
+    })
+    .meta({ id: 'PairingResponseDto' }),
+) {}
+
+export class PairingStatusDto extends createZodDto(
+  z
+    .object({ status: z.enum(['pending', 'redeemed', 'expired', 'locked']).meta({ id: 'PairingState' }) })
+    .meta({ id: 'PairingStatusDto' }),
+) {}

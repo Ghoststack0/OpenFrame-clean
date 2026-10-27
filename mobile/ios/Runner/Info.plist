@@ -129,7 +129,7 @@
       <string>_CC1AD845._googlecast._tcp</string>
     </array>
     <key>NSCameraUsageDescription</key>
-    <string>We need to access the camera to let you take beautiful video using this app</string>
+    <string>We need to access the camera to scan QR codes for signing in and to let you take beautiful video using this app</string>
     <key>NSFaceIDUsageDescription</key>
     <string>We need to use FaceID to allow access to your locked folder</string>
     <key>NSLocalNetworkUsageDescription</key>

@@ -1526,6 +1526,18 @@ export type LogoutResponseDto = {
     /** Logout successful */
     successful: boolean;
 };
+export type PairingResponseDto = {
+    code: string;
+    expiresAt: string;
+    id: string;
+    serverUrls: string[];
+};
+export type PairingRedeemDto = {
+    code: string;
+};
+export type PairingStatusDto = {
+    status: PairingState;
+};
 export type PinCodeResetDto = {
     /** User password (required if PIN code is not provided) */
     password?: string;
@@ -5388,6 +5400,46 @@ export function logout(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Create phone pairing code
+ */
+export function createPairing(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PairingResponseDto;
+    }>("/auth/pairing", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Redeem phone pairing code
+ */
+export function redeemPairing({ pairingRedeemDto }: {
+    pairingRedeemDto: PairingRedeemDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LoginResponseDto;
+    }>("/auth/pairing/redeem", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: pairingRedeemDto
+    })));
+}
+/**
+ * Get phone pairing status
+ */
+export function getPairingStatus({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PairingStatusDto;
+    }>(`/auth/pairing/${encodeURIComponent(id)}`, {
+        ...opts
+    }));
+}
+/**
  * Reset pin code
  */
 export function resetPinCode({ pinCodeResetDto }: {
@@ -8638,6 +8690,12 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
+}
+export enum PairingState {
+    Pending = "pending",
+    Redeemed = "redeemed",
+    Expired = "expired",
+    Locked = "locked"
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
