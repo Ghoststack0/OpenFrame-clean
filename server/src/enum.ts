@@ -941,6 +941,7 @@ export enum JobName {
   PersonGenerateThumbnail = 'PersonGenerateThumbnail',
 
   SessionCleanup = 'SessionCleanup',
+  UploadSessionCleanup = 'UploadSessionCleanup',
 
   SendMail = 'SendMail',
 

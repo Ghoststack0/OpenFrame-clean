@@ -6,20 +6,23 @@ import {
   AssetUploadAction,
   AssetVisibility,
   Permission,
+  RESUMABLE_UPLOAD_THRESHOLD,
   addAssetsToAlbum,
   checkBulkUpload,
   createAlbum,
   defaults,
   getAllAlbums,
   getSupportedMediaTypes,
+  uploadResumable,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
 import { Matcher, watch as watchFs } from 'chokidar';
 import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import micromatch from 'micromatch';
-import { Stats, createReadStream, existsSync } from 'node:fs';
-import { stat, unlink } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { Stats, createReadStream, existsSync, openAsBlob } from 'node:fs';
+import { mkdir, readFile, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import path, { basename } from 'node:path';
 import { Queue } from 'src/queue.js';
 import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 } from 'src/utils.js';
@@ -47,6 +50,7 @@ export interface UploadOptionsDto {
   watch?: boolean;
   jsonOutput?: boolean;
   signal?: AbortSignal;
+  configDirectory?: string;
 }
 
 class UploadFile extends File {
@@ -152,6 +156,7 @@ export const startWatch = async (
 };
 
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
+  options = { ...options, configDirectory: baseOptions.configDirectory };
   await authenticate(baseOptions);
   await requirePermissions([Permission.AssetUpload]);
 
@@ -422,12 +427,66 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
   return newAssets;
 };
 
+const resumableSessions = new Map<string, string>();
+
 const uploadFile = async (
   input: string,
   stats: Stats,
-  { visibility, signal }: UploadOptionsDto,
+  { visibility, signal, configDirectory }: UploadOptionsDto,
 ): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
+
+  if (stats.size >= RESUMABLE_UPLOAD_THRESHOLD) {
+    const checksum = await sha1(input);
+    const metadata = {
+      filename: basename(input),
+      size: stats.size,
+      checksum,
+      fileCreatedAt: stats.mtime.toISOString(),
+      fileModifiedAt: stats.mtime.toISOString(),
+      isFavorite: false,
+      visibility,
+    };
+    const sessionKey = createHash('sha256')
+      .update(JSON.stringify([baseUrl, headers, metadata]))
+      .digest('hex');
+    const directory = configDirectory ? path.join(configDirectory, 'uploads') : undefined;
+    const sessionPath = directory ? path.join(directory, sessionKey) : undefined;
+    let sessionId = resumableSessions.get(sessionKey);
+    if (sessionPath) {
+      try {
+        sessionId = await readFile(sessionPath, 'utf8');
+      } catch (error) {
+        if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) {
+          throw error;
+        }
+      }
+    }
+    const sidecarPath = findSidecar(input);
+    const sidecar = sidecarPath ? new File([await openAsBlob(sidecarPath)], basename(sidecarPath)) : undefined;
+    return uploadResumable({
+      file: await openAsBlob(input),
+      metadata,
+      sidecar,
+      sessionId,
+      signal,
+      onSession: async (id) => {
+        if (id) {
+          resumableSessions.set(sessionKey, id);
+        } else {
+          resumableSessions.delete(sessionKey);
+        }
+        if (sessionPath && directory) {
+          if (id) {
+            await mkdir(directory, { recursive: true, mode: 0o700 });
+            await writeFile(sessionPath, id, { mode: 0o600 });
+          } else {
+            await rm(sessionPath, { force: true });
+          }
+        }
+      },
+    });
+  }
 
   const formData = new FormData();
   formData.append('fileCreatedAt', stats.mtime.toISOString());

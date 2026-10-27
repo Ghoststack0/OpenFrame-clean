@@ -1181,6 +1181,36 @@ export type AssetMetadataBulkResponseDto = {
         [key: string]: any;
     };
 };
+export type ResumableUploadCreateDto = {
+    /** Hex or base64 SHA1 */
+    checksum: string;
+    /** Duration in milliseconds (for videos) */
+    duration?: number;
+    /** File creation date */
+    fileCreatedAt: string;
+    /** File modification date */
+    fileModifiedAt: string;
+    filename: string;
+    /** Mark as favorite */
+    isFavorite?: boolean;
+    /** Live photo video ID */
+    livePhotoVideoId?: string;
+    /** Asset metadata items */
+    metadata?: AssetMetadataUpsertItemDto[];
+    size: number;
+    visibility?: AssetVisibility;
+};
+export type ResumableUploadResponseDto = {
+    chunkSize: number;
+    expiresAt: string;
+    id: string;
+    offset: number;
+    size: number;
+};
+export type ResumableUploadFinalizeDto = {
+    /** Sidecar file data */
+    sidecarData?: Blob;
+};
 export type ExifResponseDto = {
     /** City name */
     city?: string | null;
@@ -4931,6 +4961,90 @@ export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
     }));
 }
 /**
+ * Create resumable upload
+ */
+export function createUpload({ key, slug, resumableUploadCreateDto }: {
+    key?: string;
+    slug?: string;
+    resumableUploadCreateDto: ResumableUploadCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: ResumableUploadResponseDto;
+    }>(`/assets/uploads${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: resumableUploadCreateDto
+    })));
+}
+/**
+ * Query resumable upload offset
+ */
+export function headUpload({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/uploads/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "HEAD"
+    }));
+}
+/**
+ * Append resumable upload chunk
+ */
+export function patchUpload({ contentType, uploadOffset, id, key, slug, body }: {
+    contentType: "application/offset+octet-stream";
+    uploadOffset: number;
+    id: string;
+    key?: string;
+    slug?: string;
+    body: Blob;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ResumableUploadResponseDto;
+    }>(`/assets/uploads/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "PATCH",
+        body,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "Content-Type": contentType,
+            "Upload-Offset": uploadOffset
+        })
+    }));
+}
+/**
+ * Finalize resumable upload
+ */
+export function finalizeUpload({ id, key, slug, resumableUploadFinalizeDto }: {
+    id: string;
+    key?: string;
+    slug?: string;
+    resumableUploadFinalizeDto: ResumableUploadFinalizeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMediaResponseDto;
+    }>(`/assets/uploads/${encodeURIComponent(id)}/finalize${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: resumableUploadFinalizeDto
+    })));
+}
+/**
  * Retrieve an asset
  */
 export function getAssetInfo({ id, key, slug }: {
@@ -8655,6 +8769,7 @@ export enum JobName {
     PersonFileMigration = "PersonFileMigration",
     PersonGenerateThumbnail = "PersonGenerateThumbnail",
     SessionCleanup = "SessionCleanup",
+    UploadSessionCleanup = "UploadSessionCleanup",
     SendMail = "SendMail",
     SidecarQueueAll = "SidecarQueueAll",
     SidecarCheck = "SidecarCheck",
