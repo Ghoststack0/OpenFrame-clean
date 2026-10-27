@@ -1,4 +1,11 @@
-import { BadRequestException, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { parseCookie } from 'cookie';
 import { DateTime } from 'luxon';
 import { IncomingHttpHeaders } from 'node:http';
@@ -14,15 +21,19 @@ import {
   OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
+  PairingRedeemDto,
+  PairingResponseDto,
+  PairingStatusDto,
   PinCodeChangeDto,
   PinCodeResetDto,
   PinCodeSetupDto,
   SessionUnlockDto,
   SignUpDto,
+  mapLoginResponse,
 } from 'src/dtos/auth.dto.js';
 import { SystemConfig, defaults } from 'src/dtos/config.dto.js';
 import { UserAdminResponseDto, mapUserAdmin } from 'src/dtos/user.dto.js';
-import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission } from 'src/enum.js';
+import { AuthType, ImmichCookie, ImmichHeader, ImmichQuery, JobName, Permission, UserStatus } from 'src/enum.js';
 import { OAuthProfile } from 'src/repositories/oauth.repository.js';
 import { BaseService } from 'src/services/base.service.js';
 import { isGranted } from 'src/utils/access.js';
@@ -68,6 +79,95 @@ const FIVE_MINUTES_MS = 5 * 60 * 1000;
 
 @Injectable()
 export class AuthService extends BaseService {
+  private async pairingConfig() {
+    const config = await this.getConfig({ withCache: false });
+    if (!config.passwordLogin.enabled && !config.oauth.enabled) {
+      throw new ForbiddenException('Phone pairing is disabled');
+    }
+    return config;
+  }
+
+  async createPairing(auth: AuthDto, origin: string): Promise<PairingResponseDto> {
+    if (!auth.session || auth.apiKey || auth.sharedLink) {
+      throw new ForbiddenException('Phone pairing requires a user session');
+    }
+    const config = await this.pairingConfig();
+    const user = await this.userRepository.get(auth.user.id, {});
+    if (!user || user.deletedAt || user.status !== UserStatus.Active) {
+      throw new ForbiddenException('Account cannot pair a phone');
+    }
+    if (user.shouldChangePassword) {
+      const { password } = await this.userRepository.getForChangePassword(user.id);
+      if (password) {
+        throw new ForbiddenException('Change your password before pairing a phone');
+      }
+    }
+    const serverUrls = [
+      ...new Set(
+        [config.server.externalDomain, origin].filter(Boolean).map((value) => {
+          const url = new URL(value);
+          if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) {
+            throw new BadRequestException('Invalid pairing server URL');
+          }
+          return url.href.replace(/\/$/, '');
+        }),
+      ),
+    ];
+    const secret = this.cryptoRepository.randomBytes(32).toString('base64url');
+    const pairing = await this.sessionRepository.createPairing({
+      sessionId: auth.session.id,
+      secretHash: this.cryptoRepository.hashSha256(secret),
+      expiresAt: new Date(Date.now() + FIVE_MINUTES_MS),
+    });
+    return { id: pairing.id, code: `${pairing.id}.${secret}`, expiresAt: pairing.expiresAt.toISOString(), serverUrls };
+  }
+
+  async getPairingStatus(auth: AuthDto, id: string): Promise<PairingStatusDto> {
+    if (!auth.session || auth.apiKey || auth.sharedLink) {
+      throw new ForbiddenException('Phone pairing requires a user session');
+    }
+    const pairing = await this.sessionRepository.getPairing(id, auth.session.id);
+    if (!pairing) {
+      throw new UnauthorizedException('Invalid pairing');
+    }
+    return {
+      status: pairing.redeemedAt
+        ? 'redeemed'
+        : pairing.expiresAt <= new Date()
+          ? 'expired'
+          : pairing.attempts >= 5
+            ? 'locked'
+            : 'pending',
+    };
+  }
+
+  async redeemPairing(dto: PairingRedeemDto, details: LoginDetails) {
+    await this.pairingConfig();
+    const [id, secret] = dto.code.split('.', 2);
+    // Validate the UUID separately so malformed input never reaches PostgreSQL.
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id) || !secret) {
+      throw new UnauthorizedException('Invalid pairing');
+    }
+    const token = this.cryptoRepository.randomBytesAsText(32);
+    const result = await this.sessionRepository.redeemPairing(id, this.cryptoRepository.hashSha256(secret), {
+      token: this.cryptoRepository.hashSha256(token),
+      deviceOS: details.deviceOS,
+      deviceType: details.deviceType,
+      appVersion: details.appVersion,
+    });
+    if (result.status === 'locked') {
+      throw new HttpException('Pairing attempt limit reached', HttpStatus.TOO_MANY_REQUESTS);
+    }
+    if (result.status !== 'redeemed') {
+      throw new UnauthorizedException('Invalid pairing');
+    }
+    const user = await this.userRepository.get(result.userId, {});
+    if (!user) {
+      throw new UnauthorizedException('Invalid pairing');
+    }
+    return mapLoginResponse(user, token);
+  }
+
   async login(dto: LoginCredentialDto, details: LoginDetails) {
     const config = await this.getConfig({ withCache: false });
     if (!config.passwordLogin.enabled) {

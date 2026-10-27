@@ -65,6 +65,7 @@ import { MoveTable } from 'src/schema/tables/move.table.js';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
 import { NotificationTable } from 'src/schema/tables/notification.table.js';
 import { OcrSearchTable } from 'src/schema/tables/ocr-search.table.js';
+import { PairingTable } from 'src/schema/tables/pairing.table.js';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table.js';
 import { PartnerTable } from 'src/schema/tables/partner.table.js';
 import { PasskeyTable } from 'src/schema/tables/passkey.table.js';
@@ -124,6 +125,7 @@ export class ImmichDatabase {
     AssetOcrAuditTable,
     AssetTable,
     AuthChallengeTable,
+    PairingTable,
     AssetFileTable,
     AssetExifTable,
     ClusterGroupTable,
@@ -228,6 +230,7 @@ export interface DB {
   asset: AssetTable;
   asset_audit: AssetAuditTable;
   auth_challenge: AuthChallengeTable;
+  pairing: PairingTable;
   asset_edit: AssetEditTable;
   asset_edit_audit: AssetEditAuditTable;
   asset_exif: AssetExifTable;

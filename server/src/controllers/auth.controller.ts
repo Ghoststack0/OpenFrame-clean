@@ -1,4 +1,18 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Put, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  ParseUUIDPipe,
+  Post,
+  Put,
+  Req,
+  Res,
+} from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
@@ -9,6 +23,9 @@ import {
   LoginCredentialDto,
   LoginResponseDto,
   LogoutResponseDto,
+  PairingRedeemDto,
+  PairingResponseDto,
+  PairingStatusDto,
   PinCodeChangeDto,
   PinCodeResetDto,
   PinCodeSetupDto,
@@ -26,6 +43,31 @@ import { respondWithCookie, respondWithoutCookie } from 'src/utils/response.js';
 @Controller('auth')
 export class AuthController {
   constructor(private service: AuthService) {}
+
+  @Post('pairing')
+  @Authenticated()
+  @Header('Cache-Control', 'no-store')
+  @Endpoint({ summary: 'Create phone pairing code', history: HistoryBuilder.v4().alpha('v4.0.0') })
+  createPairing(@Auth() auth: AuthDto, @Req() request: Request): Promise<PairingResponseDto> {
+    return this.service.createPairing(auth, `${request.protocol}://${request.get('host')}`);
+  }
+
+  @Get('pairing/:id')
+  @Authenticated()
+  @Header('Cache-Control', 'no-store')
+  @Endpoint({ summary: 'Get phone pairing status', history: HistoryBuilder.v4().alpha('v4.0.0') })
+  getPairingStatus(@Auth() auth: AuthDto, @Param('id', new ParseUUIDPipe()) id: string): Promise<PairingStatusDto> {
+    return this.service.getPairingStatus(auth, id);
+  }
+
+  @Post('pairing/redeem')
+  @Authenticated({ public: true })
+  @HttpCode(HttpStatus.OK)
+  @Header('Cache-Control', 'no-store')
+  @Endpoint({ summary: 'Redeem phone pairing code', history: HistoryBuilder.v4().alpha('v4.0.0') })
+  redeemPairing(@Body() dto: PairingRedeemDto, @GetLoginDetails() details: LoginDetails): Promise<LoginResponseDto> {
+    return this.service.redeemPairing(dto, details);
+  }
 
   @Post('login')
   @Endpoint({
