@@ -611,6 +611,7 @@
   "asset_processing_dismiss": "Dismiss {name}",
   "asset_processing_failed_count": "Processing failed for {count, plural, one {# item} other {# items}}",
   "asset_processing_finished_failed": "Processing finished · {failed, number} failed",
+  "asset_processing_hide": "Hide processing",
   "asset_processing_pipeline": "Processing steps for {name}",
   "asset_processing_stage_faces": "Detecting faces",
   "asset_processing_stage_metadata": "Reading metadata",

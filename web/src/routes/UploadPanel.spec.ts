@@ -255,6 +255,18 @@ describe('UploadPanel', () => {
       expect(screen.queryByRole('button', { name: 'Clear finished' })).toBeNull();
     });
 
+    it('lets the user stop following items that are still processing', async () => {
+      upload('done');
+      upload('busy');
+      finish('done');
+      render(UploadPanel, {});
+
+      await fireEvent.click(await screen.findByRole('button', { name: 'Hide processing' }));
+
+      expect(screen.queryByRole('list', { name: 'Processing steps for done.jpg' })).toBeNull();
+      expect(screen.queryByRole('list', { name: 'Processing steps for busy.jpg' })).toBeNull();
+    });
+
     it('is hidden while nothing has finished', async () => {
       upload('busy');
       render(UploadPanel, {});

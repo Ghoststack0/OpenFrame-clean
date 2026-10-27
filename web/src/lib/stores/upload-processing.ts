@@ -136,5 +136,12 @@ export const clearFinishedProcessing = () => {
   }
 };
 
+/** Stop following every item, e.g. when ML jobs are backlogged and the user doesn't want to wait. */
+export const hideAllProcessing = () => {
+  for (const row of get(processingRows)) {
+    assetProcessingStore.dismiss(row.assetId);
+  }
+};
+
 /** Stop tracking one item, e.g. a failed one the user has seen. */
 export const dismissProcessing = (assetId: string) => assetProcessingStore.dismiss(assetId);

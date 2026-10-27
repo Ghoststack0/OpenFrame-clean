@@ -6,6 +6,7 @@
   import {
     clearFinishedProcessing,
     dismissProcessing,
+    hideAllProcessing,
     processingRows,
     processingSummary,
   } from '$lib/stores/upload-processing';
@@ -246,11 +247,19 @@
             </ul>
           {/if}
         </div>
-        {#if $processingSummary.finished > 0}
-          <div class="mt-4 flex justify-end">
-            <Button size="small" shape="round" color="secondary" onclick={clearFinishedProcessing}>
-              {$t('clear_finished')}
-            </Button>
+        {#if hasProcessing}
+          <div class="mt-4 flex justify-end gap-2">
+            {#if isProcessingOnly}
+              <!-- Processing can wait on a long ML backlog; let the user stop following it. -->
+              <Button size="small" shape="round" color="secondary" variant="ghost" onclick={hideAllProcessing}>
+                {$t('asset_processing_hide')}
+              </Button>
+            {/if}
+            {#if $processingSummary.finished > 0}
+              <Button size="small" shape="round" color="secondary" onclick={clearFinishedProcessing}>
+                {$t('clear_finished')}
+              </Button>
+            {/if}
           </div>
         {/if}
       </div>
