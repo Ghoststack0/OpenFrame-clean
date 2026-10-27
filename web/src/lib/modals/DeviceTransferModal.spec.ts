@@ -104,7 +104,7 @@ describe('DeviceTransferModal component', () => {
       action: DeviceTransferAction.Open,
     });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
-    expect(toastManager.primary).toHaveBeenCalledWith(`Sent 2 items to ${phone.label}`);
+    expect(toastManager.primary).toHaveBeenCalledWith(`Sent to ${phone.label}`);
   });
 
   it('sends with "download" when selected', async () => {

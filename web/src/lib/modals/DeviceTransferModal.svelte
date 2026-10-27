@@ -43,7 +43,7 @@
     sendingTo = target.id;
     try {
       await sendAssetsToDevice({ targetSessionId: target.id, assetIds, action });
-      toastManager.primary($t('device_transfer_sent', { values: { count: assetIds.length, device: target.label } }));
+      toastManager.primary($t('device_transfer_sent', { values: { device: target.label } }));
       onClose();
     } catch (error) {
       console.error('Failed to send assets to device', error);

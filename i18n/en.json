@@ -907,7 +907,7 @@
   "device_transfer_load_error": "Unable to load your devices",
   "device_transfer_pick_device": "{count, plural, one {Send # item to} other {Send # items to}}",
   "device_transfer_received": "{device} sent you {count, plural, one {# photo} other {# photos}}",
-  "device_transfer_sent": "{count, plural, one {Sent # item to {device}} other {Sent # items to {device}}}",
+  "device_transfer_sent": "Sent to {device}",
   "device_transfer_too_many": "You can send up to {max} items at a time. Deselect some items and try again.",
   "device_transfer_unknown_device": "Another device",
   "direction": "Direction",
