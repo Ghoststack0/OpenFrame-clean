@@ -10,20 +10,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/feature_message.provider.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
 import 'package:immich_mobile/utils/semver.dart';
@@ -32,6 +23,7 @@ import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/forms/login/post_login.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
@@ -182,73 +174,6 @@ class LoginForm extends HookConsumerWidget {
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
     }
 
-    Future<void> handleSyncFlow() async {
-      final backgroundManager = ref.read(backgroundSyncProvider);
-      final viewIntentHandler = ref.read(viewIntentHandlerProvider);
-
-      await backgroundManager.syncLocal(full: true);
-      await backgroundManager.syncRemote();
-      await viewIntentHandler.flushDeferredViewIntent();
-      await backgroundManager.hashAssets();
-
-      if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
-        await backgroundManager.syncLinkedAlbum();
-      }
-    }
-
-    Future<void> getManageMediaPermission() async {
-      final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
-      if (!context.mounted) {
-        return;
-      }
-
-      if (!hasPermission) {
-        await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-              elevation: 5,
-              title: Text(
-                context.t.manage_media_access_title,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.primaryColor),
-              ),
-              content: SingleChildScrollView(
-                child: ListBody(
-                  children: [
-                    Text(context.t.manage_media_access_subtitle, style: const TextStyle(fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text(context.t.manage_media_access_rationale, style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(
-                    context.t.cancel,
-                    style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    unawaited(ref.read(permissionRepositoryProvider).requestManageMediaPermission());
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(
-                    context.t.manage_media_access_settings,
-                    style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
-
-    bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
-
     Future<void> login() async {
       TextInput.finishAutofillContext();
 
@@ -266,22 +191,7 @@ class LoginForm extends HookConsumerWidget {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
           passwordController.clear();
         } else {
-          await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-          if (isSyncRemoteDeletionsMode()) {
-            await getManageMediaPermission();
-          }
-          unawaited(handleSyncFlow());
-          if (!context.mounted) {
-            return;
-          }
-
-          ref.read(websocketProvider.notifier).connect();
-          unawaited(ref.read(featureMessageServiceProvider).markSeen());
-          if (!context.mounted) {
-            return;
-          }
-
-          unawaited(context.router.replaceAll([const TabShellRoute()]));
+          await completePostLogin(context, ref, connectWebsocket: true);
           return;
         }
       } catch (error) {
@@ -371,17 +281,7 @@ class LoginForm extends HookConsumerWidget {
               .saveAuthInfo(accessToken: loginResponseDto.accessToken);
 
           if (isSuccess && context.mounted) {
-            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (isSyncRemoteDeletionsMode()) {
-              await getManageMediaPermission();
-            }
-            unawaited(handleSyncFlow());
-            if (!context.mounted) {
-              return;
-            }
-
-            unawaited(ref.read(featureMessageServiceProvider).markSeen());
-            unawaited(context.router.replaceAll([const TabShellRoute()]));
+            await completePostLogin(context, ref, connectWebsocket: false);
             return;
           }
         } catch (error, stack) {
@@ -462,6 +362,12 @@ class LoginForm extends HookConsumerWidget {
                     keyboardAction: .next,
                     onSubmit: (_) => form.submit(),
                   ),
+                ),
+                ImmichTextButton(
+                  labelText: context.t.qr_login_scan,
+                  icon: Icons.qr_code_scanner_rounded,
+                  variant: ImmichVariant.ghost,
+                  onPressed: () => context.pushRoute(const QrScanRoute()),
                 ),
                 ImmichTextButton(
                   labelText: context.t.settings,
