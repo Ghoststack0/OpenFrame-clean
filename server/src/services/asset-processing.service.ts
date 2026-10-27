@@ -23,6 +23,9 @@ import { MediaService } from 'src/services/media.service.js';
 import { JobItem } from 'src/types.js';
 import { isFacialRecognitionEnabled, isSmartSearchEnabled } from 'src/utils/misc.js';
 
+// Clients only follow assets uploaded in their current session, so library-wide job reruns stay off the socket.
+const LIVE_EVENT_WINDOW_MS = 24 * 60 * 60 * 1000;
+
 type ProcessingAsset = Awaited<ReturnType<AssetJobRepository['getProcessingStatus']>>[number];
 
 const getStageJob = (job: JobItem) => {
@@ -202,7 +205,9 @@ export class AssetProcessingService extends BaseService {
           ),
         ),
       );
-      const assets = await this.assetJobRepository.getProcessingStatus(batch.keys().toArray());
+      const cutoff = Date.now() - LIVE_EVENT_WINDOW_MS;
+      const rows = await this.assetJobRepository.getProcessingStatus(batch.keys().toArray());
+      const assets = rows.filter((asset) => new Date(asset.createdAt).getTime() >= cutoff);
       const statuses = await this.mapStatus(assets);
       for (const [index, asset] of assets.entries()) {
         for (const item of statuses[index].stages) {

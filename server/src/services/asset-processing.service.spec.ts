@@ -17,6 +17,7 @@ const ownerId = newUuid();
 const pendingAsset: ProcessingAsset = {
   id,
   ownerId,
+  createdAt: new Date(),
   type: AssetType.Image,
   visibility: AssetVisibility.Timeline,
   metadataExtractedAt: null,
@@ -218,6 +219,16 @@ describe(AssetProcessingService.name, () => {
       stage: Stage.Metadata,
       state: State.Complete,
     });
+  });
+
+  it('keeps library-wide reruns of old assets off the websocket', async () => {
+    mocks.assetJob.getProcessingStatus.mockResolvedValue([
+      { ...pendingAsset, createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), metadataExtractedAt: new Date() },
+    ]);
+    sut.onJobSuccess({ job: { name: JobName.AssetExtractMetadata, data: { id } } });
+    await vi.runAllTimersAsync();
+    expect(mocks.assetJob.getProcessingStatus).toHaveBeenCalledWith([id]);
+    expect(mocks.websocket.clientSend).not.toHaveBeenCalled();
   });
 
   it('emits skipped stages when ML is disabled', async () => {

@@ -37,6 +37,7 @@ export class AssetJobRepository {
       .select([
         'asset.id',
         'asset.ownerId',
+        'asset.createdAt',
         'asset.type',
         'asset.visibility',
         'asset_job_status.metadataExtractedAt',
