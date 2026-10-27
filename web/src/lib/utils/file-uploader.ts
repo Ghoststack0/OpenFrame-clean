@@ -17,7 +17,7 @@ import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { addAssetsToAlbumsMutation } from '$lib/queries/album.query';
 import { executeMutation } from '$lib/queries/client';
 import { uploadAssetsStore } from '$lib/stores/upload';
-import { UploadState } from '$lib/types';
+import { UploadState, type UploadPhase } from '$lib/types';
 import { trackUpload, uploadRequest } from '$lib/utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { asQueryString } from '$lib/utils/shared-links';
@@ -26,11 +26,15 @@ import { handleError } from './handle-error';
 
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
 let adaptiveConcurrency = new AdaptiveUploadConcurrency();
+export const setUploadConcurrency = (concurrency: number) => {
+  uploadExecutionQueue.concurrency = concurrency;
+  uploadAssetsStore.setConcurrency(uploadExecutionQueue.concurrency);
+};
 const recordTransfer = (bytes: number) => {
-  uploadExecutionQueue.concurrency = adaptiveConcurrency.record(bytes);
+  setUploadConcurrency(adaptiveConcurrency.record(bytes));
 };
 const recordUploadError = () => {
-  uploadExecutionQueue.concurrency = adaptiveConcurrency.error();
+  setUploadConcurrency(adaptiveConcurrency.error());
 };
 
 type FilePickerParam = { multiple?: boolean; extensions?: string[] };
@@ -101,7 +105,7 @@ export const fileUploadHandler = async ({
 }: FileUploadHandlerParams): Promise<string[]> => {
   if (get(uploadAssetsStore.remainingUploads) === 0) {
     adaptiveConcurrency = new AdaptiveUploadConcurrency();
-    uploadExecutionQueue.concurrency = adaptiveConcurrency.concurrency;
+    setUploadConcurrency(adaptiveConcurrency.concurrency);
   }
   const extensions = uploadManager.getExtensions();
   const promises = [];
@@ -226,6 +230,10 @@ async function fileUploader({
           : `upload:${authManager.user.id}:${checksum}:${assetFile.name}:${assetFile.lastModified}:${isLockedAssets}`;
         let initialOffset: number | undefined;
         let sessionId: string | undefined;
+        let retryAttempt = 0;
+        let verifying = false;
+        const setPhase = (phase: UploadPhase) => uploadAssetsStore.updateItem(deviceAssetId, { phase });
+        uploadAssetsStore.updateItem(deviceAssetId, { resumable: !!storageKey, phase: { kind: 'chunks' } });
         try {
           sessionId = storageKey ? (localStorage.getItem(storageKey) ?? undefined) : undefined;
         } catch {
@@ -260,11 +268,32 @@ async function fileUploader({
               }
             },
             onProgress: (offset, total) => {
+              const isFirst = initialOffset === undefined;
               initialOffset ??= offset;
               uploadAssetsStore.updateProgress(deviceAssetId, offset, total, initialOffset);
+              retryAttempt = 0;
+              // Every chunk is committed, so the only request left is the finalize (server-side checksum)
+              verifying = offset === total;
+              if (verifying) {
+                setPhase({ kind: 'verifying' });
+              } else if (isFirst && offset > 0) {
+                setPhase({ kind: 'resumed', from: offset });
+              } else {
+                setPhase({ kind: 'chunks' });
+              }
             },
-            onChunk: recordTransfer,
-            onRetry: recordUploadError,
+            onChunk: (bytes) => {
+              retryAttempt = 0;
+              recordTransfer(bytes);
+              setPhase({ kind: 'chunks' });
+            },
+            onRetry: () => {
+              recordUploadError();
+              if (!verifying) {
+                retryAttempt++;
+                setPhase({ kind: 'retrying', attempt: retryAttempt });
+              }
+            },
           });
         } finally {
           untrack();

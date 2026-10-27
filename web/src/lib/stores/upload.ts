@@ -1,4 +1,4 @@
-import { derived, get, writable } from 'svelte/store';
+import { derived, get, readonly, writable } from 'svelte/store';
 import { UploadState, type UploadAsset } from '$lib/types';
 
 export type UploadProgress = {
@@ -61,6 +61,7 @@ function createUploadStore() {
     items.some((item) => item.state === UploadState.ERROR || item.state === UploadState.DUPLICATED),
   );
   const settledBytes = writable(0);
+  const concurrency = writable(2);
   const progress = derived([uploadAssets, settledBytes], ([$items, $settled]) => getUploadProgress($items, $settled));
   const settle = (items: UploadAsset[]) => {
     const bytes = items.reduce((sum, item) => sum + item.file.size, 0);
@@ -184,6 +185,8 @@ function createUploadStore() {
     stats.set({ errors: 0, duplicates: 0, success: 0, total: 0 });
   };
 
+  const setConcurrency = (value: number) => concurrency.set(value);
+
   const track = (value: 'success' | 'duplicate' | 'error') => {
     stats.update((stats) => {
       switch (value) {
@@ -213,6 +216,8 @@ function createUploadStore() {
     remainingUploads,
     isDismissible,
     isUploading,
+    concurrency: readonly(concurrency),
+    setConcurrency,
     track,
     dismissErrors,
     reset,
