@@ -15,7 +15,7 @@ import { lstat, mkdir, mkdtemp, open, readFile, realpath, rm, truncate, utimes, 
 import os from 'node:os';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
-import { object } from 'src/import/metadata.js';
+import { hasEmbeddedCaptureDate, object } from 'src/import/metadata.js';
 import { buildPlan, ImportPlan } from 'src/import/plan.js';
 import { readSources, resolveSources } from 'src/import/source.js';
 import { uploadImportFile } from 'src/import/upload.js';
@@ -28,7 +28,7 @@ export type ImportOptions = {
   progressFile?: string;
   report?: string;
 };
-type ProgressItem = { assetId: string; size: number; modified: string; completed?: string };
+type ProgressItem = { assetId: string; size: number; modified: string; completed?: string; hasEmbeddedDate?: boolean };
 type Progress = {
   format: 'openframe-import-v1';
   target: string;
@@ -114,7 +114,8 @@ const loadProgress = async (filename: string, target: string): Promise<Progress>
         typeof item.size !== 'number' ||
         !Number.isFinite(item.size) ||
         typeof item.modified !== 'string' ||
-        (item.completed !== undefined && typeof item.completed !== 'string')
+        (item.completed !== undefined && typeof item.completed !== 'string') ||
+        (item.hasEmbeddedDate !== undefined && typeof item.hasEmbeddedDate !== 'boolean')
       ) {
         throw new Error('Invalid asset in progress file');
       }
@@ -123,6 +124,7 @@ const loadProgress = async (filename: string, target: string): Promise<Progress>
         size: item.size,
         modified: item.modified,
         completed: item.completed,
+        hasEmbeddedDate: item.hasEmbeddedDate,
       };
     }
     progress.pairs.push(...state.pairs);
@@ -133,6 +135,37 @@ const loadProgress = async (filename: string, target: string): Promise<Progress>
     await handle.close();
   }
   return progress;
+};
+
+const isRunning = (pid: number) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return error instanceof Error && 'code' in error && error.code === 'EPERM';
+  }
+};
+
+// An interrupted import (Ctrl+C, crash) leaves its lock behind; reclaim it when the owning process is gone.
+const acquireLock = async (filename: string) => {
+  try {
+    const handle = await open(filename, 'wx', 0o600);
+    await handle.writeFile(String(process.pid));
+    return handle;
+  } catch (error) {
+    if (!(error instanceof Error && 'code' in error && error.code === 'EEXIST')) {
+      throw error;
+    }
+    const owner = await readFile(filename, 'utf8');
+    const pid = Number(owner.trim());
+    if (Number.isSafeInteger(pid) && pid > 0 && isRunning(pid)) {
+      throw new Error(`Another import (pid ${pid}) is using this progress file: ${filename}`, { cause: error });
+    }
+    await rm(filename, { force: true });
+    const handle = await open(filename, 'wx', 0o600);
+    await handle.writeFile(String(process.pid));
+    return handle;
+  }
 };
 
 const saveProgress = async (filename: string, state: Progress, change: Pick<Progress, 'assets' | 'pairs'>) => {
@@ -199,7 +232,7 @@ export const importExport = async (
     ]);
     const user = await getMyUser();
     await mkdir(path.dirname(progressFile), { recursive: true });
-    const lock = await open(`${progressFile}.lock`, 'wx', 0o600);
+    const lock = await acquireLock(`${progressFile}.lock`);
     let temporary: string | undefined;
     try {
       const state = await loadProgress(progressFile, `${auth.url}:${user.id}`);
@@ -239,13 +272,16 @@ export const importExport = async (
             staged = path.join(temporary, path.posix.basename(entry.name));
             await pipeline(await entry.open(), createWriteStream(staged, { flags: 'wx', mode: 0o600 }));
             await utimes(staged, entry.modified, entry.modified);
+            const hasEmbeddedDate = item.update.dateTimeOriginal ? await hasEmbeddedCaptureDate(staged) : false;
             const assetId = await uploadImportFile(staged);
-            saved = { assetId, size: entry.size, modified };
+            saved = { assetId, size: entry.size, modified, hasEmbeddedDate };
             state.assets[entry.id] = saved;
             await saveProgress(progressFile, state, { assets: { [entry.id]: saved }, pairs: [] });
           }
-          if (Object.keys(item.update).length > 0) {
-            await updateAsset({ id: saved.assetId, updateAssetDto: item.update });
+          const { dateTimeOriginal, ...rest } = item.update;
+          const update = saved.hasEmbeddedDate || !dateTimeOriginal ? rest : { ...rest, dateTimeOriginal };
+          if (Object.keys(update).length > 0) {
+            await updateAsset({ id: saved.assetId, updateAssetDto: update });
           }
           for (const albumName of item.albums) {
             let albumId = albums.get(albumName);

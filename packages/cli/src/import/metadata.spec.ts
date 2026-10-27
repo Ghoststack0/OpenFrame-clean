@@ -1,6 +1,10 @@
 import { AssetVisibility } from '@immich/sdk';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import {
   csvDate,
+  hasEmbeddedCaptureDate,
   icloudRow,
   matchSidecar,
   Sidecar,
@@ -156,5 +160,46 @@ describe('Takeout albums', () => {
     ['Photos from childhood/photo.jpg', 'Photos from childhood'],
   ])('%s => %s', (filename, album) => {
     expect(takeoutAlbum(filename)).toBe(album);
+  });
+});
+
+// Minimal little-endian JPEG: SOI, APP1 Exif with IFD0 -> Exif IFD -> DateTimeOriginal, EOI.
+const jpegWithCaptureDate = (date: string) => {
+  const tiff = Buffer.alloc(8 + 18 + 18 + 20);
+  tiff.write('II', 0, 'ascii');
+  tiff.writeUInt16LE(42, 2);
+  tiff.writeUInt32LE(8, 4);
+  tiff.writeUInt16LE(1, 8);
+  tiff.writeUInt16LE(0x87_69, 10); // ExifIFDPointer
+  tiff.writeUInt16LE(4, 12);
+  tiff.writeUInt32LE(1, 14);
+  tiff.writeUInt32LE(26, 18);
+  tiff.writeUInt32LE(0, 22);
+  tiff.writeUInt16LE(1, 26);
+  tiff.writeUInt16LE(0x90_03, 28); // DateTimeOriginal
+  tiff.writeUInt16LE(2, 30);
+  tiff.writeUInt32LE(20, 32);
+  tiff.writeUInt32LE(44, 36);
+  tiff.writeUInt32LE(0, 40);
+  tiff.write(`${date}\0`, 44, 'ascii');
+  const payload = Buffer.concat([Buffer.from('Exif\0\0', 'binary'), tiff]);
+  const length = Buffer.alloc(2);
+  length.writeUInt16BE(payload.length + 2);
+  return Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe1]), length, payload, Buffer.from([0xff, 0xd9])]);
+};
+
+describe('hasEmbeddedCaptureDate', () => {
+  it('detects an embedded capture date and ignores files without one', async () => {
+    const directory = await mkdtemp(path.join(os.tmpdir(), 'import-exif-test-'));
+    try {
+      const withDate = path.join(directory, 'with-date.jpg');
+      const withoutDate = path.join(directory, 'without-date.mp4');
+      await writeFile(withDate, jpegWithCaptureDate('2021:01:01 09:00:00'));
+      await writeFile(withoutDate, 'synthetic video');
+      await expect(hasEmbeddedCaptureDate(withDate)).resolves.toBe(true);
+      await expect(hasEmbeddedCaptureDate(withoutDate)).resolves.toBe(false);
+    } finally {
+      await rm(directory, { recursive: true, force: true });
+    }
   });
 });

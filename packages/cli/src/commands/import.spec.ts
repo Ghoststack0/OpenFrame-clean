@@ -6,6 +6,7 @@ import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
 import { createGzip } from 'node:zlib';
 import { importExport, protectExports } from 'src/commands/import.js';
+import { hasEmbeddedCaptureDate } from 'src/import/metadata.js';
 import { uploadImportFile } from 'src/import/upload.js';
 import { authenticate } from 'src/utils.js';
 import { pack } from 'tar-stream';
@@ -27,6 +28,10 @@ vi.mock('src/utils.js', () => ({
   requirePermissions: vi.fn(),
 }));
 vi.mock('src/import/upload.js', () => ({ uploadImportFile: vi.fn(async () => 'asset-1') }));
+vi.mock('src/import/metadata.js', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('src/import/metadata.js')>()),
+  hasEmbeddedCaptureDate: vi.fn(async () => false),
+}));
 
 describe('import command', () => {
   let root: string;
@@ -95,6 +100,36 @@ describe('import command', () => {
       format: 'openframe-import-v1',
       target: 'https://server/api:user-1',
     });
+  });
+
+  it('keeps an embedded capture date instead of overwriting it with the UTC sidecar time', async () => {
+    vi.mocked(hasEmbeddedCaptureDate).mockResolvedValueOnce(true);
+    await importExport('takeout', [source], base, { progressFile });
+    expect(updateAsset).toHaveBeenCalledWith({ id: 'asset-1', updateAssetDto: { isFavorite: true } });
+  });
+
+  it('remembers the embedded-date decision when resuming metadata after a failure', async () => {
+    vi.mocked(hasEmbeddedCaptureDate).mockResolvedValueOnce(true);
+    vi.mocked(updateAsset).mockRejectedValueOnce(new Error('temporary server failure'));
+    await expect(importExport('takeout', [source], base, { progressFile })).rejects.toThrow('failed');
+    await importExport('takeout', [source], base, { progressFile });
+    expect(hasEmbeddedCaptureDate).toHaveBeenCalledTimes(1);
+    expect(updateAsset).toHaveBeenLastCalledWith({ id: 'asset-1', updateAssetDto: { isFavorite: true } });
+  });
+
+  it('reclaims a lock left behind by an interrupted import', async () => {
+    await writeFile(`${progressFile}.lock`, '2147483646');
+    await importExport('takeout', [source], base, { progressFile });
+    expect(uploadImportFile).toHaveBeenCalledTimes(1);
+    await expect(access(`${progressFile}.lock`)).rejects.toThrow();
+  });
+
+  it('refuses to run while another live import holds the lock', async () => {
+    await writeFile(`${progressFile}.lock`, String(process.pid));
+    await expect(importExport('takeout', [source], base, { progressFile })).rejects.toThrow('Another import');
+    expect(uploadImportFile).not.toHaveBeenCalled();
+    expect(await readFile(`${progressFile}.lock`, 'utf8')).toBe(String(process.pid));
+    await rm(`${progressFile}.lock`);
   });
 
   it('resumes metadata after a failure without uploading again', async () => {
@@ -176,13 +211,6 @@ describe('import command', () => {
     await writeFile(progressFile, 'invalid');
     await expect(importExport('takeout', [source], base, { progressFile })).rejects.toThrow();
     expect(uploadImportFile).not.toHaveBeenCalled();
-  });
-
-  it('rejects concurrent use of the same progress file', async () => {
-    await writeFile(`${progressFile}.lock`, 'another importer');
-    await expect(importExport('takeout', [source], base, { progressFile })).rejects.toThrow('EEXIST');
-    expect(uploadImportFile).not.toHaveBeenCalled();
-    expect(await readFile(`${progressFile}.lock`, 'utf8')).toBe('another importer');
   });
 
   it('protects source files, including output paths through symlinks, and refuses report overwrites', async () => {

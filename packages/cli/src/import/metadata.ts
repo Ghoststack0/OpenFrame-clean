@@ -1,4 +1,7 @@
 import { AssetVisibility, UpdateAssetDto } from '@immich/sdk';
+// The package's UMD main breaks under ESM interop; import its ESM build directly.
+import exifr from 'exifr/dist/full.esm.mjs';
+import { open } from 'node:fs/promises';
 import path from 'node:path';
 
 export type Problem = { file: string; message: string };
@@ -8,6 +11,28 @@ export type Metadata = {
   partner: boolean;
 };
 export type Sidecar = Metadata & { id: string; name: string; title?: string; invalid?: string };
+
+// Takeout's photoTakenTime is a bare UTC instant. Applying it over an embedded capture date would replace the
+// photo's local time zone with UTC, so callers keep the embedded date when one exists.
+export const hasEmbeddedCaptureDate = async (filename: string) => {
+  try {
+    // exifr's own file reader fails on current Node; read the head ourselves, where JPEG/HEIC keep these tags.
+    const handle = await open(filename, 'r');
+    let head: Buffer;
+    try {
+      const buffer = Buffer.alloc(1024 * 1024);
+      const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+      head = buffer.subarray(0, bytesRead);
+    } finally {
+      await handle.close();
+    }
+    const tags = await exifr.parse(head, { pick: ['DateTimeOriginal', 'CreateDate'] });
+    return Boolean(tags?.DateTimeOriginal ?? tags?.CreateDate);
+  } catch {
+    // exifr can't read every format (e.g. most videos); fall back to the sidecar date.
+    return false;
+  }
+};
 
 export const object = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
