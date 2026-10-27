@@ -86,6 +86,7 @@ import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table.js'
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table.js';
 import { TagTable } from 'src/schema/tables/tag.table.js';
+import { UploadSessionTable } from 'src/schema/tables/upload-session.table.js';
 import { UserAuditTable } from 'src/schema/tables/user-audit.table.js';
 import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.table.js';
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table.js';
@@ -104,6 +105,7 @@ import { WorkflowTable } from 'src/schema/tables/workflow.table.js';
 @Database({ name: 'immich' })
 export class ImmichDatabase {
   tables = [
+    UploadSessionTable,
     ActivityTable,
     AlbumAssetTable,
     AlbumAssetAuditTable,
@@ -214,6 +216,7 @@ export interface Migrations {
 export interface DB {
   kysely_migrations: { timestamp: string; name: string };
 
+  upload_session: UploadSessionTable;
   activity: ActivityTable;
 
   album: AlbumTable;
