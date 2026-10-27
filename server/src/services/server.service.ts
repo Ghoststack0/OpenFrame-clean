@@ -8,6 +8,9 @@ import {
   ServerApkLinksDto,
   ServerConfigDto,
   ServerFeaturesDto,
+  ServerIdentityResponseDto,
+  ServerLanCandidatesResponseDto,
+  ServerLanQueryDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
@@ -83,6 +86,28 @@ export class ServerService extends BaseService {
 
   ping(): ServerPingResponse {
     return { res: 'pong' };
+  }
+
+  async getServerIdentity({ nonce }: ServerLanQueryDto): Promise<ServerIdentityResponseDto> {
+    const { secret } = await this.systemMetadataRepository.getOrCreate(SystemMetadataKey.LanIdentity, {
+      secret: this.cryptoRepository.randomBytes(32).toString('hex'),
+    });
+    return {
+      serverId: this.cryptoRepository.hashSha256(secret).toString('hex'),
+      proof: this.cryptoRepository.hmacSha256(nonce, secret),
+    };
+  }
+
+  async getLanCandidates(query: ServerLanQueryDto): Promise<ServerLanCandidatesResponseDto> {
+    const { server } = await this.getConfig({ withCache: true });
+    const { port } = this.configRepository.getEnv();
+    const detected = server.autoDetectLocalUrls
+      ? this.serverInfoRepository.getLocalAddresses().map((address) => `http://${address}:${port}`)
+      : [];
+    return {
+      ...(await this.getServerIdentity(query)),
+      urls: [...new Set([...(server.localUrls ?? []), ...detected])].slice(0, 16),
+    };
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {

@@ -25,6 +25,8 @@ enum SettingsKey<T> {
   viewerTapToNavigate<bool>(),
 
   // Network
+  networkAutomaticLanTransfer<bool>(),
+  networkAllowInsecureLanTransfer<bool>(),
   networkAutoEndpointSwitching<bool>(),
   networkExternalEndpointList<List<String>>(codec: ListCodec(PrimitiveCodec.string)),
   networkCustomHeaders<Map<String, String>>(codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string)),

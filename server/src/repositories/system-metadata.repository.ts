@@ -35,6 +35,24 @@ export class SystemMetadataRepository {
       .execute();
   }
 
+  async getOrCreate<T extends keyof SystemMetadata>(key: T, value: SystemMetadata[T]): Promise<SystemMetadata[T]> {
+    const existing = await this.get(key);
+    if (existing) {
+      return existing;
+    }
+    // Concurrent API workers must keep the first instance secret.
+    await this.db
+      .insertInto('system_metadata')
+      .values({ key, value } as Upsert)
+      .onConflict((oc) => oc.columns(['key']).doNothing())
+      .execute();
+    const saved = await this.get(key);
+    if (!saved) {
+      throw new Error(`Failed to initialize system metadata: ${key}`);
+    }
+    return saved;
+  }
+
   @GenerateSql({ params: ['metadata_key'] })
   async delete<T extends keyof SystemMetadata>(key: T): Promise<void> {
     await this.db.deleteFrom('system_metadata').where('key', '=', key).execute();

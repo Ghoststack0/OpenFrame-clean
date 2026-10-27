@@ -72,6 +72,11 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       _firstLaunch = false;
     }
 
+    final isAuthenticated = _ref.read(authProvider).isAuthenticated;
+    if (isAuthenticated) {
+      await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
+    }
+
     // no need to resume because app was never really paused
     if (!_wasPaused && !_fullSyncPending) {
       _log.info("Resume skipped, app was never paused");
@@ -79,13 +84,8 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
     _wasPaused = false;
 
-    final isAuthenticated = _ref.read(authProvider).isAuthenticated;
-
     // Needs to be logged in
     if (isAuthenticated) {
-      // switch endpoint if needed
-      await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
-
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
     }
 

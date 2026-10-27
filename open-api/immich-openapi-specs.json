@@ -13508,6 +13508,97 @@
         "x-immich-state": "Deprecated"
       }
     },
+    "/server/identity": {
+      "get": {
+        "description": "Answer a fresh challenge without disclosing LAN addresses.",
+        "operationId": "getServerIdentity",
+        "parameters": [
+          {
+            "name": "nonce",
+            "required": true,
+            "in": "query",
+            "description": "Fresh random 32-byte hexadecimal challenge",
+            "schema": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerIdentityResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Verify server identity",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ]
+      }
+    },
+    "/server/lan-candidates": {
+      "get": {
+        "description": "Discover direct URLs for this instance after login.",
+        "operationId": "getLanCandidates",
+        "parameters": [
+          {
+            "name": "nonce",
+            "required": true,
+            "in": "query",
+            "description": "Fresh random 32-byte hexadecimal challenge",
+            "schema": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerLanCandidatesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get LAN candidates",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/server/license": {
       "delete": {
         "description": "Delete the currently set server product key.",
@@ -19963,9 +20054,22 @@
       },
       "AdminConfigServerDto": {
         "properties": {
+          "autoDetectLocalUrls": {
+            "description": "Advertise private interface addresses using the server port",
+            "type": "boolean"
+          },
           "externalDomain": {
             "description": "External domain",
             "type": "string"
+          },
+          "localUrls": {
+            "description": "LAN base URLs, including any reverse proxy path. Only disclosed to authenticated users",
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "maxItems": 16,
+            "type": "array"
           },
           "loginPageMessage": {
             "description": "Login page message",
@@ -28524,6 +28628,48 @@
           "sidecar",
           "smartSearch",
           "trash"
+        ],
+        "type": "object"
+      },
+      "ServerIdentityResponseDto": {
+        "properties": {
+          "proof": {
+            "description": "HMAC-SHA256 of the nonce, in hexadecimal",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "SHA-256 fingerprint of the persistent instance secret",
+            "type": "string"
+          }
+        },
+        "required": [
+          "proof",
+          "serverId"
+        ],
+        "type": "object"
+      },
+      "ServerLanCandidatesResponseDto": {
+        "properties": {
+          "proof": {
+            "description": "HMAC-SHA256 of the nonce, in hexadecimal",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "SHA-256 fingerprint of the persistent instance secret",
+            "type": "string"
+          },
+          "urls": {
+            "description": "Candidate LAN base URLs without /api, unless explicitly configured",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "proof",
+          "serverId",
+          "urls"
         ],
         "type": "object"
       },

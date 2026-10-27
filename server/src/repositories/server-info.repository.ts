@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { exiftool } from 'exiftool-vendored';
 import { exec as execCallback } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
+import { networkInterfaces } from 'node:os';
 import { promisify } from 'node:util';
 import sharp from 'sharp';
 import { ReleaseChannel } from 'src/enum.js';
@@ -48,6 +49,22 @@ const getLockfileVersion = (name: string, lockfile?: BuildLockfile) => {
 
 @Injectable()
 export class ServerInfoRepository {
+  getLocalAddresses(): string[] {
+    return Object.values(networkInterfaces())
+      .flatMap((interfaces) => interfaces ?? [])
+      .filter(({ address, internal, family }) => {
+        if (internal) {
+          return false;
+        }
+        if (family === 'IPv6') {
+          return /^(fc|fd)/i.test(address);
+        }
+        const [a, b] = address.split('.').map(Number);
+        return a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+      })
+      .map(({ address, family }) => (family === 'IPv6' ? `[${address}]` : address));
+  }
+
   constructor(
     private configRepository: ConfigRepository,
     private logger: LoggingRepository,

@@ -52,6 +52,34 @@ describe('config controllers', () => {
   });
 
   describe('PUT /admin/config', () => {
+    it('keeps LAN configuration private and accepts legacy config without the new fields', async () => {
+      const config = validConfig();
+      config.server.localUrls = ['http://192.168.1.2:2283'];
+      config.server.autoDetectLocalUrls = true;
+      expect(mapPublicConfig(config).server).not.toHaveProperty('localUrls');
+      expect(mapUserConfig(config).server).not.toHaveProperty('localUrls');
+      expect(mapUserConfig(config).server).not.toHaveProperty('autoDetectLocalUrls');
+      delete config.server.localUrls;
+      delete config.server.autoDetectLocalUrls;
+      service.updateAdminConfig.mockImplementation((dto) => Promise.resolve(dto));
+      const { status } = await request(ctx.getHttpServer()).put('/admin/config').send(config);
+      expect(status).toBe(200);
+    });
+
+    it.each([
+      'ftp://host',
+      'http://user:password@host',
+      'http://host?token=secret',
+      'http://host/#fragment',
+      'http://host?',
+      'http://host#',
+    ])('rejects unsafe LAN base URL %s', async (url) => {
+      const config = validConfig();
+      config.server.localUrls = [url];
+      const { status } = await request(ctx.getHttpServer()).put('/admin/config').send(config);
+      expect(status).toBe(400);
+    });
+
     it('should accept a valid config', async () => {
       service.updateAdminConfig.mockImplementation((dto) => Promise.resolve(dto));
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -11,22 +12,45 @@ import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/lan_direct_transfer.provider.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/lan_direct_transfer.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
-final authServiceProvider = Provider(
-  (ref) => AuthService(
+final authServiceProvider = Provider((ref) {
+  final service = AuthService(
     ref.watch(authApiRepositoryProvider),
     ref.watch(authRepositoryProvider),
     ref.watch(apiServiceProvider),
     ref.watch(networkServiceProvider),
     ref.watch(backgroundSyncProvider),
-  ),
-);
+    lanDirectTransferService: LanDirectTransferService(() => NetworkRepository.client),
+    onLanRouteChanged: (state) => ref.read(lanDirectTransferProvider.notifier).state = state,
+  );
+  void refresh() {
+    unawaited(
+      service.setOpenApiServiceEndpoint().catchError((Object error, StackTrace stack) {
+        Logger('AuthService').warning('Cannot refresh network route', error, stack);
+        return null;
+      }),
+    );
+  }
+
+  final subscription = Connectivity().onConnectivityChanged.listen(
+    (_) => refresh(),
+    onError: (Object error, StackTrace stack) =>
+        Logger('AuthService').warning('Network events unavailable', error, stack),
+  );
+  ref.onDispose(() => unawaited(subscription.cancel()));
+  ref.onDispose(service.dispose);
+  ref.listen(appConfigProvider.select((config) => config.network), (_, _) => refresh());
+  return service;
+});
 
 class AuthService {
   final AuthApiRepository _authApiRepository;
@@ -35,14 +59,22 @@ class AuthService {
   final NetworkService _networkService;
   final BackgroundSyncManager _backgroundSyncManager;
   final _log = Logger("AuthService");
+  final LanDirectTransferService? _lanDirectTransferService;
+  final void Function(LanRouteState)? _onLanRouteChanged;
+  Future<String?>? _endpointSwitch;
+  int _endpointGeneration = 0;
+  bool _disposed = false;
+  bool _clearingLocalData = false;
 
   AuthService(
     this._authApiRepository,
     this._authRepository,
     this._apiService,
     this._networkService,
-    this._backgroundSyncManager,
-  );
+    this._backgroundSyncManager, {
+    this._lanDirectTransferService,
+    this._onLanRouteChanged,
+  });
 
   /// Validates the provided server URL by resolving and setting the endpoint.
   /// Also sets the device info header and stores the valid URL.
@@ -114,19 +146,28 @@ class AuthService {
   ///
   /// All deletions are executed in parallel using [Future.wait].
   Future<void> clearLocalData() async {
-    // Cancel any ongoing background sync operations before clearing data
-    await _backgroundSyncManager.cancel();
-    await Future.wait([
-      _authRepository.clearLocalData(),
-      Store.delete(StoreKey.currentUser),
-      Store.delete(StoreKey.accessToken),
-      SettingsRepository.instance.clear(const [
-        .networkAutoEndpointSwitching,
-        .networkPreferredWifiName,
-        .networkLocalEndpoint,
-        .networkExternalEndpointList,
-      ]),
-    ]);
+    _clearingLocalData = true;
+    _endpointGeneration++;
+    _onLanRouteChanged?.call(const LanRouteState());
+    try {
+      // Cancel any ongoing background sync operations before clearing data
+      await _backgroundSyncManager.cancel();
+      await Future.wait([
+        _authRepository.clearLocalData(),
+        Store.delete(StoreKey.currentUser),
+        Store.delete(StoreKey.accessToken),
+        SettingsRepository.instance.clear(const [
+          .networkAutomaticLanTransfer,
+          .networkAllowInsecureLanTransfer,
+          .networkAutoEndpointSwitching,
+          .networkPreferredWifiName,
+          .networkLocalEndpoint,
+          .networkExternalEndpointList,
+        ]),
+      ]);
+    } finally {
+      _clearingLocalData = false;
+    }
   }
 
   Future<void> changePassword({required String currentPassword, required String newPassword}) async {
@@ -138,10 +179,64 @@ class AuthService {
     }
   }
 
-  Future<String?> setOpenApiServiceEndpoint() async {
+  Future<String?> setOpenApiServiceEndpoint() {
+    _endpointGeneration++;
+    return _endpointSwitch ??= _refreshEndpoint().whenComplete(() => _endpointSwitch = null);
+  }
+
+  void dispose() {
+    _disposed = true;
+    _endpointGeneration++;
+  }
+
+  Future<String?> _refreshEndpoint() async {
+    String? result;
+    int generation;
+    do {
+      generation = _endpointGeneration;
+      result = await _switchEndpoint(generation);
+    } while (generation != _endpointGeneration && !_disposed);
+    return result;
+  }
+
+  Future<String?> _switchEndpoint(int generation) async {
+    if (_disposed ||
+        _clearingLocalData ||
+        (_lanDirectTransferService != null && Store.tryGet(StoreKey.accessToken) == null)) {
+      return null;
+    }
     final enable = _authRepository.getEndpointSwitchingFeature();
     if (!enable) {
-      return null;
+      final service = _lanDirectTransferService;
+      final publicUrl = Store.tryGet(StoreKey.serverUrl);
+      final token = Store.tryGet(StoreKey.accessToken);
+      if (service == null || publicUrl == null || token == null) {
+        return null;
+      }
+      final fallback = LanDirectTransferService.apiUrl(publicUrl);
+      // A previous LAN address must not remain active on a newly joined network.
+      await _apiService.activateEndpoint(fallback);
+      if (generation != _endpointGeneration || token != Store.tryGet(StoreKey.accessToken)) {
+        return null;
+      }
+      _onLanRouteChanged?.call(LanRouteState(url: fallback));
+      final selected = _authRepository.getAutomaticLanTransfer()
+          ? await service.select(publicUrl: publicUrl, allowInsecureHttp: _authRepository.getAllowInsecureLanTransfer())
+          : LanRouteState(url: fallback, lastProbeResult: LanProbeResult.disabled);
+      // Discard probes from an old network, account, or settings change.
+      if (generation != _endpointGeneration ||
+          publicUrl != Store.tryGet(StoreKey.serverUrl) ||
+          token != Store.tryGet(StoreKey.accessToken)) {
+        return null;
+      }
+      if (selected.url != fallback) {
+        await _apiService.activateEndpoint(selected.url!);
+      }
+      if (generation != _endpointGeneration || token != Store.tryGet(StoreKey.accessToken)) {
+        return null;
+      }
+      _onLanRouteChanged?.call(selected);
+      return selected.url;
     }
 
     final wifiName = await _networkService.getWifiName();
@@ -152,8 +247,15 @@ class AuthService {
       endpoint = await _setLocalConnection();
     }
 
+    final isLocal = endpoint != null;
     endpoint ??= await _setRemoteConnection();
-
+    _onLanRouteChanged?.call(
+      LanRouteState(
+        route: isLocal ? LanRoute.lan : LanRoute.public,
+        url: endpoint ?? Store.tryGet(StoreKey.serverEndpoint),
+        lastProbeResult: LanProbeResult.manualOverride,
+      ),
+    );
     return endpoint;
   }
 
@@ -161,9 +263,9 @@ class AuthService {
     try {
       final localEndpoint = _authRepository.getLocalEndpoint();
       if (localEndpoint != null) {
-        await _apiService.resolveAndSetEndpoint(localEndpoint);
+        final url = await _apiService.resolveAndSetEndpoint(localEndpoint);
         _log.info("Using local endpoint");
-        return localEndpoint;
+        return url;
       }
     } catch (error, stackTrace) {
       _log.severe("Cannot set local endpoint", error, stackTrace);
@@ -179,7 +281,7 @@ class AuthService {
       endpointList = _authRepository.getExternalEndpointList();
     } catch (error, stackTrace) {
       _log.severe("Cannot get external endpoint", error, stackTrace);
-      return null;
+      endpointList = [];
     }
 
     for (var i = 0; i < endpointList.length; i++) {
@@ -196,6 +298,12 @@ class AuthService {
       }
     }
 
+    final publicUrl = Store.tryGet(StoreKey.serverUrl);
+    if (_lanDirectTransferService != null && publicUrl != null && Store.tryGet(StoreKey.accessToken) != null) {
+      final url = LanDirectTransferService.apiUrl(publicUrl);
+      await _apiService.activateEndpoint(url);
+      return url;
+    }
     return null;
   }
 
