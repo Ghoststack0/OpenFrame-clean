@@ -63,6 +63,7 @@ const SHARED_LINK_ROUTES = new Set([
   'POST assets',
   'POST assets/uploads',
   'POST assets/uploads/:id/finalize',
+  'POST assets/processing-status',
   'POST download/archive',
   'POST download/info',
   'POST search/metadata',
