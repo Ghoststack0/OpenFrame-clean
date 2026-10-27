@@ -7,6 +7,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
+import 'package:immich_mobile/providers/lan_direct_transfer.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -23,6 +24,7 @@ class AppBarServerInfo extends HookConsumerWidget {
     final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
     final bool showVersionWarning = ref.watch(versionWarningPresentProvider(user));
+    final lanRoute = ref.watch(lanDirectTransferProvider).route;
 
     final appInfo = useState({});
 
@@ -56,6 +58,13 @@ class AppBarServerInfo extends HookConsumerWidget {
           ),
           divider,
           _ServerInfoItem(label: context.t.server_info_box_server_url, text: getServerUrl() ?? '--', tooltip: true),
+          divider,
+          _ServerInfoItem(
+            label: context.t.server_info_box_connection,
+            text: lanRoute == LanRoute.lan
+                ? context.t.server_info_box_connection_local
+                : context.t.server_info_box_connection_public,
+          ),
           if (serverInfoState.latestVersion != null) ...[
             divider,
             _ServerInfoItem(
