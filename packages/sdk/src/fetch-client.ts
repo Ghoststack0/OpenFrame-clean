@@ -3039,6 +3039,29 @@ export type SessionCreateResponseDto = {
     /** Last update date */
     updatedAt: string;
 };
+export type DeviceTransferDto = {
+    action: DeviceTransferAction;
+    assetIds: string[];
+    targetSessionId: string;
+};
+export type DeviceTransferResponseDto = {
+    action: DeviceTransferAction;
+    assetIds: string[];
+    /** Transfer ID */
+    id: string;
+    sentAt: string;
+    sourceSessionId: string;
+    targetSessionId: string;
+};
+export type SessionTargetResponseDto = {
+    /** Device name inferred from existing session metadata */
+    deviceName: string;
+    deviceOS: string;
+    deviceType: string;
+    id: string;
+    /** Friendly device label including a short session ID */
+    label: string;
+};
 export type SessionUpdateDto = {
     /** Reset pending sync state */
     isPendingSyncReset?: boolean;
@@ -7119,6 +7142,32 @@ export function createSession({ sessionCreateDto }: {
     })));
 }
 /**
+ * Send assets to another session
+ */
+export function sendToDevice({ deviceTransferDto }: {
+    deviceTransferDto: DeviceTransferDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DeviceTransferResponseDto;
+    }>("/sessions/send-to-device", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: deviceTransferDto
+    })));
+}
+/**
+ * List online target sessions
+ */
+export function getDeviceTargets(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionTargetResponseDto[];
+    }>("/sessions/targets", {
+        ...opts
+    }));
+}
+/**
  * Delete a session
  */
 export function deleteSession({ id }: {
@@ -8692,6 +8741,10 @@ export enum SearchSuggestionType {
     CameraMake = "camera-make",
     CameraModel = "camera-model",
     CameraLensModel = "camera-lens-model"
+}
+export enum DeviceTransferAction {
+    Open = "open",
+    Download = "download"
 }
 export enum SharedLinkType {
     Album = "ALBUM",
