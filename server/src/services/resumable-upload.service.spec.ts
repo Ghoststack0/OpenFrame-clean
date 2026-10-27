@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
@@ -128,6 +128,36 @@ describe(ResumableUploadService.name, () => {
     await sut.patch(authStub.user1, id, 0, Readable.from(Buffer.alloc(data.length)));
     await expect(sut.finalize(authStub.user1, id)).rejects.toBeInstanceOf(UnprocessableEntityException);
     expect(media.mocks.asset.create).not.toHaveBeenCalled();
+  });
+
+  it('preserves an asset sidecar if persisting the final session result fails', async () => {
+    const { id } = await sut.create(authStub.user1, dto());
+    await sut.patch(authStub.user1, id, 0, Readable.from(data));
+    const sidecarPath = join(directory, 'video.xmp');
+    await writeFile(sidecarPath, '<xmp/>');
+    media.mocks.asset.upsertFile.mockResolvedValue();
+    repository.update.mockImplementation((_id, values) => {
+      if (values.result) {
+        return Promise.reject(new Error('Session result commit failed'));
+      }
+      Object.assign(session!, values);
+      return Promise.resolve();
+    });
+    await expect(
+      sut.finalize(authStub.user1, id, {
+        uuid: id,
+        checksum: Buffer.alloc(0),
+        originalName: 'video.xmp',
+        originalPath: sidecarPath,
+        size: 6,
+      }),
+    ).rejects.toThrow('Session result commit failed');
+    expect(await readFile(sidecarPath, 'utf8')).toBe('<xmp/>');
+    expect(media.mocks.asset.upsertFile).toHaveBeenCalledWith({
+      assetId: asset.id,
+      path: sidecarPath,
+      type: 'sidecar',
+    });
   });
 
   it('uses normal checksum deduplication and preserves the staged file during duplicate cleanup', async () => {

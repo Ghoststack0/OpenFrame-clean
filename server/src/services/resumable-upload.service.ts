@@ -91,6 +91,7 @@ export class ResumableUploadService {
   }
 
   async finalize(auth: AuthDto, id: string, sidecarFile?: UploadFile): Promise<AssetMediaResponseDto> {
+    let sidecarDelegated = false;
     try {
       const current = await this.repository.withLock(id, async (session, repository) => {
         const current = await this.checkSession(auth, session);
@@ -117,6 +118,7 @@ export class ResumableUploadService {
       // Separate hard links let concurrent finalizers use normal dedup cleanup without deleting staged data or an asset.
       await this.storage.link(this.partialPath(current), file.originalPath);
       // Release the session connection before normal asset creation needs connections from the same pool.
+      sidecarDelegated = true;
       const result = await this.media.uploadAsset(auth, dto, file, sidecarFile);
       return await this.repository.withLock(id, async (session, repository) => {
         if (!session) {
@@ -129,7 +131,7 @@ export class ResumableUploadService {
         return result;
       });
     } catch (error) {
-      if (sidecarFile) {
+      if (sidecarFile && !sidecarDelegated) {
         await this.storage.unlink(sidecarFile.originalPath);
       }
       throw error;
