@@ -24,6 +24,7 @@ import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/permission_api.g.dart';
+import 'package:immich_mobile/presentation/widgets/device_transfer/device_transfer_banners.widget.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -297,7 +298,10 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
             password: context.t.password,
             undo: context.t.undo,
           ),
-          child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
+          child: ImmichThemeProvider(
+            colorScheme: context.colorScheme,
+            child: DeviceTransferOverlay(child: child!),
+          ),
         ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,

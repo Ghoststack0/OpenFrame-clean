@@ -904,6 +904,7 @@
   "device_transfer_error_unavailable": "{device} is no longer available",
   "device_transfer_error_unknown": "Unable to send to device",
   "device_transfer_incoming": "Incoming transfers",
+  "device_transfer_items_unavailable": "Couldn't find the sent items. They may not have synced to this device yet.",
   "device_transfer_load_error": "Unable to load your devices",
   "device_transfer_pick_device": "{count, plural, one {Send # item to} other {Send # items to}}",
   "device_transfer_received": "{device} sent you {count, plural, one {# photo} other {# photos}}",

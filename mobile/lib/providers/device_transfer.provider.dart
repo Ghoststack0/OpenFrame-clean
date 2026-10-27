@@ -18,3 +18,7 @@ final deviceTransferServiceProvider = Provider.autoDispose<DeviceTransferService
 final deviceTransferIncomingProvider = StreamProvider.autoDispose<DeviceTransferResponseDto>((ref) {
   return ref.watch(deviceTransferServiceProvider).incoming;
 });
+
+final deviceTransferTargetsProvider = FutureProvider.autoDispose<List<SessionTargetResponseDto>>(
+  (ref) => ref.read(deviceTransferServiceProvider).listTargets(),
+);
