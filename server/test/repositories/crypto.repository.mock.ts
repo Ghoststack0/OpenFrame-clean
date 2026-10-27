@@ -4,6 +4,7 @@ import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 
 export const newCryptoRepositoryMock = (): Mocked<RepositoryInterface<CryptoRepository>> => {
   return {
+    hmacSha256: vitest.fn(),
     randomUUID: vitest.fn().mockReturnValue('random-uuid'),
     randomBytes: vitest.fn().mockReturnValue(Buffer.from('random-bytes', 'utf8')),
     compareBcrypt: vitest.fn().mockResolvedValue(true),

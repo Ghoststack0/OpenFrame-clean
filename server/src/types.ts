@@ -552,6 +552,7 @@ export type MemoriesState = {
 export type MediaLocation = { location: string };
 
 export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
+  [SystemMetadataKey.LanIdentity]: { secret: string };
   [SystemMetadataKey.AdminOnboarding]: { isOnboarded: boolean };
   [SystemMetadataKey.FacialRecognitionState]: { lastRun?: string };
   [SystemMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: Date };

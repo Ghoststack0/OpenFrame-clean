@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/external_network_preference.dart';
+import 'package:immich_mobile/widgets/settings/networking_settings/lan_direct_transfer_settings.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/local_network_preference.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -137,6 +138,8 @@ class NetworkingSettings extends HookConsumerWidget {
           title: context.t.automatic_endpoint_switching_title,
           subtitle: context.t.automatic_endpoint_switching_subtitle,
         ),
+        const SizedBox(height: 8),
+        LanDirectTransferSettings(manualSwitchingEnabled: featureEnabled.value),
         const SizedBox(height: 8),
         SettingGroupTitle(title: context.t.local_network, icon: Icons.home_outlined),
         LocalNetworkPreference(enabled: featureEnabled.value),

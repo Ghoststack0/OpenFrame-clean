@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
+import 'package:immich_mobile/services/lan_direct_transfer.service.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -65,7 +66,13 @@ abstract final class Bootstrap {
 
     // TODO(rewrite): This is bad DB coupling and should be removed
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
-    if (endpoint != null && endpoint.isNotEmpty) {
+    final publicUrl = Store.tryGet(StoreKey.serverUrl);
+    if (!settingsRepo.appConfig.network.autoEndpointSwitching &&
+        publicUrl != null &&
+        Store.tryGet(StoreKey.accessToken) != null) {
+      // A persisted LAN route belongs to the previous network until reverified.
+      await apiService.activateEndpoint(LanDirectTransferService.apiUrl(publicUrl));
+    } else if (endpoint != null && endpoint.isNotEmpty) {
       apiService.setEndpoint(endpoint);
     }
 

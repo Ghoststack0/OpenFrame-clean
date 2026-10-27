@@ -434,6 +434,19 @@ const AdminConfigSchemaWithVisibility = z
       .meta({ id: 'AdminConfigTemplatesDto' }),
     server: z
       .object({
+        localUrls: z
+          .array(
+            z.url({ protocol: /^https?$/ }).refine((value) => {
+              const url = new URL(value);
+              return !url.username && !url.password && !value.includes('?') && !value.includes('#');
+            }, 'Local URLs must not contain credentials, query parameters, or fragments'),
+          )
+          .max(16)
+          .optional()
+          .describe('LAN base URLs, including any reverse proxy path. Only disclosed to authenticated users'),
+        autoDetectLocalUrls: configBool
+          .optional()
+          .describe('Advertise private interface addresses using the server port'),
         externalDomain: emptyOrUrl('External domain must be an empty string or a valid URL')
           .describe('External domain')
           .meta({ visibility: User }),
@@ -787,6 +800,8 @@ export const defaults = Object.freeze<SystemConfig>({
     },
   },
   server: {
+    localUrls: [],
+    autoDetectLocalUrls: false,
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,

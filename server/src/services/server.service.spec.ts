@@ -1,4 +1,5 @@
 import { SystemMetadataKey } from 'src/enum.js';
+import { CryptoRepository } from 'src/repositories/crypto.repository.js';
 import { ServerService } from 'src/services/server.service.js';
 import { mockEnvData } from 'test/repositories/config.repository.mock.js';
 import { ServiceMocks, newTestService } from 'test/utils.js';
@@ -13,6 +14,45 @@ describe(ServerService.name, () => {
 
   it('should work', () => {
     expect(sut).toBeDefined();
+  });
+
+  describe('LAN discovery', () => {
+    const nonce = 'a'.repeat(64);
+    const crypto = new CryptoRepository();
+
+    beforeEach(() => {
+      mocks.systemMetadata.getOrCreate.mockResolvedValue({ secret: 'instance-secret' });
+      mocks.crypto.hashSha256.mockImplementation((value) => crypto.hashSha256(value));
+      mocks.crypto.hmacSha256.mockImplementation((value, secret) => crypto.hmacSha256(value, secret));
+    });
+
+    it('returns no addresses by default and keeps a stable instance identity', async () => {
+      const result = await sut.getLanCandidates({ nonce });
+      expect(result.urls).toEqual([]);
+      expect(result.serverId).toBe(crypto.hashSha256('instance-secret').toString('hex'));
+      expect(await sut.getServerIdentity({ nonce })).toEqual({ serverId: result.serverId, proof: result.proof });
+      expect(mocks.serverInfo.getLocalAddresses).not.toHaveBeenCalled();
+      expect(mocks.systemMetadata.getOrCreate).toHaveBeenCalledWith(SystemMetadataKey.LanIdentity, expect.any(Object));
+    });
+
+    it('changes the proof for each challenge and each instance', async () => {
+      const first = await sut.getServerIdentity({ nonce });
+      const next = await sut.getServerIdentity({ nonce: 'b'.repeat(64) });
+      expect(next.proof).not.toBe(first.proof);
+      mocks.systemMetadata.getOrCreate.mockResolvedValue({ secret: 'other-instance' });
+      const other = await sut.getServerIdentity({ nonce });
+      expect(other.serverId).not.toBe(first.serverId);
+      expect(other.proof).not.toBe(first.proof);
+    });
+
+    it('combines configured URLs with opt-in detected addresses and the configured port', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        server: { localUrls: ['https://photos.lan', 'http://192.168.1.2:2283'], autoDetectLocalUrls: true },
+      });
+      mocks.serverInfo.getLocalAddresses.mockReturnValue(['192.168.1.2', '[fd00::1]']);
+      const result = await sut.getLanCandidates({ nonce });
+      expect(result.urls).toEqual(['https://photos.lan', 'http://192.168.1.2:2283', 'http://[fd00::1]:2283']);
+    });
   });
 
   describe('getStorage', () => {

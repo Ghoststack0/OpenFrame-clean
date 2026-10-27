@@ -374,8 +374,12 @@ export type AdminConfigReverseGeocodingDto = {
     enabled: boolean;
 };
 export type AdminConfigServerDto = {
+    /** Advertise private interface addresses using the server port */
+    autoDetectLocalUrls?: boolean;
     /** External domain */
     externalDomain: string;
+    /** LAN base URLs, including any reverse proxy path. Only disclosed to authenticated users */
+    localUrls?: string[];
     /** Login page message */
     loginPageMessage: string;
     /** Public users */
@@ -2959,6 +2963,20 @@ export type ServerFeaturesDto = {
     smartSearch: boolean;
     /** Whether trash feature is enabled */
     trash: boolean;
+};
+export type ServerIdentityResponseDto = {
+    /** HMAC-SHA256 of the nonce, in hexadecimal */
+    proof: string;
+    /** SHA-256 fingerprint of the persistent instance secret */
+    serverId: string;
+};
+export type ServerLanCandidatesResponseDto = {
+    /** HMAC-SHA256 of the nonce, in hexadecimal */
+    proof: string;
+    /** SHA-256 fingerprint of the persistent instance secret */
+    serverId: string;
+    /** Candidate LAN base URLs without /api, unless explicitly configured */
+    urls: string[];
 };
 export type LicenseKeyDto = {
     /** Activation key */
@@ -7132,6 +7150,36 @@ export function getServerFeatures(opts?: Oazapfts.RequestOpts) {
         status: 200;
         data: ServerFeaturesDto;
     }>("/server/features", {
+        ...opts
+    }));
+}
+/**
+ * Verify server identity
+ */
+export function getServerIdentity({ nonce }: {
+    nonce: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerIdentityResponseDto;
+    }>(`/server/identity${QS.query(QS.explode({
+        nonce
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Get LAN candidates
+ */
+export function getLanCandidates({ nonce }: {
+    nonce: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerLanCandidatesResponseDto;
+    }>(`/server/lan-candidates${QS.query(QS.explode({
+        nonce
+    }))}`, {
         ...opts
     }));
 }

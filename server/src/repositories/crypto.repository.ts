@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { compare, hash } from 'bcrypt';
 import jwt from 'jsonwebtoken';
-import { createHash, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
+import { createHash, createHmac, createPublicKey, createVerify, randomBytes, randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 
 @Injectable()
 export class CryptoRepository {
+  hmacSha256(value: string, secret: string): string {
+    return createHmac('sha256', secret).update(value).digest('hex');
+  }
+
   randomUUID(): string {
     return randomUUID();
   }

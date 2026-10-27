@@ -1,17 +1,24 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/data/db/main/database.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/lan_direct_transfer.service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
+
+class MockLanDirectTransferService extends Mock implements LanDirectTransferService {}
 
 void main() {
   late AuthService sut;
@@ -94,6 +101,144 @@ void main() {
 
       verify(() => apiService.resolveAndSetEndpoint(testUrl)).called(1);
       verifyNever(() => apiService.setDeviceInfoHeader());
+    });
+  });
+
+  group('automatic LAN endpoint integration', () {
+    late MockLanDirectTransferService lan;
+    late List<LanRouteState> states;
+    const publicUrl = 'https://public.example/api';
+    const lanUrl = 'https://photos.lan/api';
+    const verified = LanRouteState(route: LanRoute.lan, url: lanUrl, lastProbeResult: LanProbeResult.verified);
+    const fallback = LanRouteState(url: publicUrl, lastProbeResult: LanProbeResult.discoveryFailed);
+
+    setUp(() async {
+      lan = MockLanDirectTransferService();
+      states = [];
+      sut = AuthService(
+        authApiRepository,
+        authRepository,
+        apiService,
+        networkService,
+        backgroundSyncManager,
+        lanDirectTransferService: lan,
+        onLanRouteChanged: states.add,
+      );
+      await Store.put(StoreKey.serverUrl, publicUrl);
+      await Store.put(StoreKey.accessToken, 'token');
+      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(false);
+      when(() => authRepository.getAutomaticLanTransfer()).thenReturn(true);
+      when(() => authRepository.getAllowInsecureLanTransfer()).thenReturn(false);
+      when(() => apiService.activateEndpoint(any())).thenAnswer((_) async {});
+      when(() => lan.select(publicUrl: publicUrl, allowInsecureHttp: false)).thenAnswer((_) async => verified);
+    });
+
+    tearDown(() async {
+      await Store.delete(StoreKey.serverUrl);
+      await Store.delete(StoreKey.accessToken);
+    });
+
+    test('activates a verified endpoint through the shared API service and exposes state', () async {
+      expect(await sut.setOpenApiServiceEndpoint(), lanUrl);
+      verify(() => apiService.activateEndpoint(lanUrl)).called(1);
+      expect(states.last.route, LanRoute.lan);
+      expect(Store.get(StoreKey.serverUrl), publicUrl);
+      verifyNever(() => networkService.getWifiName());
+    });
+
+    test('restores the public URL on discovery failure', () async {
+      when(() => lan.select(publicUrl: publicUrl, allowInsecureHttp: false)).thenAnswer((_) async => fallback);
+      expect(await sut.setOpenApiServiceEndpoint(), publicUrl);
+      verify(() => apiService.activateEndpoint(publicUrl)).called(1);
+      expect(states.last.lastProbeResult, LanProbeResult.discoveryFailed);
+    });
+
+    test('restores the public URL when automatic LAN transfer is disabled', () async {
+      when(() => authRepository.getAutomaticLanTransfer()).thenReturn(false);
+      expect(await sut.setOpenApiServiceEndpoint(), publicUrl);
+      verifyNever(() => lan.select(publicUrl: publicUrl));
+      expect(states.last.lastProbeResult, LanProbeResult.disabled);
+    });
+
+    test('keeps the manual SSID override when it disagrees with automatic discovery', () async {
+      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(true);
+      when(() => networkService.getWifiName()).thenAnswer((_) async => 'OtherWifi');
+      when(() => authRepository.getPreferredWifiName()).thenReturn('HomeWifi');
+      when(
+        () => authRepository.getExternalEndpointList(),
+      ).thenReturn([const AuxilaryEndpoint(url: publicUrl, status: AuxCheckStatus.valid)]);
+      when(() => apiService.resolveAndSetEndpoint(publicUrl)).thenAnswer((_) async => publicUrl);
+      expect(await sut.setOpenApiServiceEndpoint(), publicUrl);
+      verifyNever(() => lan.select(publicUrl: publicUrl));
+      expect(states.last.lastProbeResult, LanProbeResult.manualOverride);
+    });
+
+    test('discards an in-flight probe after a network change and reruns selection', () async {
+      final pending = Completer<LanRouteState>();
+      var calls = 0;
+      when(() => lan.select(publicUrl: publicUrl, allowInsecureHttp: false)).thenAnswer((_) {
+        calls++;
+        return calls == 1 ? pending.future : Future.value(fallback);
+      });
+      final first = sut.setOpenApiServiceEndpoint();
+      await Future<void>.delayed(Duration.zero);
+      final second = sut.setOpenApiServiceEndpoint();
+      pending.complete(verified);
+      expect(await first, publicUrl);
+      expect(await second, publicUrl);
+      verifyNever(() => apiService.activateEndpoint(lanUrl));
+      verify(() => apiService.activateEndpoint(publicUrl)).called(2);
+    });
+
+    test('does not activate a probe after logout', () async {
+      final pending = Completer<LanRouteState>();
+      when(() => lan.select(publicUrl: publicUrl, allowInsecureHttp: false)).thenAnswer((_) => pending.future);
+      final operation = sut.setOpenApiServiceEndpoint();
+      await Future<void>.delayed(Duration.zero);
+      await Store.delete(StoreKey.accessToken);
+      pending.complete(verified);
+      expect(await operation, isNull);
+      verifyNever(() => apiService.activateEndpoint(lanUrl));
+      expect(states.last.route, LanRoute.public);
+    });
+
+    test('does not rerun a probe while logout waits for background cancellation', () async {
+      final pending = Completer<LanRouteState>();
+      final cancellation = Completer<void>();
+      when(() => lan.select(publicUrl: publicUrl, allowInsecureHttp: false)).thenAnswer((_) => pending.future);
+      when(() => backgroundSyncManager.cancel()).thenAnswer((_) => cancellation.future);
+      final operation = sut.setOpenApiServiceEndpoint();
+      await Future<void>.delayed(Duration.zero);
+      final clearing = sut.clearLocalData();
+      pending.complete(verified);
+      expect(await operation, isNull);
+      verifyNever(() => apiService.activateEndpoint(lanUrl));
+      verify(() => lan.select(publicUrl: publicUrl, allowInsecureHttp: false)).called(1);
+      final assertion = expectLater(clearing, throwsStateError);
+      cancellation.completeError(StateError('cancellation failed'));
+      await assertion;
+    });
+
+    test('discards probes after disposal', () async {
+      final pending = Completer<LanRouteState>();
+      when(() => lan.select(publicUrl: publicUrl, allowInsecureHttp: false)).thenAnswer((_) => pending.future);
+      final operation = sut.setOpenApiServiceEndpoint();
+      await Future<void>.delayed(Duration.zero);
+      sut.dispose();
+      pending.complete(verified);
+      expect(await operation, isNull);
+      verifyNever(() => apiService.activateEndpoint(lanUrl));
+    });
+
+    test('does not publish a LAN route after disposal during endpoint activation', () async {
+      final activation = Completer<void>();
+      when(() => apiService.activateEndpoint(lanUrl)).thenAnswer((_) => activation.future);
+      final operation = sut.setOpenApiServiceEndpoint();
+      await Future<void>.delayed(Duration.zero);
+      sut.dispose();
+      activation.complete();
+      expect(await operation, isNull);
+      expect(states.last.route, LanRoute.public);
     });
   });
 
