@@ -4,7 +4,8 @@ import { UploadState, type UploadAsset } from '$lib/types';
 import UploadAssetPreview from './UploadAssetPreview.svelte';
 
 const MiB = 1024 * 1024;
-const RESUME_HINT = 'Progress is kept on the server for 24 hours. Retry to resume from where it stopped.';
+const RESUME_HINT =
+  'Progress is kept on the server for 24 hours after the last uploaded chunk. Retry to resume from where it stopped.';
 
 const uploadAsset = (overrides: Partial<UploadAsset> = {}): UploadAsset => ({
   id: 'large.mp4',
@@ -73,6 +74,7 @@ describe('UploadAssetPreview', () => {
 
     expect(screen.getByText('Network down')).toBeTruthy();
     expect(screen.getByText(RESUME_HINT)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeTruthy();
   });
 
   it('does not promise resumption for failed uploads that keep no session', () => {

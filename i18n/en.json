@@ -2299,7 +2299,7 @@
   "upload_parallelism": "Uploading {count, number} at a time",
   "upload_progress": "Remaining {remaining, number} - Processed {processed, number}/{total, number}",
   "upload_reconnecting": "Reconnecting… (retry {attempt, number})",
-  "upload_resumable_failed": "Progress is kept on the server for 24 hours. Retry to resume from where it stopped.",
+  "upload_resumable_failed": "Progress is kept on the server for 24 hours after the last uploaded chunk. Retry to resume from where it stopped.",
   "upload_resuming_from": "Resuming from {size}",
   "upload_skipped_duplicates": "Skipped {count, plural, one {# duplicate asset} other {# duplicate assets}}",
   "upload_status_duplicates": "Duplicates",

@@ -106,11 +106,24 @@
       </div>
     {:else if uploadAsset.state === UploadState.ERROR}
       <div class="flex items-center justify-between gap-1">
-        <button type="button" onclick={() => handleRetry(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
-          <Icon icon={mdiRestart} size="20" />
+        <!-- Reachable by keyboard and screen readers: the resume hint points users at this action. -->
+        <button
+          type="button"
+          onclick={() => handleRetry(uploadAsset)}
+          class=""
+          aria-label={$t('retry')}
+          title={$t('retry')}
+        >
+          <Icon icon={mdiRestart} size="20" aria-hidden="true" />
         </button>
-        <button type="button" onclick={() => handleDismiss(uploadAsset)} class="" aria-hidden="true" tabindex={-1}>
-          <Icon icon={mdiClose} size="20" />
+        <button
+          type="button"
+          onclick={() => handleDismiss(uploadAsset)}
+          class=""
+          aria-label={$t('close')}
+          title={$t('close')}
+        >
+          <Icon icon={mdiClose} size="20" aria-hidden="true" />
         </button>
       </div>
     {/if}
