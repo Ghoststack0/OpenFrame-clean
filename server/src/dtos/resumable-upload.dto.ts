@@ -4,6 +4,8 @@ import { AssetMediaCreateSchema } from 'src/dtos/asset-media.dto.js';
 
 export const UPLOAD_CHUNK_SIZE = 8 * 1024 * 1024;
 export const UPLOAD_SESSION_TTL = 24 * 60 * 60 * 1000;
+// Upper bound for streaming one chunk; a lease older than this is treated as abandoned.
+export const UPLOAD_CHUNK_LEASE = 15 * 60 * 1000;
 
 export const ResumableUploadCreateSchema = AssetMediaCreateSchema.pick({
   fileCreatedAt: true,

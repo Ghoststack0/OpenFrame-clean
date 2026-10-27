@@ -18,6 +18,7 @@ import {
   ResumableUploadCreateDto,
   ResumableUploadCreateSchema,
   ResumableUploadResponseDto,
+  UPLOAD_CHUNK_LEASE,
   UPLOAD_CHUNK_SIZE,
   UPLOAD_SESSION_TTL,
 } from 'src/dtos/resumable-upload.dto.js';
@@ -64,15 +65,22 @@ export class ResumableUploadService {
   }
 
   async head(auth: AuthDto, id: string): Promise<ResumableUploadResponseDto> {
-    return this.repository.withLock(id, async (session) => {
-      const current = await this.checkSession(auth, session);
-      return this.response(current);
-    });
+    const current = await this.checkSession(auth, await this.repository.get(id));
+    return this.response(current);
   }
 
   async patch(auth: AuthDto, id: string, offset: number, input: Readable): Promise<ResumableUploadResponseDto> {
-    return this.repository.withLock(id, async (session, repository) => {
-      const current = await this.checkSession(auth, session);
+    await this.checkSession(auth, await this.repository.get(id));
+    const leaseId = randomUUID();
+    const current = await this.repository.acquire(id, leaseId, new Date(Date.now() + UPLOAD_CHUNK_LEASE));
+    if (!current) {
+      throw new ConflictException('Another chunk for this upload is in progress');
+    }
+    let isReleased = false;
+    try {
+      if (new Date(current.expiresAt).getTime() <= Date.now()) {
+        throw new NotFoundException('Upload session not found or expired');
+      }
       if (current.result || offset !== current.offset) {
         throw new ConflictException('Upload offset mismatch');
       }
@@ -85,9 +93,16 @@ export class ResumableUploadService {
         throw new BadRequestException('Empty chunk');
       }
       const next = { ...current, offset: offset + written, expiresAt: new Date(Date.now() + UPLOAD_SESSION_TTL) };
-      await repository.update(id, { offset: next.offset, expiresAt: next.expiresAt });
+      isReleased = await this.repository.release(id, leaseId, { offset: next.offset, expiresAt: next.expiresAt });
+      if (!isReleased) {
+        throw new ConflictException('Upload chunk took too long; query the offset and retry');
+      }
       return this.response(next);
-    });
+    } finally {
+      if (!isReleased) {
+        await this.repository.release(id, leaseId);
+      }
+    }
   }
 
   async finalize(auth: AuthDto, id: string, sidecarFile?: UploadFile): Promise<AssetMediaResponseDto> {
@@ -95,6 +110,9 @@ export class ResumableUploadService {
     try {
       const current = await this.repository.withLock(id, async (session, repository) => {
         const current = await this.checkSession(auth, session);
+        if (current.leaseExpiresAt && new Date(current.leaseExpiresAt).getTime() > Date.now()) {
+          throw new ConflictException('A chunk for this upload is still in progress');
+        }
         if (current.offset !== current.size) {
           throw new ConflictException('Upload is incomplete');
         }
@@ -116,7 +134,7 @@ export class ResumableUploadService {
       const request = { auth, fieldName: UploadFieldName.ASSET_DATA, file, body: { ...dto } };
       file.originalPath = join(this.media.getUploadFolder(request), this.media.getUploadFilename(request));
       // Separate hard links let concurrent finalizers use normal dedup cleanup without deleting staged data or an asset.
-      await this.storage.link(this.partialPath(current), file.originalPath);
+      await this.storage.linkOrCopy(this.partialPath(current), file.originalPath);
       // Release the session connection before normal asset creation needs connections from the same pool.
       sidecarDelegated = true;
       const result = await this.media.uploadAsset(auth, dto, file, sidecarFile);

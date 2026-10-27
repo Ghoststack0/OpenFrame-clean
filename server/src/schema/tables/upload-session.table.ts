@@ -27,4 +27,10 @@ export class UploadSessionTable {
 
   @Column({ type: 'timestamp with time zone', index: true })
   expiresAt!: Timestamp;
+
+  @Column({ type: 'uuid', nullable: true })
+  leaseId!: string | null;
+
+  @Column({ type: 'timestamp with time zone', nullable: true })
+  leaseExpiresAt!: Timestamp | null;
 }

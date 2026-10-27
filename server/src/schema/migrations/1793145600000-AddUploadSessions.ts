@@ -10,6 +10,8 @@ export async function up(db: Kysely<any>): Promise<void> {
     "metadata" jsonb NOT NULL,
     "result" jsonb,
     "expiresAt" timestamp with time zone NOT NULL,
+    "leaseId" uuid,
+    "leaseExpiresAt" timestamp with time zone,
     CONSTRAINT "upload_session_pkey" PRIMARY KEY ("id"),
     CONSTRAINT "upload_session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON UPDATE CASCADE ON DELETE CASCADE
   );`.execute(db);

@@ -7,10 +7,11 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import fs, { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
+import { vi } from 'vitest';
 import { StorageCore } from 'src/cores/storage.core.js';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto.js';
 import { ResumableUploadCreateSchema } from 'src/dtos/resumable-upload.dto.js';
@@ -65,6 +66,8 @@ describe(ResumableUploadService.name, () => {
         expiresAt: new Date(input.expiresAt),
         sharedLinkId: input.sharedLinkId ?? null,
         result: input.result ?? null,
+        leaseId: null,
+        leaseExpiresAt: null,
         metadata: JSON.parse(JSON.stringify(input.metadata)),
       };
       session = created;
@@ -79,6 +82,21 @@ describe(ResumableUploadService.name, () => {
       return Promise.resolve();
     });
     repository.withLock.mockImplementation(async (_id, action) => action(session, repository));
+    repository.get.mockImplementation(() => Promise.resolve(session && { ...session }));
+    repository.acquire.mockImplementation((_id, leaseId, leaseExpiresAt) => {
+      if (!session || (session.leaseExpiresAt && new Date(session.leaseExpiresAt).getTime() > Date.now())) {
+        return Promise.resolve(undefined);
+      }
+      Object.assign(session, { leaseId, leaseExpiresAt });
+      return Promise.resolve({ ...session });
+    });
+    repository.release.mockImplementation((_id, leaseId, values = {}) => {
+      if (session?.leaseId !== leaseId) {
+        return Promise.resolve(false);
+      }
+      Object.assign(session, values, { leaseId: null, leaseExpiresAt: null });
+      return Promise.resolve(true);
+    });
     sut = new ResumableUploadService(
       repository,
       new StorageRepository(automock(LoggingRepository, { args: [undefined, { getEnv: () => ({}) }], strict: false })),
@@ -120,6 +138,47 @@ describe(ResumableUploadService.name, () => {
     });
     await expect(sut.finalize(authStub.user1, id)).resolves.toEqual({ id: asset.id, status: AssetMediaStatus.CREATED });
     expect(media.mocks.asset.create).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a concurrent chunk for the same session without holding a transaction while streaming', async () => {
+    const { id } = await sut.create(authStub.user1, dto());
+    let release!: () => void;
+    const slow = Readable.from(
+      (async function* () {
+        yield data.subarray(0, 4);
+        await new Promise<void>((resolve) => (release = resolve));
+        yield data.subarray(4, 8);
+      })(),
+    );
+    const first = sut.patch(authStub.user1, id, 0, slow);
+    await vi.waitFor(() => expect(release).toBeDefined());
+    await expect(sut.patch(authStub.user1, id, 0, Readable.from(data))).rejects.toThrow('in progress');
+    await expect(sut.finalize(authStub.user1, id)).rejects.toThrow('in progress');
+    expect(repository.withLock).toHaveBeenCalledTimes(1);
+    release();
+    await expect(first).resolves.toMatchObject({ offset: 8 });
+    expect(session).toMatchObject({ offset: 8, leaseId: null, leaseExpiresAt: null });
+  });
+
+  it('releases the lease when a chunk fails, and refuses to commit after losing it', async () => {
+    const { id } = await sut.create(authStub.user1, dto());
+    await expect(sut.patch(authStub.user1, id, 3, Readable.from(data))).rejects.toBeInstanceOf(ConflictException);
+    expect(session).toMatchObject({ leaseId: null, offset: 0 });
+    repository.release.mockResolvedValueOnce(false);
+    await expect(sut.patch(authStub.user1, id, 0, Readable.from(data))).rejects.toThrow('took too long');
+    expect(session?.offset).toBe(0);
+  });
+
+  it('copies the staged file when the upload filesystem does not support hard links', async () => {
+    const link = vi
+      .spyOn(fs, 'link')
+      .mockRejectedValueOnce(Object.assign(new Error('not permitted'), { code: 'EPERM' }));
+    const { id } = await sut.create(authStub.user1, dto());
+    await sut.patch(authStub.user1, id, 0, Readable.from(data));
+    await expect(sut.finalize(authStub.user1, id)).resolves.toEqual({ id: asset.id, status: AssetMediaStatus.CREATED });
+    expect(link).toHaveBeenCalledTimes(1);
+    expect(await readFile(media.mocks.asset.create.mock.calls[0][0].originalPath!)).toEqual(data);
+    link.mockRestore();
   });
 
   it('rejects incomplete uploads and checksum failures', async () => {

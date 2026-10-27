@@ -57,8 +57,17 @@ export class StorageRepository {
     this.logger.setContext(StorageRepository.name);
   }
 
-  link(source: string, target: string) {
-    return fs.link(source, target);
+  /** Hard link where the filesystem supports it (e.g. not some SMB/CIFS or exFAT mounts), otherwise copy. */
+  async linkOrCopy(source: string, target: string) {
+    try {
+      await fs.link(source, target);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'EPERM' && code !== 'ENOTSUP' && code !== 'EOPNOTSUPP' && code !== 'EXDEV' && code !== 'ENOSYS') {
+        throw error;
+      }
+      await fs.copyFile(source, target, fs.constants.COPYFILE_EXCL);
+    }
   }
 
   async hashFile(filepath: string) {
