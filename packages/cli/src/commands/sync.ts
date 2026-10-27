@@ -1,5 +1,7 @@
 import {
   AssetResponseDto,
+  AssetUploadAction,
+  checkBulkUpload,
   defaults,
   deleteAssets,
   getAllAlbums,
@@ -168,19 +170,31 @@ const remoteAssets = async (albumName: string | undefined, userId: string, signa
   }
 };
 
-const isRemoteDeleted = async (assetId: string, userId: string, signal: AbortSignal) => {
+// Only a well-formed answer from the server may count as a deletion: 404s come from a wrong base URL or proxy,
+// and the server answers 400 both for purged assets and for access problems. A purge is confirmed by the
+// checksum check reporting that this account no longer has the content.
+const isRemoteDeleted = async (entry: SyncEntry, userId: string, signal: AbortSignal) => {
   try {
-    const asset = await retry(() => getAssetInfo({ id: assetId }), signal);
+    const asset = await retry(() => getAssetInfo({ id: entry.assetId }), signal);
     if (asset.ownerId !== userId) {
       throw new Error('Sync refuses deletion of an asset owned by another account.');
     }
     return asset.isTrashed;
   } catch (error) {
-    if (isHttpError(error) && error.status === 404) {
-      return true;
+    if (!isHttpError(error) || error.status !== 400) {
+      throw error;
     }
-    throw error;
   }
+  const { results } = await retry(
+    () => checkBulkUpload({ assetBulkUploadCheckDto: { assets: [{ id: entry.assetId, checksum: entry.checksum }] } }),
+    signal,
+  );
+  const result = results.find((item) => item.id === entry.assetId);
+  if (!result) {
+    throw new Error(`Server did not confirm the state of asset ${entry.assetId}; keeping local data.`);
+  }
+  // A duplicate under any asset ID means the content is still on the server, so keep the local file.
+  return result.action === AssetUploadAction.Accept;
 };
 
 const remember = (state: SyncState, entry: SyncEntry) => {
@@ -317,7 +331,7 @@ export const syncOnce = async (
       !presentAssetIds.has(entry.assetId) &&
       !byChecksum.has(entry.checksum)
     ) {
-      if (!(await isRemoteDeleted(entry.assetId, state.userId, signal))) {
+      if (!(await isRemoteDeleted(entry, state.userId, signal))) {
         console.log(
           `${options.dryRun ? 'Would trash' : 'Trashing'} server asset ${entry.assetId} (local deletion: ${entry.path})`,
         );
@@ -332,7 +346,7 @@ export const syncOnce = async (
     }
     let removed = deleted.get(entry.assetId);
     if (removed === undefined) {
-      removed = await isRemoteDeleted(entry.assetId, state.userId, signal);
+      removed = await isRemoteDeleted(entry, state.userId, signal);
       deleted.set(entry.assetId, removed);
     }
     if (!removed) {

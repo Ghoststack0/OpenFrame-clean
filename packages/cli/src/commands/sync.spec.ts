@@ -628,13 +628,36 @@ describe('desktop sync', () => {
     });
   });
 
-  it('confirms HTTP 404 before deleting local data, and preserves it on HTTP 403', async () => {
+  it('never treats HTTP 404 (wrong base URL or proxy) as a server deletion', async () => {
     await track();
     vi.mocked(isHttpError).mockReturnValue(true);
+    vi.mocked(getAssetInfo).mockRejectedValue(Object.assign(new Error('gone'), { status: 404 }));
+    await expect(run({ propagateServerDeletions: true })).rejects.toThrow('gone');
+    expect(await readFile(path.join(root, 'photo.jpg'), 'utf8')).toBe('photo');
     vi.mocked(getAssetInfo).mockRejectedValue(Object.assign(new Error('forbidden'), { status: 403 }));
     await expect(run({ propagateServerDeletions: true })).rejects.toThrow('forbidden');
     expect(await readFile(path.join(root, 'photo.jpg'), 'utf8')).toBe('photo');
-    vi.mocked(getAssetInfo).mockRejectedValue(Object.assign(new Error('gone'), { status: 404 }));
+  });
+
+  it('confirms a purged asset with the checksum check before deleting local data', async () => {
+    await track();
+    vi.mocked(isHttpError).mockReturnValue(true);
+    vi.mocked(getAssetInfo).mockRejectedValue(
+      Object.assign(new Error('Not found or no asset.read access'), { status: 400 }),
+    );
+    vi.mocked(checkBulkUpload).mockImplementation(async ({ assetBulkUploadCheckDto }) => ({
+      results: assetBulkUploadCheckDto.assets.map(({ id }) => ({
+        id,
+        action: AssetUploadAction.Reject,
+        reason: AssetRejectReason.Duplicate,
+        assetId: otherId,
+      })),
+    }));
+    await run({ propagateServerDeletions: true });
+    expect(await readFile(path.join(root, 'photo.jpg'), 'utf8')).toBe('photo');
+    vi.mocked(checkBulkUpload).mockImplementation(async ({ assetBulkUploadCheckDto }) => ({
+      results: assetBulkUploadCheckDto.assets.map(({ id }) => ({ id, action: AssetUploadAction.Accept })),
+    }));
     await run({ propagateServerDeletions: true });
     expect(await readdir(root)).toEqual([]);
   });

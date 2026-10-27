@@ -239,7 +239,7 @@ openframe sync ~/Pictures --download --download-album "Family"
 | `-i, --ignore <pattern>`       | Ignore this upload glob, using the existing upload matching convention.                                                                                                |
 | `-H, --include-hidden`         | Include hidden media in the recursive upload scan.                                                                                                                     |
 | `--propagate-local-deletions`  | Move tracked server assets to trash when their local files disappear and no scanned copy or other tracked local path remains. Never permanently deletes server assets. |
-| `--propagate-server-deletions` | Delete tracked local files after the server confirms trash or HTTP 404. Keep locally modified files and sidecars.                                                      |
+| `--propagate-server-deletions` | Delete tracked local files after the server confirms trash, or the checksum check confirms the content is gone. Keep locally modified files and sidecars.              |
 | `-n, --dry-run`                | Preview actions without transferring, deleting, modifying albums, or saving state. A temporary process lock still prevents concurrent runs.                            |
 
 Sync uses the existing bulk upload checksum check, upload retries, sidecar upload, and album
