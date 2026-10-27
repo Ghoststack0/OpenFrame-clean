@@ -3,6 +3,7 @@
   import { page } from '$app/state';
   import { getPagesProvider, getSettingsProvider } from '$lib/commands';
   import DownloadPanel from './DownloadPanel.svelte';
+  import DeviceTransferNotifications from '$lib/components/DeviceTransferNotifications.svelte';
   import ErrorLayout from './ErrorLayout.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import NavigationLoadingBar from './NavigationLoadingBar.svelte';
@@ -257,6 +258,9 @@
     {/if}
 
     <DownloadPanel />
+    {#if authManager.authenticated}
+      <DeviceTransferNotifications />
+    {/if}
     <UploadPanel />
     <ScreencastOverlay />
 
