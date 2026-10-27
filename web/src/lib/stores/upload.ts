@@ -97,14 +97,16 @@ function createUploadStore() {
     });
   };
 
-  const updateProgress = (id: string, loaded: number, total: number) => {
+  const updateProgress = (id: string, loaded: number, total: number, uploadedBeforeStart = 0) => {
     updateAssetMap(id, (v) => {
-      const uploadSpeed = v.startDate ? loaded / ((Date.now() - v.startDate) / 1000) : 0;
+      const uploadSpeed = v.startDate
+        ? Math.max(0, loaded - uploadedBeforeStart) / Math.max(0.001, (Date.now() - v.startDate) / 1000)
+        : 0;
       return {
         ...v,
         progress: Math.floor((loaded / total) * 100),
         speed: uploadSpeed,
-        eta: Math.ceil((total - loaded) / uploadSpeed),
+        eta: uploadSpeed > 0 ? Math.ceil((total - loaded) / uploadSpeed) : 0,
       };
     });
   };

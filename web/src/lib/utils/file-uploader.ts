@@ -3,6 +3,8 @@ import {
   AssetUploadAction,
   AssetVisibility,
   checkBulkUpload,
+  RESUMABLE_UPLOAD_THRESHOLD,
+  uploadResumable,
   getBaseUrl,
   type AssetMediaResponseDto,
 } from '@immich/sdk';
@@ -16,12 +18,20 @@ import { addAssetsToAlbumsMutation } from '$lib/queries/album.query';
 import { executeMutation } from '$lib/queries/client';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { UploadState } from '$lib/types';
-import { uploadRequest } from '$lib/utils';
+import { trackUpload, uploadRequest } from '$lib/utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { asQueryString } from '$lib/utils/shared-links';
+import { AdaptiveUploadConcurrency } from './adaptive-upload-concurrency';
 import { handleError } from './handle-error';
 
 export const uploadExecutionQueue = new ExecutorQueue({ concurrency: 2 });
+let adaptiveConcurrency = new AdaptiveUploadConcurrency();
+const recordTransfer = (bytes: number) => {
+  uploadExecutionQueue.concurrency = adaptiveConcurrency.record(bytes);
+};
+const recordUploadError = () => {
+  uploadExecutionQueue.concurrency = adaptiveConcurrency.error();
+};
 
 type FilePickerParam = { multiple?: boolean; extensions?: string[] };
 type FileUploadParam = { multiple?: boolean; albumId?: string };
@@ -89,6 +99,10 @@ export const fileUploadHandler = async ({
   albumId,
   isLockedAssets = false,
 }: FileUploadHandlerParams): Promise<string[]> => {
+  if (get(uploadAssetsStore.remainingUploads) === 0) {
+    adaptiveConcurrency = new AdaptiveUploadConcurrency();
+    uploadExecutionQueue.concurrency = adaptiveConcurrency.concurrency;
+  }
   const extensions = uploadManager.getExtensions();
   const promises = [];
   for (const file of files) {
@@ -175,12 +189,13 @@ async function fileUploader({
       formData.append('visibility', AssetVisibility.Locked);
     }
 
+    let checksum: string | undefined;
     let responseData: { id: string; status: AssetMediaStatus; isTrashed?: boolean } | undefined;
     if (!authManager.isSharedLink) {
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_hashing') });
       await tick();
       try {
-        const checksum = await hashFile(assetFile);
+        checksum = await hashFile(assetFile);
 
         const {
           results: [checkUploadResult],
@@ -201,17 +216,71 @@ async function fileUploader({
       const queryParams = asQueryString(authManager.params);
 
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_uploading') });
-      const response = await uploadRequest<AssetMediaResponseDto>({
-        url: getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
-        data: formData,
-        onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
-      });
-
-      if (![200, 201].includes(response.status)) {
-        throw new Error($t('errors.unable_to_upload_file'));
+      recordTransfer(0);
+      if (assetFile.size >= RESUMABLE_UPLOAD_THRESHOLD) {
+        checksum ??= await hashFile(assetFile);
+        const controller = new AbortController();
+        const untrack = trackUpload(() => controller.abort());
+        const storageKey = authManager.isSharedLink
+          ? undefined
+          : `upload:${authManager.user.id}:${checksum}:${assetFile.name}:${assetFile.lastModified}:${isLockedAssets}`;
+        let initialOffset: number | undefined;
+        let sessionId: string | undefined;
+        try {
+          sessionId = storageKey ? (localStorage.getItem(storageKey) ?? undefined) : undefined;
+        } catch {
+          /* Storage can be disabled in private browsing. */
+        }
+        try {
+          responseData = await uploadResumable({
+            file: assetFile,
+            metadata: {
+              filename: assetFile.name,
+              size: assetFile.size,
+              checksum,
+              fileCreatedAt,
+              fileModifiedAt: fileCreatedAt,
+              isFavorite: false,
+              visibility: isLockedAssets ? AssetVisibility.Locked : undefined,
+            },
+            ...authManager.params,
+            sessionId,
+            signal: controller.signal,
+            onSession: (id) => {
+              try {
+                if (storageKey) {
+                  if (id) {
+                    localStorage.setItem(storageKey, id);
+                  } else {
+                    localStorage.removeItem(storageKey);
+                  }
+                }
+              } catch {
+                /* Uploading does not require local storage. */
+              }
+            },
+            onProgress: (offset, total) => {
+              initialOffset ??= offset;
+              uploadAssetsStore.updateProgress(deviceAssetId, offset, total, initialOffset);
+            },
+            onChunk: recordTransfer,
+            onRetry: recordUploadError,
+          });
+        } finally {
+          untrack();
+        }
+      } else {
+        const response = await uploadRequest<AssetMediaResponseDto>({
+          url: getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
+          data: formData,
+          onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
+        });
+        if (![200, 201].includes(response.status)) {
+          throw new Error($t('errors.unable_to_upload_file'));
+        }
+        recordTransfer(assetFile.size);
+        responseData = response.data;
       }
-
-      responseData = response.data;
     }
 
     if (responseData.status === AssetMediaStatus.Duplicate) {
@@ -249,6 +318,7 @@ async function fileUploader({
       return;
     }
 
+    recordUploadError();
     const errorMessage = handleError(error, $t('errors.unable_to_upload_file'));
     uploadAssetsStore.track('error');
     uploadAssetsStore.updateItem(deviceAssetId, { state: UploadState.ERROR, error: errorMessage });
