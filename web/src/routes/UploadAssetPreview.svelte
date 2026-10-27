@@ -34,6 +34,30 @@
     uploadAssetsStore.removeItem(uploadAsset.id);
     await fileUploadHandler({ files: [uploadAsset.file], albumId: uploadAsset.albumId });
   };
+
+  const getStatusLabel = (uploadAsset: UploadAsset) => {
+    switch (uploadAsset.phase?.kind) {
+      case 'chunks': {
+        return $t('upload_uploading_in_chunks');
+      }
+
+      case 'resumed': {
+        return $t('upload_resuming_from', { values: { size: getByteUnitString(uploadAsset.phase.from, $locale) } });
+      }
+
+      case 'retrying': {
+        return $t('upload_reconnecting', { values: { attempt: uploadAsset.phase.attempt } });
+      }
+
+      case 'verifying': {
+        return $t('upload_verifying');
+      }
+
+      default: {
+        return uploadAsset.message;
+      }
+    }
+  };
 </script>
 
 <div
@@ -99,8 +123,10 @@
         {#if uploadAsset.message === $t('asset_hashing')}
           {uploadAsset.message}
         {:else}
-          {uploadAsset.message}
-          {uploadAsset.progress}% - {getByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
+          <span aria-live="polite">{getStatusLabel(uploadAsset)}</span>
+          {#if uploadAsset.phase?.kind !== 'retrying' && uploadAsset.phase?.kind !== 'verifying'}
+            {uploadAsset.progress}% - {getByteUnitString(uploadAsset.speed || 0, $locale)}/s - {uploadAsset.eta}s
+          {/if}
         {/if}
       </p>
     </div>
@@ -112,5 +138,8 @@
         {uploadAsset.error}
       </p>
     </div>
+    {#if uploadAsset.resumable}
+      <p class="w-full text-justify immich-form-label">{$t('upload_resumable_failed')}</p>
+    {/if}
   {/if}
 </div>

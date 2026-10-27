@@ -2,7 +2,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { getByteUnitString } from '$lib/utils/byte-units';
-  import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import { setUploadConcurrency, uploadExecutionQueue } from '$lib/utils/file-uploader';
   import { acquireWakeLock, releaseWakeLock } from '$lib/utils/wakelock.svelte';
   import { Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
@@ -15,7 +15,7 @@
   let showOptions = $state(false);
   let concurrency = $state(uploadExecutionQueue.concurrency);
 
-  let { stats, progress, isDismissible, isUploading, remainingUploads } = uploadAssetsStore;
+  let { stats, progress, isDismissible, isUploading, remainingUploads, concurrency: parallelism } = uploadAssetsStore;
 
   // Circumference of the progress ring drawn around the minimized button (r = 30)
   const ringLength = 2 * Math.PI * 30;
@@ -140,6 +140,11 @@
               <span>{getByteUnitString($progress.speed, $locale)}/s</span>
             {/if}
           </p>
+          {#if hasRemaining}
+            <p class="text-xs immich-form-label">
+              {$t('upload_parallelism', { values: { count: Math.min($parallelism, $remainingUploads) } })}
+            </p>
+          {/if}
         </div>
         {#if showOptions}
           <div class="mb-4 max-h-100 immich-scrollbar overflow-y-auto rounded-lg">
@@ -156,7 +161,7 @@
               max="50"
               step="1"
               bind:value={concurrency}
-              onchange={() => (uploadExecutionQueue.concurrency = concurrency)}
+              onchange={() => setUploadConcurrency(concurrency)}
             />
           </div>
         {/if}
