@@ -46,6 +46,7 @@ export interface UploadOptionsDto {
   progress?: boolean;
   watch?: boolean;
   jsonOutput?: boolean;
+  signal?: AbortSignal;
 }
 
 class UploadFile extends File {
@@ -66,7 +67,7 @@ class UploadFile extends File {
   }
 }
 
-const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
+export const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   const { newFiles, duplicates } = await checkForDuplicates(files, options);
   const newAssets = await uploadFiles(newFiles, options);
   if (options.jsonOutput) {
@@ -75,6 +76,7 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   await updateAlbums([...newAssets, ...duplicates], options);
 
   await deleteFiles(newAssets, duplicates, options);
+  return [...newAssets, ...duplicates];
 };
 
 export const startWatch = async (
@@ -83,7 +85,16 @@ export const startWatch = async (
   {
     batchSize = UPLOAD_WATCH_BATCH_SIZE,
     debounceTimeMs = UPLOAD_WATCH_DEBOUNCE_TIME_MS,
-  }: { batchSize?: number; debounceTimeMs?: number } = {},
+    onBatch = (files: string[]) => uploadBatch(files, options),
+    onRemove,
+    handleSignals = true,
+  }: {
+    batchSize?: number;
+    debounceTimeMs?: number;
+    onBatch?: (files: string[]) => Promise<unknown>;
+    onRemove?: (filepath: string) => void;
+    handleSignals?: boolean;
+  } = {},
 ) => {
   const watcherIgnored: Matcher[] = [];
   const { image, video } = await getSupportedMediaTypes();
@@ -98,7 +109,7 @@ export const startWatch = async (
     debounceTimeMs,
     onBatch: async (paths: string[]) => {
       const uniquePaths = [...new Set(paths)];
-      await uploadBatch(uniquePaths, options);
+      await onBatch(uniquePaths);
     },
   });
 
@@ -127,13 +138,17 @@ export const startWatch = async (
   })
     .on('add', onFile)
     .on('change', onFile)
+    .on('unlink', (filepath) => onRemove?.(filepath))
     .on('error', (error) => console.error(`Watcher error: ${error}`));
 
-  process.on('SIGINT', async () => {
-    console.log('Exiting...');
-    await fsWatcher.close();
-    process.exit();
-  });
+  if (handleSignals) {
+    process.on('SIGINT', async () => {
+      console.log('Exiting...');
+      await fsWatcher.close();
+      process.exit();
+    });
+  }
+  return fsWatcher;
 };
 
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
@@ -176,7 +191,10 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   return files;
 };
 
-export const checkForDuplicates = async (files: string[], { concurrency, skipHash, progress }: UploadOptionsDto) => {
+export const checkForDuplicates = async (
+  files: string[],
+  { concurrency, skipHash, progress, signal }: UploadOptionsDto,
+) => {
   if (skipHash) {
     console.log('Skipping hash check, assuming all files are new');
     return { newFiles: files, duplicates: [] };
@@ -268,7 +286,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
       if (!stats) {
         throw new Error(`Stats not found for ${filepath}`);
       }
-      const dto = { id: filepath, checksum: await sha1(filepath) };
+      const dto = { id: filepath, checksum: await sha1(filepath, signal) };
 
       results.push(dto);
       checkBulkUploadRequests.push(dto);
@@ -407,7 +425,7 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
 const uploadFile = async (
   input: string,
   stats: Stats,
-  { visibility }: UploadOptionsDto,
+  { visibility, signal }: UploadOptionsDto,
 ): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
 
@@ -437,6 +455,7 @@ const uploadFile = async (
     redirect: 'error',
     headers: headers as Record<string, string>,
     body: formData,
+    ...(signal && { signal: AbortSignal.any([signal, AbortSignal.timeout(30 * 60_000)]) }),
     // eslint-disable-next-line unicorn/no-null
     window: null,
   });
