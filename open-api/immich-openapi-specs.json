@@ -14745,6 +14745,101 @@
         "x-immich-state": "Stable"
       }
     },
+    "/sessions/send-to-device": {
+      "post": {
+        "description": "Send 1 to 100 accessible assets to another online session of the same user via on_device_transfer. Requires a session token. Returns 404 for an unavailable session and 409 for an offline target. Delivery is ephemeral and best effort, with no acknowledgement or offline replay.",
+        "operationId": "sendToDevice",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceTransferDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceTransferResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Send assets to another session",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "session.read"
+      }
+    },
+    "/sessions/targets": {
+      "get": {
+        "description": "List other online sessions belonging to the signed-in user. Requires a session token.",
+        "operationId": "getDeviceTargets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionTargetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List online target sessions",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "session.read"
+      }
+    },
     "/sessions/{id}": {
       "delete": {
         "description": "Delete a specific session by id.",
@@ -23246,6 +23341,88 @@
         },
         "type": "object"
       },
+      "DeviceTransferAction": {
+        "enum": [
+          "open",
+          "download"
+        ],
+        "type": "string"
+      },
+      "DeviceTransferDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/DeviceTransferAction"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "targetSessionId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "assetIds",
+          "targetSessionId"
+        ],
+        "type": "object"
+      },
+      "DeviceTransferResponseDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/DeviceTransferAction"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "id": {
+            "description": "Transfer ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "sentAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "sourceSessionId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "targetSessionId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "assetIds",
+          "id",
+          "sentAt",
+          "sourceSessionId",
+          "targetSessionId"
+        ],
+        "type": "object"
+      },
       "DownloadArchiveDto": {
         "properties": {
           "archiveName": {
@@ -29834,6 +30011,37 @@
           "id",
           "isPendingSyncReset",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SessionTargetResponseDto": {
+        "properties": {
+          "deviceName": {
+            "description": "Device name inferred from existing session metadata",
+            "type": "string"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "label": {
+            "description": "Friendly device label including a short session ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceName",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "label"
         ],
         "type": "object"
       },

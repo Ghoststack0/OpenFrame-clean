@@ -487,6 +487,7 @@
       />
       <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
         <DownloadAction menuItem filename={person.name || 'immich'} />
+        <ActionMenuItem action={Actions.SendToDevice} />
         <MenuOption
           icon={mdiAccountMultipleCheckOutline}
           text={$t('fix_incorrect_match')}

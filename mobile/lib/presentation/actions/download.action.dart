@@ -26,24 +26,24 @@ class DownloadAction extends AssetActionBuilder {
       return null;
     }
 
-    return .new(icon: Icons.download, label: context.t.download, onAction: () => _download(ref, assets));
+    return .new(icon: Icons.download, label: context.t.download, onAction: () => downloadRemoteAssets(ref, assets));
   }
+}
 
-  Future<void> _download(WidgetRef ref, List<RemoteAsset> assets) async {
-    final backgroundSync = ref.read(backgroundSyncProvider);
-    final downloads = ref.read(downloadRepositoryProvider);
+Future<void> downloadRemoteAssets(WidgetRef ref, List<RemoteAsset> assets) async {
+  final backgroundSync = ref.read(backgroundSyncProvider);
+  final downloads = ref.read(downloadRepositoryProvider);
 
-    try {
-      await downloads.downloadAllAssets(assets);
+  try {
+    await downloads.downloadAllAssets(assets);
 
-      unawaited(
-        Future.delayed(const .new(seconds: 1), () async {
-          await backgroundSync.syncLocal();
-          await backgroundSync.hashAssets();
-        }),
-      );
-    } catch (error, stack) {
-      handleError(error, stack: stack, description: "Failed to download the assets");
-    }
+    unawaited(
+      Future.delayed(const .new(seconds: 1), () async {
+        await backgroundSync.syncLocal();
+        await backgroundSync.hashAssets();
+      }),
+    );
+  } catch (error, stack) {
+    handleError(error, stack: stack, description: "Failed to download the assets");
   }
 }

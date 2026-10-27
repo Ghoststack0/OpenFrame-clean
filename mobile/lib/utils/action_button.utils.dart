@@ -17,6 +17,7 @@ import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
 import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
+import 'package:immich_mobile/presentation/actions/send_to_device.action.dart';
 import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
@@ -62,6 +63,7 @@ enum ActionButtonType {
   likeActivity,
   share,
   shareLink,
+  sendToDevice,
   cast,
   setAlbumCover,
   similarPhotos,
@@ -87,6 +89,9 @@ enum ActionButtonType {
       ActionButtonType.advancedInfo => context.advancedTroubleshooting,
       ActionButtonType.share => true,
       ActionButtonType.shareLink =>
+        !context.isInLockedView && //
+            context.asset.hasRemote,
+      ActionButtonType.sendToDevice =>
         !context.isInLockedView && //
             context.asset.hasRemote,
       ActionButtonType.archive =>
@@ -173,6 +178,7 @@ enum ActionButtonType {
       ActionButtonType.advancedInfo => ActionMenuItem(action: AssetDebugAction(source: context.source)),
       ActionButtonType.share => ActionMenuItem(action: ShareAction(source: context.source)),
       ActionButtonType.shareLink => ActionMenuItem(action: ShareLinkAction(source: context.source)),
+      ActionButtonType.sendToDevice => ActionMenuItem(action: SendToDeviceAction(source: context.source)),
       ActionButtonType.slideshow => const ActionMenuItem(action: SlideshowAction()),
       ActionButtonType.archive ||
       ActionButtonType.unarchive => ActionMenuItem(action: ArchiveAction(source: context.source)),
