@@ -9,8 +9,8 @@ Immich has a command line interface (CLI) that allows you to perform certain act
 
 More features are planned for the future.
 
-:::tip Google Photos Takeout
-If you are looking to import your Google Photos takeout, we recommend this community maintained tool [immich-go](https://github.com/simulot/immich-go)
+:::tip Import an export
+Use the built-in `openframe import takeout` and `openframe import icloud` commands. See [Import Google Takeout or iCloud Photos](./import-exports.md).
 :::
 
 ## Requirements
