@@ -200,3 +200,124 @@ The API key can be obtained in the user setting panel on the web interface. You 
 ![Obtain Api Key](./img/obtain-api-key.webp)
 
 ![Specify permissions for the key](./img/obtain-api-key-2.webp)
+
+## Desktop folder sync
+
+OpenFrame adds `openframe sync <folder>`. The `immich` alias accepts the same command.
+Log in with `openframe login <url> <key>` first, or use the existing `IMMICH_INSTANCE_URL`
+and `IMMICH_API_KEY` environment variables. The folder must already exist.
+
+```bash
+# Recursively upload new/changed media, then watch for changes.
+openframe sync ~/Pictures
+
+# Also download your missing server originals, checking the server every minute.
+openframe sync ~/Pictures --download
+
+# Run one pass for cron or a systemd timer. Failures return a nonzero exit status.
+openframe sync ~/Pictures --download --once
+
+# Preview transfers and explicit deletion propagation without changing data or state.
+openframe sync ~/Pictures --download --propagate-local-deletions --dry-run --once
+
+# Use the existing upload album conventions. --album and --album-name are exclusive.
+openframe sync ~/Pictures --album
+openframe sync ~/Pictures --album-name "Desktop photos"
+
+# Filter downloads independently of upload album mapping.
+openframe sync ~/Pictures --download --download-album "Family"
+```
+
+| Option                         | Behavior                                                                                                                                                               |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--once`                       | Run one pass and exit instead of watching.                                                                                                                             |
+| `--download`                   | Download missing originals owned by the authenticated user.                                                                                                            |
+| `--download-album <name>`      | Limit downloads to exactly one album matching this name. Requires `--download`. Shared assets owned by others are excluded.                                            |
+| `--template <template>`        | Relative download path. Default: `YYYY/MM/{originalFileName}`. Tokens: `YYYY`, `MM`, `DD`, `{originalFileName}`, `{assetId}`. Dates use UTC.                           |
+| `-a, --album`                  | Create upload albums from immediate parent folder names, like `upload --album`.                                                                                        |
+| `-A, --album-name <name>`      | Add uploaded assets to the named album, like `upload --album-name`.                                                                                                    |
+| `-i, --ignore <pattern>`       | Ignore this upload glob, using the existing upload matching convention.                                                                                                |
+| `-H, --include-hidden`         | Include hidden media in the recursive upload scan.                                                                                                                     |
+| `--propagate-local-deletions`  | Move tracked server assets to trash when their local files disappear and no scanned copy or other tracked local path remains. Never permanently deletes server assets. |
+| `--propagate-server-deletions` | Delete tracked local files after the server confirms trash, or the checksum check confirms the content is gone. Keep locally modified files and sidecars.              |
+| `-n, --dry-run`                | Preview actions without transferring, deleting, modifying albums, or saving state. A temporary process lock still prevents concurrent runs.                            |
+
+Sync uses the existing bulk upload checksum check, upload retries, sidecar upload, and album
+mapping. Changed files create new server assets; they do not overwrite or remove older versions.
+New/changed files must keep the same size and modification time for one second before hashing.
+If a file changes during that check, sync defers the entire pass, including deletions. With `--once`,
+this returns a nonzero exit status so the next scheduled run can retry.
+The watcher also waits for writes to finish. Pause a producer that writes with long gaps before
+syncing its output. Unchanged files reuse their cached checksum. Edits that preserve both file
+size and modification time require touching the file to trigger a new checksum.
+
+Downloads stream to private temporary files, verify the server SHA-1, then publish without
+replacing an existing file. Filename collisions use `<name>-<assetId>.<extension>`, followed by a
+numeric suffix if necessary. Unsafe filename characters are replaced. Absolute paths, traversal,
+and symlink destinations are rejected. The destination filesystem must support hard links.
+Templates affect future downloads; changing one does not move tracked files. Upload exclusions
+and hidden-file settings do not filter downloads.
+
+### State and deletion safety
+
+The folder contains `.openframe-sync.json`, written atomically with owner-only permissions.
+Keeping state beside the data makes a folder move and its deletion history travel together,
+and avoids platform-specific XDG paths. It contains no API key, but includes private filenames:
+
+```json
+{
+  "version": 1,
+  "serverUrl": "https://photos.example.com/api",
+  "userId": "00000000-0000-4000-8000-000000000001",
+  "entries": [
+    {
+      "path": "2026/10/photo.jpg",
+      "checksum": "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3",
+      "assetId": "00000000-0000-4000-8000-000000000002",
+      "size": 4,
+      "mtimeMs": 1793145600000
+    }
+  ]
+}
+```
+
+Checksums are hexadecimal SHA-1; paths are relative and use `/`. The state is bound to the server
+URL and account. Invalid state or a different account stops sync without resetting the file.
+Keep this file out of other backup import tools.
+
+By default, deletion never propagates. Missing tracked paths remain in state, so restarting sync
+does not download them again or recreate server assets removed by another client. Neither flag
+applies to files that have never been synced. Removing an asset from an album is not a server
+deletion. A network/permission error is not treated as a server deletion. Always preview deletion
+flags with `--dry-run --once`; an unmounted drive can look like locally deleted files. Removing
+state resets the deletion history, so previously removed assets may download again.
+Upload exclusions and hidden-file settings also prevent local deletions in those paths from
+propagating to the server.
+
+Sync serializes passes and retries transient requests up to three times. Metadata requests time out after
+two minutes; transfers have a thirty-minute limit. A failed pass in watch mode is retried on a later filesystem event or the next
+one-minute poll. Ctrl+C or SIGTERM cancels network work, saves completed progress, closes the
+watcher, and releases the lock. Failed uploads/downloads do not advance their state. An abrupt
+kill can leave `.openframe-sync.lock` or `.openframe-sync-*.part`/`*.tmp` files. After confirming
+no sync process is running, remove its stale lock manually before restarting. Sync does not
+remove leftover temporary files from an abruptly killed process automatically.
+
+Use an API key with asset upload/read permissions, asset download permission for `--download`,
+and asset delete permission for `--propagate-local-deletions`. Album mapping also needs the
+same album permissions as `upload --album` or `upload --album-name`.
+
+### systemd user service
+
+An example unit is provided in [openframe-sync.service](/examples/openframe-sync.service).
+Save it as `~/.config/systemd/user/openframe-sync.service`, replace the executable and picture
+folder paths, and log in using the same account that runs the service. Then run:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now openframe-sync.service
+journalctl --user -u openframe-sync.service -f
+```
+
+The service watches continuously and polls the server every minute. For a systemd timer, change
+`Type` to `oneshot`, add `--once` to `ExecStart`, remove `Restart` and `RestartSec`, and attach
+your preferred timer schedule. No deletion flag is enabled in the example.

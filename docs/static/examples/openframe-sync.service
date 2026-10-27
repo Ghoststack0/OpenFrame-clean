@@ -1,0 +1,17 @@
+[Unit]
+Description=Sync desktop photos with OpenFrame
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Replace the executable path with the output of: command -v openframe
+# Credentials come from the existing openframe login configuration.
+ExecStart=%h/.local/bin/openframe sync %h/Pictures --download
+Restart=on-failure
+RestartSec=30
+TimeoutStopSec=150
+UMask=0077
+
+[Install]
+WantedBy=default.target

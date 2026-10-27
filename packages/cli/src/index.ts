@@ -7,6 +7,7 @@ import { upload } from 'src/commands/asset.js';
 import { login, logout } from 'src/commands/auth.js';
 import { importExport } from 'src/commands/import.js';
 import { serverInfo } from 'src/commands/server-info.js';
+import { sync } from 'src/commands/sync.js';
 import { version } from '../package.json';
 
 const defaultConfigDirectory = path.join(os.homedir(), '.config/immich/');
@@ -122,5 +123,29 @@ for (const format of ['takeout', 'icloud'] as const) {
     }
   });
 }
+
+program
+  .command('sync')
+  .description('Keep a local folder in sync with OpenFrame (uploads and watches by default)')
+  .argument('<folder>', 'Existing local folder, scanned recursively')
+  .option('--once', 'Run one sync pass and exit')
+  .option('--download', 'Also download missing originals from your library')
+  .option('--download-album <name>', 'Download only from the album with this exact name')
+  .option('--template <template>', 'Download path template in UTC', 'YYYY/MM/{originalFileName}')
+  .option('-a, --album', 'Automatically create upload albums based on folder name')
+  .addOption(new Option('-A, --album-name <name>', 'Add uploaded assets to this album').conflicts('album'))
+  .option('-i, --ignore <pattern>', 'Upload pattern to ignore')
+  .option('-H, --include-hidden', 'Include hidden files and folders in uploads')
+  .option('--propagate-local-deletions', 'Move previously synced assets to server trash when removed locally')
+  .option('--propagate-server-deletions', 'Delete unchanged synced local files when trashed or deleted on the server')
+  .option('-n, --dry-run', 'Show planned transfers and deletions without changing files or the server')
+  .action(async (folder, options) => {
+    try {
+      await sync(folder, program.opts(), { ...options, concurrency: 1 });
+    } catch (error) {
+      console.error(`Sync failed: ${error}`);
+      process.exitCode = 1;
+    }
+  });
 
 program.parse(process.argv);
