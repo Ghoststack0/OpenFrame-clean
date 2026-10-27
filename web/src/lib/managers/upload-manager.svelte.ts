@@ -2,6 +2,7 @@ import { getSupportedMediaTypes, type ServerMediaTypesResponseDto } from '@immic
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { assetProcessingStore } from '$lib/stores/asset-processing';
 import { uploadAssetsStore } from '$lib/stores/upload';
+import { uploadedAssets } from '$lib/stores/upload-processing';
 import { cancelUploadRequests } from '$lib/utils';
 
 class UploadManager {
@@ -21,6 +22,7 @@ class UploadManager {
     cancelUploadRequests();
     uploadAssetsStore.reset();
     assetProcessingStore.reset();
+    uploadedAssets.reset();
   }
 
   async #loadExtensions() {

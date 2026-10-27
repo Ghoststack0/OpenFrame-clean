@@ -1,5 +1,6 @@
 import { derived, get, writable } from 'svelte/store';
 import { assetProcessingStore } from '$lib/stores/asset-processing';
+import { uploadedAssets } from '$lib/stores/upload-processing';
 import { UploadState, type UploadAsset } from '$lib/types';
 
 export type UploadProgress = {
@@ -129,11 +130,9 @@ function createUploadStore() {
   };
 
   const updateItem = (id: string, partialObject: Partial<UploadAsset>) => {
-    if (
-      partialObject.assetId &&
-      partialObject.state !== UploadState.DUPLICATED &&
-      get(uploadAssets).some((item) => item.id === id)
-    ) {
+    const item = partialObject.assetId ? get(uploadAssets).find((item) => item.id === id) : undefined;
+    if (partialObject.assetId && item && partialObject.state !== UploadState.DUPLICATED) {
+      uploadedAssets.add(partialObject.assetId, item.file);
       assetProcessingStore.track(partialObject.assetId);
     }
     updateAssetMap(id, (v) => ({ ...v, ...partialObject }));
