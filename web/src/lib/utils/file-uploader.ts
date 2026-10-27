@@ -218,6 +218,7 @@ async function fileUploader({
       uploadAssetsStore.track('duplicate');
     } else {
       uploadAssetsStore.track('success');
+      uploadAssetsStore.updateItem(deviceAssetId, { assetId: responseData.id });
     }
 
     if (albumId && !authManager.isSharedLink) {

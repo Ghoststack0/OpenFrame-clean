@@ -1,6 +1,7 @@
 import {
   MaintenanceAction,
   type AssetResponseDto,
+  type AssetProcessingEventV1,
   type MaintenanceStatusResponseDto,
   type NotificationDto,
   type ReleaseEventV1,
@@ -19,6 +20,7 @@ import { getNotificationsQuery } from '$lib/queries/notification.query';
 import { getServerConfigQuery } from '$lib/queries/server.query';
 import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
+import { assetProcessingStore } from '$lib/stores/asset-processing';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { createEventEmitter } from '$lib/utils/eventemitter';
 
@@ -27,6 +29,7 @@ interface AppRestartEvent {
 }
 
 export interface Events {
+  AssetProcessingStatusV1: (event: AssetProcessingEventV1) => void;
   on_upload_success: (asset: AssetResponseDto) => void;
   on_user_delete: (id: string) => void;
   on_asset_delete: (assetId: string) => void;
@@ -69,7 +72,9 @@ websocket
   .on('connect', () => {
     eventManager.emit('WebsocketConnect');
     websocketStore.connected.set(true);
+    void assetProcessingStore.refresh();
   })
+  .on('AssetProcessingStatusV1', (event) => assetProcessingStore.update(event))
   .on('disconnect', () => websocketStore.connected.set(false))
   .on('on_server_version', (serverVersion) => {
     const previous = get(websocketStore.serverVersion);
@@ -79,6 +84,7 @@ websocket
     }
   })
   .on('on_config_update', () => {
+    void assetProcessingStore.refresh();
     void queryClient.invalidateQueries({ queryKey: ['config'] });
     void queryClient.invalidateQueries({ queryKey: getServerConfigQuery().queryKey });
   })

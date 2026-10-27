@@ -1181,6 +1181,17 @@ export type AssetMetadataBulkResponseDto = {
         [key: string]: any;
     };
 };
+export type AssetProcessingStatusRequestDto = {
+    /** Between 1 and 100 readable asset IDs */
+    assetIds: string[];
+};
+export type AssetProcessingStatusResponseDto = {
+    assetId: string;
+    stages: {
+        stage: AssetProcessingStage;
+        state: AssetProcessingState;
+    }[];
+};
 export type ExifResponseDto = {
     /** City name */
     city?: string | null;
@@ -3387,6 +3398,11 @@ export type WorkflowShareResponseDto = {
     /** Workflow trigger type */
     trigger: WorkflowTrigger;
 };
+export type AssetProcessingEventV1 = {
+    assetId: string;
+    stage: AssetProcessingStage;
+    state: AssetProcessingState;
+};
 export type LicenseResponseDto = UserLicense;
 export type ReleaseEventV1 = {
     /** When the server last checked for a latest version. As an ISO timestamp */
@@ -4909,6 +4925,26 @@ export function updateBulkAssetMetadata({ assetMetadataBulkUpsertDto }: {
         ...opts,
         method: "PUT",
         body: assetMetadataBulkUpsertDto
+    })));
+}
+/**
+ * Get asset processing status
+ */
+export function getAssetProcessingStatus({ key, slug, assetProcessingStatusRequestDto }: {
+    key?: string;
+    slug?: string;
+    assetProcessingStatusRequestDto: AssetProcessingStatusRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetProcessingStatusResponseDto[];
+    }>(`/assets/processing-status${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetProcessingStatusRequestDto
     })));
 }
 /**
@@ -8498,6 +8534,20 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
+}
+export enum AssetProcessingStage {
+    Uploaded = "uploaded",
+    Metadata = "metadata",
+    Thumbnails = "thumbnails",
+    Video = "video",
+    SmartSearch = "smartSearch",
+    Faces = "faces"
+}
+export enum AssetProcessingState {
+    Pending = "pending",
+    Complete = "complete",
+    Skipped = "skipped",
+    Failed = "failed"
 }
 export enum PersonUserRole {
     Read = "read",

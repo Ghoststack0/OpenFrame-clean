@@ -4195,6 +4195,82 @@
         "x-immich-state": "Beta"
       }
     },
+    "/assets/processing-status": {
+      "post": {
+        "description": "Retrieve processing stages for up to 100 readable assets. Rejects the entire batch if any asset is inaccessible. Recent job failures are retained for seven days.",
+        "operationId": "getAssetProcessingStatus",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetProcessingStatusRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetProcessingStatusResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get asset processing status",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/statistics": {
       "get": {
         "description": "Retrieve various statistics about the assets owned by the authenticated user.",
@@ -21598,6 +21674,98 @@
           "createdAt"
         ],
         "type": "string"
+      },
+      "AssetProcessingEventV1": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/AssetProcessingStage"
+          },
+          "state": {
+            "$ref": "#/components/schemas/AssetProcessingState"
+          }
+        },
+        "required": [
+          "assetId",
+          "stage",
+          "state"
+        ],
+        "type": "object"
+      },
+      "AssetProcessingStage": {
+        "enum": [
+          "uploaded",
+          "metadata",
+          "thumbnails",
+          "video",
+          "smartSearch",
+          "faces"
+        ],
+        "type": "string"
+      },
+      "AssetProcessingState": {
+        "enum": [
+          "pending",
+          "complete",
+          "skipped",
+          "failed"
+        ],
+        "type": "string"
+      },
+      "AssetProcessingStatusRequestDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Between 1 and 100 readable asset IDs",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "AssetProcessingStatusResponseDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "stages": {
+            "items": {
+              "properties": {
+                "stage": {
+                  "$ref": "#/components/schemas/AssetProcessingStage"
+                },
+                "state": {
+                  "$ref": "#/components/schemas/AssetProcessingState"
+                }
+              },
+              "required": [
+                "stage",
+                "state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "stages"
+        ],
+        "type": "object"
       },
       "AssetRejectReason": {
         "description": "Rejection reason if rejected",

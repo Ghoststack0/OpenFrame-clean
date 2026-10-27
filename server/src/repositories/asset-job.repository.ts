@@ -26,6 +26,41 @@ import { mimeTypes } from 'src/utils/mime-types.js';
 export class AssetJobRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getProcessingStatus(ids: string[]) {
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+      .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .leftJoin('asset_video', 'asset_video.assetId', 'asset.id')
+      .leftJoin('asset_audio', 'asset_audio.assetId', 'asset.id')
+      .select([
+        'asset.id',
+        'asset.ownerId',
+        'asset.type',
+        'asset.visibility',
+        'asset_job_status.metadataExtractedAt',
+        'asset_job_status.facesRecognizedAt',
+      ])
+      .select((eb) => [
+        eb
+          .exists(eb.selectFrom('smart_search').select('assetId').whereRef('smart_search.assetId', '=', 'asset.id'))
+          .as('hasEmbedding'),
+        jsonArrayFrom(
+          eb
+            .selectFrom('asset_file')
+            .select('type')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('isEdited', '=', false),
+        ).as('files'),
+        withAudioStream(eb).as('audioStream'),
+        withVideoStream(eb).as('videoStream'),
+        withVideoFormat(eb).as('format'),
+      ])
+      .where('asset.id', '=', anyUuid(ids))
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   getForSearchDuplicatesJob(id: string) {
     return this.db

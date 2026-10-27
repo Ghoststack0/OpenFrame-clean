@@ -59,6 +59,7 @@ const SHARED_LINK_ROUTES = new Set([
   'GET timeline/bucket',
   'GET timeline/buckets',
   'POST assets',
+  'POST assets/processing-status',
   'POST download/archive',
   'POST download/info',
   'POST search/metadata',

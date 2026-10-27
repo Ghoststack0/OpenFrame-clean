@@ -7,6 +7,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { AssetProcessingEventV1 } from 'src/dtos/asset-processing.dto.js';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { NotificationDto } from 'src/dtos/notification.dto.js';
@@ -45,6 +46,7 @@ export interface ClientEventMap {
   on_notification: [NotificationDto];
   on_session_delete: [string];
 
+  AssetProcessingStatusV1: [AssetProcessingEventV1];
   AssetUploadReadyV2: [{ asset: SyncAssetV2; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];
   AssetEditReadyV2: [{ asset: SyncAssetV2; edit: SyncAssetEditV1[] }];
