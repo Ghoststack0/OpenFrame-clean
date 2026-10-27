@@ -1,6 +1,7 @@
 import {
   MaintenanceAction,
   type AssetResponseDto,
+  type DeviceTransferResponseDto,
   type MaintenanceStatusResponseDto,
   type NotificationDto,
   type ReleaseEventV1,
@@ -19,6 +20,7 @@ import { getNotificationsQuery } from '$lib/queries/notification.query';
 import { getServerConfigQuery } from '$lib/queries/server.query';
 import { searchUsersAdminQuery } from '$lib/queries/user-admin.query';
 import { Route } from '$lib/route';
+import { deviceTransferStore } from '$lib/stores/device-transfer.store';
 import { maintenanceStore } from '$lib/stores/maintenance.store';
 import { createEventEmitter } from '$lib/utils/eventemitter';
 
@@ -41,6 +43,7 @@ export interface Events {
   on_new_release: (event: ReleaseEventV1) => void;
   on_session_delete: (sessionId: string) => void;
   on_notification: (notification: NotificationDto) => void;
+  on_device_transfer: (payload: DeviceTransferResponseDto) => void;
 
   AppRestartV1: (event: AppRestartEvent) => void;
 
@@ -104,6 +107,7 @@ websocket
   .on('on_asset_update', (asset) => eventManager.emit('AssetUpdate', asset))
   .on('on_person_thumbnail', (id) => eventManager.emit('PersonThumbnailReady', { id }))
   .on('on_notification', () => void queryClient.invalidateQueries({ queryKey: getNotificationsQuery().queryKey }))
+  .on('on_device_transfer', deviceTransferStore.receive)
   .on('connect_error', (e) => console.log('Websocket Connect Error', e));
 
 export const openWebsocketConnection = () => {
@@ -122,6 +126,7 @@ export const openWebsocketConnection = () => {
 
 export const closeWebsocketConnection = () => {
   websocket.disconnect();
+  deviceTransferStore.clear();
 };
 
 export const waitForWebsocketEvent = <T extends keyof Events>(
