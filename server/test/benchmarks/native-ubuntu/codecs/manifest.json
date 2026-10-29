@@ -819,6 +819,20 @@
       "version": "1.4.0-1",
       "file": "xtrans-dev_1.4.0-1_all.deb",
       "sha256": "45277c51d5d83db351b61859314b59595c9626ac372fbb2fc0d5542e169d9086"
+    },
+    {
+      "package": "libltdl-dev",
+      "version": "2.4.7-7build1",
+      "architecture": "amd64",
+      "file": "libltdl-dev_2.4.7-7build1_amd64.deb",
+      "sha256": "3a706efe1d9d8b493bd2335fabaa9ec28549c9134750fad6c0a5aa9868c6ee9c"
+    },
+    {
+      "package": "libltdl7",
+      "version": "2.4.7-7build1",
+      "architecture": "amd64",
+      "file": "libltdl7_2.4.7-7build1_amd64.deb",
+      "sha256": "02d0d2d7e1bf73f838a92f8df7a9b07b698c837e82bd89aee6a581cf793cd966"
     }
   ],
   "patches": [
