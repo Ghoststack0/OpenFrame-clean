@@ -17,6 +17,28 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class CodecPrepareTest(unittest.TestCase):
+    def test_missing_shared_runtime_is_rejected_before_compilation(self):
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            script = folder / 'prepare.py'
+            script.write_text((ROOT / 'server/test/benchmarks/native-ubuntu/codecs/prepare.py').read_text())
+            (folder / 'manifest.json').write_text(json.dumps({
+                'baseImagesCommit': 'unused', 'ubuntuPackages': [], 'sources': [], 'patches': [],
+            }))
+            codecs = folder / 'codecs'
+            libraries = codecs / 'sysroot/usr/lib/x86_64-linux-gnu'
+            libraries.mkdir(parents=True)
+            (libraries / 'libexample.so').symlink_to('libexample.so.1')
+            command = [os.sys.executable, str(script)]
+            env = dict(os.environ, OPENFRAME_CODECS=str(codecs))
+            result = subprocess.run(command, env=env, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('Missing shared runtime targets', result.stderr)
+            self.assertIn('libexample.so', result.stderr)
+            (libraries / 'libexample.so.1').write_bytes(b'runtime')
+            result = subprocess.run(command, env=env, text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_system_libraries_skip_ubuntu_packages_and_verify_sources(self):
         with tempfile.TemporaryDirectory() as folder:
             folder = Path(folder)
