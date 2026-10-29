@@ -9,16 +9,16 @@ const originalDefaults = { ...defaults };
 const json = (body: unknown, status = 200) => Response.json(body, { status });
 
 describe('CLI resumable uploads', () => {
-let directory: string;
-beforeEach(async () => {
-  directory = await mkdtemp(join(tmpdir(), 'cli-resume-'));
-  defaults.baseUrl = 'https://example.com/api';
-  defaults.headers = { 'x-api-key': 'key' };
-});
-afterEach(async () => {
-  Object.assign(defaults, originalDefaults);
-  await rm(directory, { recursive: true, force: true });
-});
+  let directory: string;
+  beforeEach(async () => {
+    directory = await mkdtemp(join(tmpdir(), 'cli-resume-'));
+    defaults.baseUrl = 'https://example.com/api';
+    defaults.headers = { 'x-api-key': 'key' };
+  });
+  afterEach(async () => {
+    Object.assign(defaults, originalDefaults);
+    await rm(directory, { recursive: true, force: true });
+  });
 
   it('uploads bounded chunks, resumes a lost response and includes sidecars and API credentials', async () => {
     const filepath = join(directory, 'large.mp4');
