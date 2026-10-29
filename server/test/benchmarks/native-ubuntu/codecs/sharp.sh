@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# shellcheck source=./jobs.sh
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=jobs.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/jobs.sh"
 npm_config_jobs="$(codec_build_jobs)"
 export npm_config_jobs

@@ -445,6 +445,7 @@ Options
   --native       Build and run directly on the host
   --resume       Resume an interrupted install (detected automatically)
   --with-ml      Install ML and preload models in the background
+  --remote-bundle PATH  Enable frpc using a trusted provisioned bundle (see scripts/remote/README.md)
   --without-ml   Disable ML (default)
   --yes          Use defaults without prompts
   --help         Show this help
@@ -605,7 +606,7 @@ ENV
 }
 
 main() {
-  local with_ml=false ml_explicit=false
+  local with_ml=false ml_explicit=false remote_bundle=''
   local mode='' decided=false cli_hint
   local port=2283 yes=false resume=false reply script_dir='' source_dir platform platform_name
   local redis_server pg_bin password lan_ip='' server_url unit_dir action free_kb parent missing='' choice=0
@@ -620,6 +621,9 @@ main() {
       --docker|--native)
         [[ -z "$mode" || "$mode" == "${1#--}" ]] || fail 'Choose only one of --docker and --native.'
         mode="${1#--}"; shift ;;
+      --remote-bundle)
+        [[ $# -ge 2 && -d "$2" ]] || fail "Missing remote bundle directory"
+        remote_bundle="$(realpath -- "$2")"; shift 2 ;;
       --resume) resume=true; shift ;;
       --with-ml) with_ml=true; ml_explicit=true; shift ;;
       --without-ml) with_ml=false; ml_explicit=true; shift ;;
@@ -1001,6 +1005,10 @@ WRAPPER
 }
 
 ready_screen() {
+  if [[ -n "$remote_bundle" ]]; then
+    "$source_dir/scripts/remote/install-frpc" "$remote_bundle" "$install_dir/remote" "$port" || fail "Remote connector setup failed"
+    rail "Remote connector started; verify your relay before using $(cat "$install_dir/remote/url")"
+  fi
   if command -v ip >/dev/null; then
     lan_ip="$(ip -4 route get 1.1.1.1 2>/dev/null | awk '{for(i=1;i<=NF;i++) if($i=="src") {print $(i+1); exit}}' || true)"
   fi

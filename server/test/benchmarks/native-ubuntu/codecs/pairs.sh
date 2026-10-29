@@ -4,6 +4,8 @@ cd "$HOME/openframe-native-validation-20261026"
 root="$PWD/codec-build"
 exec 9>"$root/build.lock"
 flock -n 9 || { echo 'Another native codec operation is running' >&2; exit 1; }
+# run-env is generated on the benchmark host.
+# shellcheck disable=SC1091
 source ./run-env
 export LD_LIBRARY_PATH="$root/prefix/lib:$root/sysroot/usr/lib/x86_64-linux-gnu"
 export MAGICK_CONFIGURE_PATH="$root/prefix/etc/ImageMagick-7"

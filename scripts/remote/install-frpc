@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# Install an operator-provisioned connector without downloading executable code.
+set -euo pipefail
+umask 077
+bundle=$(realpath -- "$1")
+destination=$2
+port=$3
+units=${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user
+[[ "$destination" == /* && "$destination" != *[\"%\\\$\`]* && "$destination" != *$'\n'* ]]
+[[ ! -e "$destination" && ! -L "$destination" ]]
+[[ ! -e "$units/openframe-frpc.service" && ! -L "$units/openframe-frpc.service" ]]
+systemctl --user show-environment >/dev/null
+python3 - "$bundle" "$port" <<'PY'
+import json, pathlib, sys, urllib.parse
+b = pathlib.Path(sys.argv[1])
+c = json.loads((b / 'frpc.json').read_text())
+u = urllib.parse.urlsplit((b / 'url').read_text().strip())
+assert u.scheme == 'https' and u.hostname and not u.username and not u.password and not u.query and not u.fragment
+assert c.get('auth', {}).get('method') == 'token' and c['auth'].get('token')
+tls = c['transport']['tls']
+assert tls['enable'] is True and tls['trustedCaFile'] == 'ca.crt' and tls.get('serverName')
+assert c['loginFailExit'] is False
+assert len(c['proxies']) == 1
+p = c['proxies'][0]
+assert p['type'] == 'http' and p['localIP'] == '127.0.0.1' and p['localPort'] == int(sys.argv[2])
+assert p['customDomains'] == [u.hostname]
+assert set(c) <= {'serverAddr', 'serverPort', 'auth', 'transport', 'loginFailExit', 'proxies', 'log'}
+assert set(p) <= {'name', 'type', 'localIP', 'localPort', 'customDomains'}
+assert set(c['transport']) == {'tls'}
+assert set(tls) == {'enable', 'trustedCaFile', 'serverName'}
+assert set(c.get('log', {})) <= {'level', 'maxDays'}
+PY
+# Verify before creating persistent files. Relative CA paths resolve in the bundle.
+(cd "$bundle"; ./frpc verify -c frpc.json)
+mkdir -p -- "$destination" "$units"
+install -m 700 "$bundle/frpc" "$destination/frpc"
+install -m 600 "$bundle/frpc.json" "$bundle/ca.crt" "$bundle/url" "$destination/"
+cat > "$units/openframe-frpc.service" <<UNIT
+[Unit]
+Description=OpenFrame remote connector
+After=network-online.target
+[Service]
+WorkingDirectory="$destination"
+ExecStart="$destination/frpc" -c "$destination/frpc.json"
+Restart=always
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+[Install]
+WantedBy=default.target
+UNIT
+systemctl --user daemon-reload
+systemctl --user enable --now openframe-frpc
