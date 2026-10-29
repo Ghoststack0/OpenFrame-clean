@@ -39,7 +39,9 @@ try {
       await repository.generateThumbnail(image, options, path);
       const milliseconds = performance.now() - start;
       const usage = process.cpuUsage(cpu);
-      const hash = createHash('sha256').update(await readFile(path)).digest('hex');
+      const hash = createHash('sha256')
+        .update(await readFile(path))
+        .digest('hex');
       if (!expected.has('hash')) expected.set('hash', hash);
       assert.equal(hash, expected.get('hash'), 'Encoded preview bytes differ from baseline');
       if (round >= 0) console.log(JSON.stringify({ round, version, milliseconds, cpu: usage, node: process.version }));
