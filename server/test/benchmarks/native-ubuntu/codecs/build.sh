@@ -3,7 +3,8 @@
 # shellcheck disable=SC2329
 set -euo pipefail
 script="$(realpath "${BASH_SOURCE[0]}")"
-# shellcheck source=./jobs.sh
+# shellcheck source-path=SCRIPTDIR
+# shellcheck source=jobs.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/jobs.sh"
 cmake_cache=()
 # Existing build trees keep their generator for incremental rebuilds.
