@@ -20,6 +20,7 @@ env:
 
 jobs:
   pre-job:
+    if: github.repository == 'immich-app/immich'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -254,7 +255,7 @@ jobs:
     needs: [server, retag_server, mirror]
     permissions: {}
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.repository == 'immich-app/immich'
     steps:
       - uses: immich-app/devtools/actions/success-check@81113db03f6d743efee81e0058c0b43f6cd6f36d # success-check-action-v0.0.6
         with:
@@ -265,7 +266,7 @@ jobs:
     needs: [machine-learning, retag_ml, mirror]
     permissions: {}
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.repository == 'immich-app/immich'
     steps:
       - uses: immich-app/devtools/actions/success-check@81113db03f6d743efee81e0058c0b43f6cd6f36d # success-check-action-v0.0.6
         with:
