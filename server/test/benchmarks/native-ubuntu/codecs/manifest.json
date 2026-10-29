@@ -992,6 +992,20 @@
       "architecture": "amd64",
       "file": "libxft2_2.3.6-1build1_amd64.deb",
       "sha256": "b4f4f3255c0b8773b260c61cbe20ee7c63799cfc0e4e389fa58375dd480b093a"
+    },
+    {
+      "package": "liblzo2-2",
+      "version": "2.10-2build4",
+      "architecture": "amd64",
+      "file": "liblzo2-2_2.10-2build4_amd64.deb",
+      "sha256": "e0d13be155013138b8db4cfe68212b866080af661c78302c2eab0d2f9d0d454e"
+    },
+    {
+      "package": "libbsd0",
+      "version": "0.12.1-1build1.1",
+      "architecture": "amd64",
+      "file": "libbsd0_0.12.1-1build1.1_amd64.deb",
+      "sha256": "f3857b0863ac5cfd4263e9bf6cfb1d4be88d5321e4070d5bc2b62b0949e6c86f"
     }
   ],
   "patches": [
