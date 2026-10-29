@@ -16,10 +16,17 @@ placeholder="$(python3 "$tool" placeholder)"
 trap 'rm -rf -- "$work" "$placeholder"' EXIT
 export OPENFRAME_SOURCE="$repo"
 recipe="$repo/server/test/benchmarks/native-ubuntu/codecs"
+# Install the locked JS sources and build tools with the same Node used at runtime.
+mkdir -p "$repo/local"
+curl -fsSL https://nodejs.org/dist/v24.13.1/node-v24.13.1-linux-x64.tar.xz | tar -xJ -C "$repo/local"
+export PATH="$repo/local/node-v24.13.1-linux-x64/bin:$PATH"
+npm install --global pnpm@12.14.0
+pnpm install --frozen-lockfile --ignore-scripts
 start=$SECONDS
 export OPENFRAME_CODECS="$placeholder"
 python3 "$recipe/prepare.py"
 bash "$recipe/build.sh"
+bash "$recipe/sharp.sh"
 python3 "$tool" pack "$placeholder" "$output/codecs.tar.gz" > "$output/metadata.log"
 printf 'CI placeholder build and pack: %s seconds\n' "$((SECONDS-start))" | tee "$output/timing.txt"
 # Compare a separately built normal prefix against the relocated distribution.

@@ -28,7 +28,8 @@ def sha256(path):
 
 
 def recipe_key(repo=ROOT):
-    paths = [RECIPE / name for name in ('manifest.json', 'build.sh', 'jobs.sh', 'prepare.py')]
+    paths = [RECIPE / name for name in ('manifest.json', 'build.sh', 'jobs.sh', 'prepare.py', 'sharp.sh')]
+    paths += [Path('pnpm-lock.yaml')]
     # manifest.json pins the downloaded patch and policy contents by SHA256.
     digest = hashlib.sha256(('codecs-bundle-' + VERSION + '\0').encode())
     digest.update(Path(__file__).read_bytes())
@@ -133,6 +134,10 @@ def pack(source, archive):
             origin = source / 'sysroot/usr' / name
             if origin.exists():
                 shutil.copytree(origin, stage / 'sysroot/usr' / name, symlinks=True)
+        version = json.loads((source / 'sharp-native/package.json').read_text())['version']
+        addon = source / f'sharp-native/src/build/Release/sharp-linux-x64-{version}.node'
+        (stage / 'sharp').mkdir()
+        shutil.copy2(addon, stage / 'sharp' / addon.name)
         closure(stage, source)
         for path in stage.rglob('*'):
             if path.is_symlink() and os.path.isabs(os.readlink(path)):

@@ -20,9 +20,39 @@ class BundleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             repo = Path(directory)
             shutil.copytree(ROOT / bundle.RECIPE, repo / bundle.RECIPE)
+            shutil.copy2(ROOT / "pnpm-lock.yaml", repo / "pnpm-lock.yaml")
             self.assertEqual(bundle.recipe_key(), bundle.recipe_key(repo))
             (repo / bundle.RECIPE / 'jobs.sh').write_text('changed')
             self.assertNotEqual(bundle.recipe_key(), bundle.recipe_key(repo))
+
+    def test_sharp_prebuilt_selection(self):
+        # Exercise the actual recipe with a stub Node boundary; real ELF loading
+        # remains an artifact-level check performed by validate_addon.
+        recipe = ROOT / bundle.RECIPE / 'sharp.sh'
+        for valid in (True, False):
+            with self.subTest(valid=valid), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                app = root / 'app'
+                original = app / 'server/node_modules/sharp'
+                original.mkdir(parents=True)
+                (original / 'package.json').write_text('{"version":"0.35.5"}')
+                codecs = root / 'codecs'
+                (codecs / 'sharp').mkdir(parents=True)
+                (codecs / 'sharp/sharp-linux-x64-0.35.5.node').write_bytes(b'fixture')
+                binpath = app / 'local/node-v24.13.1-linux-x64/bin'
+                binpath.mkdir(parents=True)
+                node = binpath / 'node'
+                node.write_text("#!/bin/bash\n"
+                    "if [[ $1 == -p ]]; then echo 0.35.5; exit; fi\n"
+                    "if [[ $1 == install/build.js ]]; then touch \"$OPENFRAME_CODECS/compiled\"; exit; fi\n"
+                    "if [[ $# == 3 && $3 == \"$OPENFRAME_CODECS\" ]]; then\n"
+                    "  [[ -f $OPENFRAME_CODECS/compiled || $VALID == yes ]]; exit\n"
+                    "fi\ncat >/dev/null\n")
+                node.chmod(0o755)
+                env = dict(os.environ, OPENFRAME_SOURCE=str(app), OPENFRAME_CODECS=str(codecs),
+                           VALID='yes' if valid else 'no')
+                subprocess.run(['bash', str(recipe)], env=env, check=True, capture_output=True)
+                self.assertEqual((codecs / 'compiled').exists(), not valid)
 
     def test_relocation(self):
         old, new = b'/long/build/placeholder', b'/opt/codecs'
