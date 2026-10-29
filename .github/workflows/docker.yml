@@ -15,11 +15,12 @@ concurrency:
 permissions: {}
 
 env:
-  GHCR_NAMESPACE: ghcr.io/${{ github.repository_owner }}
+  GHCR_NAMESPACE: ghcr.io/ghoststack0
   DOCKERHUB_NAMESPACE: docker.io/altran1502
 
 jobs:
   pre-job:
+    if: github.repository == 'immich-app/immich'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -116,7 +117,7 @@ jobs:
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
-          REPOSITORY: ${{ github.repository_owner }}/${{ matrix.image }}
+          REPOSITORY: ghoststack0/${{ matrix.image }}
           TAG_OLD: main${{ matrix.suffixes }}
           TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}${{ matrix.suffixes }}
           TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}${{ matrix.suffixes }}
@@ -143,7 +144,7 @@ jobs:
       - name: Re-tag image
         env:
           REGISTRY_NAME: 'ghcr.io'
-          REPOSITORY: ${{ github.repository_owner }}/immich-server
+          REPOSITORY: ghoststack0/immich-server
           TAG_OLD: main
           TAG_PR: ${{ github.event.number == 0 && github.ref_name || format('pr-{0}', github.event.number) }}
           TAG_COMMIT: commit-${{ github.event_name != 'pull_request' && github.sha || github.event.pull_request.head.sha }}
@@ -254,7 +255,7 @@ jobs:
     needs: [server, retag_server, mirror]
     permissions: {}
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.repository == 'immich-app/immich'
     steps:
       - uses: immich-app/devtools/actions/success-check@81113db03f6d743efee81e0058c0b43f6cd6f36d # success-check-action-v0.0.6
         with:
@@ -265,7 +266,7 @@ jobs:
     needs: [machine-learning, retag_ml, mirror]
     permissions: {}
     runs-on: ubuntu-latest
-    if: always()
+    if: always() && github.repository == 'immich-app/immich'
     steps:
       - uses: immich-app/devtools/actions/success-check@81113db03f6d743efee81e0058c0b43f6cd6f36d # success-check-action-v0.0.6
         with:

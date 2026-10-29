@@ -151,7 +151,12 @@ describe('desktop sync', () => {
       await saveState(root, state);
       expect(await loadState(root, state.serverUrl, userId)).toEqual(state);
       const stats = await lstat(path.join(root, STATE_FILE));
-      expect(stats.mode & 0o777).toBe(0o600);
+      if (process.platform === 'win32') {
+        expect(stats.isFile()).toBe(true);
+        expect(stats.mode & 0o600).toBe(0o600);
+      } else {
+        expect(stats.mode & 0o777).toBe(0o600);
+      }
       expect(await readdir(root)).toEqual([STATE_FILE, 'photo.jpg']);
       await expect(loadState(root, 'https://other.test/api', userId)).rejects.toThrow('another server/account');
       await expect(loadState(root, state.serverUrl, otherId)).rejects.toThrow('another server/account');
@@ -298,10 +303,12 @@ describe('desktop sync', () => {
 
     it('waits for size/mtime stability, and checks aborts', async () => {
       await writeFile(path.join(root, 'photo.jpg'), 'photo');
-      const scanning = scanLocal(root, state, { concurrency: 1 }, signal, 100);
+      const scanning = expect(scanLocal(root, state, { concurrency: 1 }, signal, 100)).rejects.toThrow(
+        'still changing',
+      );
       await new Promise((resolve) => setTimeout(resolve, 30));
       await writeFile(path.join(root, 'photo.jpg'), 'photo still writing');
-      await expect(scanning).rejects.toThrow('still changing');
+      await scanning;
       const controller = new AbortController();
       controller.abort();
       await expect(scanLocal(root, state, { concurrency: 1 }, controller.signal, 0)).rejects.toThrow();
@@ -330,10 +337,12 @@ describe('desktop sync', () => {
       await track();
       await rm(path.join(root, 'photo.jpg'));
       await writeFile(path.join(root, 'renamed.jpg'), 'p');
-      const running = syncOnce(root, state, { concurrency: 1, propagateLocalDeletions: true }, signal, 100);
+      const running = expect(
+        syncOnce(root, state, { concurrency: 1, propagateLocalDeletions: true }, signal, 100),
+      ).rejects.toThrow('still changing');
       await new Promise((resolve) => setTimeout(resolve, 30));
       await writeFile(path.join(root, 'renamed.jpg'), 'photo');
-      await expect(running).rejects.toThrow('still changing');
+      await running;
       expect(deleteAssets).not.toHaveBeenCalled();
       expect(uploadBatch).not.toHaveBeenCalled();
       await run({ propagateLocalDeletions: true });

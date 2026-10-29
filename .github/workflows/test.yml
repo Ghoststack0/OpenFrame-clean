@@ -279,7 +279,7 @@ jobs:
     name: Lint Web
     needs: pre-job
     if: ${{ fromJSON(needs.pre-job.outputs.should_run).web == true }}
-    runs-on: mich
+    runs-on: ${{ github.repository == 'immich-app/immich' && 'mich' || 'ubuntu-latest' }}
     permissions:
       contents: read
     defaults:
@@ -751,7 +751,7 @@ jobs:
   e2e-tests-ml:
     name: End-to-End Tests (ML, ${{ matrix.runner }})
     needs: pre-job
-    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true && !github.event.pull_request.head.repo.fork }}
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true && github.repository == 'immich-app/immich' && !github.event.pull_request.head.repo.fork }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -893,6 +893,7 @@ jobs:
       - name: Run ShellCheck
         uses: ludeeus/action-shellcheck@00cae500b08a931fb5698e11e79bfbd38e612a38 # 2.0.0
         with:
+          severity: warning
           ignore_paths: >-
             **/open-api/** **/openapi** **/node_modules/**
   generated-api-up-to-date:

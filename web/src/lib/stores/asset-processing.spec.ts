@@ -20,6 +20,13 @@ const response = (assetId: string, state = State.Pending): AssetProcessingStatus
   stages: Object.values(Stage).map((stage) => ({ stage, state: stage === Stage.Uploaded ? State.Complete : state })),
 });
 const fetchStatus = vi.mocked(getAssetProcessingStatus);
+const pendingStatus = () => {
+  let resolve: (value: AssetProcessingStatusResponseDto[]) => void = () => {};
+  const promise = new Promise<AssetProcessingStatusResponseDto[]>((fulfill) => {
+    resolve = fulfill;
+  });
+  return { promise, resolve };
+};
 const flush = async () => {
   await Promise.resolve();
   await Promise.resolve();
@@ -66,7 +73,7 @@ describe('asset processing store', () => {
 
   it('preserves websocket events arriving during the initial fetch', async () => {
     const store = createAssetProcessingStore();
-    const request = Promise.withResolvers<AssetProcessingStatusResponseDto[]>();
+    const request = pendingStatus();
     fetchStatus.mockReturnValue(request.promise);
     store.track('a');
     await flush();
@@ -79,7 +86,7 @@ describe('asset processing store', () => {
 
   it('ignores an older fetch response after a newer refresh', async () => {
     const store = createAssetProcessingStore();
-    const oldRequest = Promise.withResolvers<AssetProcessingStatusResponseDto[]>();
+    const oldRequest = pendingStatus();
     fetchStatus.mockReturnValueOnce(oldRequest.promise).mockResolvedValue([response('a', State.Complete)]);
     store.track('a');
     await flush();
@@ -91,7 +98,7 @@ describe('asset processing store', () => {
 
   it('does not restore dismissed or logged-out assets from in-flight responses', async () => {
     const store = createAssetProcessingStore();
-    const request = Promise.withResolvers<AssetProcessingStatusResponseDto[]>();
+    const request = pendingStatus();
     fetchStatus.mockReturnValue(request.promise);
     store.track('a');
     store.track('b');
@@ -105,7 +112,7 @@ describe('asset processing store', () => {
 
   it('does not apply a dismissed tracking generation to the same ID tracked again', async () => {
     const store = createAssetProcessingStore();
-    const request = Promise.withResolvers<AssetProcessingStatusResponseDto[]>();
+    const request = pendingStatus();
     fetchStatus.mockReturnValue(request.promise);
     store.track('a');
     await flush();

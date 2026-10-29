@@ -4,14 +4,60 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 export OPENFRAME_STATE="${OPENFRAME_STATE:-${XDG_STATE_HOME:-$HOME/.local/state}/openframe}"
 export OPENFRAME_CONFIG="${OPENFRAME_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/openframe/env}"
-fail() { echo "$*" >&2; exit 1; }
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  bold=$'\033[1m' dim=$'\033[2m' red=$'\033[31m' green=$'\033[32m' reset=$'\033[0m'
+else
+  bold='' dim='' red='' green='' reset=''
+fi
+fail() { printf '%sopenframe:%s %s\n' "$red" "$reset" "$*" >&2; exit 1; }
+services=(openframe-db openframe-redis openframe-ml openframe)
+usage() {
+  cat <<HELP
+${bold}openframe${reset} - manage a native OpenFrame installation
+
+${bold}Everyday${reset}
+  status             Show whether each service is running and reachable
+  logs [service]     Follow live logs (server, ml, db or redis; default: server and ml)
+  restart            Restart all services
+  stop               Stop all services (start again with restart)
+  update [--check]   Update to the latest version (backs up the database first)
+  uninstall          Remove OpenFrame; choose to keep or erase your photos and data
+
+${bold}Setup and maintenance${reset}
+  init               Create a configuration file to edit
+  prepare [--resume]  Build everything concurrently; reuse up-to-date outputs
+  build              Build the web app, server and machine learning
+  build-ml           Rebuild only the machine learning environment
+  codecs             Compile the native image codecs
+  resources          Download map and location data
+  doctor             Check that the build and configuration are complete
+  admin [args]       Run administration commands, e.g. admin reset-admin-password
+
+${bold}Run in the foreground${reset} ${dim}(used by the systemd services)${reset}
+  start              Start the server
+  ml                 Start machine learning
+
+${dim}Configuration: ${OPENFRAME_CONFIG/#$HOME/\~}${reset}
+HELP
+}
+unit_of() {
+  case "$1" in
+    server|openframe) echo openframe ;;
+    ml|openframe-ml) echo openframe-ml ;;
+    db|database|openframe-db) echo openframe-db ;;
+    redis|valkey|cache|openframe-redis) echo openframe-redis ;;
+    *) fail "Unknown service: $1 (use server, ml, db or redis)" ;;
+  esac
+}
 need() { command -v "$1" >/dev/null || fail "Missing command: $1"; }
 load_env() {
   [[ -f "$OPENFRAME_CONFIG" ]] || fail "Run $0 init, then configure $OPENFRAME_CONFIG"
   # This is a trusted, user-owned shell configuration, never uploaded input.
   set -a
+  # shellcheck source=/dev/null
   source "$OPENFRAME_CONFIG"
   set +a
+  if [[ "${IMMICH_MACHINE_LEARNING_ENABLED:-false}" != true ]]; then services=(openframe-db openframe-redis openframe); fi
   for name in DB_URL DB_HOSTNAME DB_DATABASE_NAME DB_USERNAME DB_PASSWORD REDIS_PASSWORD; do
     file_var="${name}_FILE"
     credential_file="${!file_var:-}"
@@ -36,9 +82,520 @@ load_env() {
     [[ "$OPENFRAME_CODECS" == /* && -f "$OPENFRAME_CODECS/sharp-native/package.json" && -f "$OPENFRAME_CODECS/prefix/etc/ImageMagick-7/policy.xml" ]] || fail 'OPENFRAME_CODECS must name an absolute, built codec directory; run openframe codecs after build.'
     export LD_LIBRARY_PATH="$OPENFRAME_CODECS/prefix/lib:$OPENFRAME_CODECS/sysroot/usr/lib/x86_64-linux-gnu${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
     export MAGICK_CONFIGURE_PATH="$OPENFRAME_CODECS/prefix/etc/ImageMagick-7"
-    export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--require $(NODE_OPTIONS= node -p 'JSON.stringify(process.argv[1])' "$ROOT/scripts/native/codecs.cjs")"
+    NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--require $(NODE_OPTIONS='' node -p 'JSON.stringify(process.argv[1])' "$ROOT/scripts/native/codecs.cjs")"
+    export NODE_OPTIONS
   fi
 }
+sync_ml() {
+  need uv
+  cd "$ROOT/machine-learning"
+  # Match machine-learning/mise.toml; the locked watchfiles has no Python 3.13 wheel.
+  uv sync --frozen --extra cpu --no-dev --python 3.12
+}
+codec_env() {
+  export OPENFRAME_CODECS="${OPENFRAME_CODECS:-${XDG_DATA_HOME:-$HOME/.local/share}/openframe/codecs}"
+  [[ "$OPENFRAME_CODECS" == /* ]] || fail 'OPENFRAME_CODECS must be absolute.'
+  export OPENFRAME_SOURCE="$ROOT"
+  recipe="$ROOT/server/test/benchmarks/native-ubuntu/codecs"
+}
+wait_jobs() {
+  local pid result=0
+  for pid in "$@"; do
+    if wait "$pid"; then :; else result=1; fi
+  done
+  return "$result"
+}
+progress_write() {
+  local path="$OPENFRAME_STATE/progress/$1"
+  printf '%s\n' "$2" > "$path.$BASHPID.tmp"
+  mv -f -- "$path.$BASHPID.tmp" "$path"
+}
+phase() {
+  if [[ -n "${prepare_task:-}" ]]; then progress_write "$prepare_task.detail" "$1"; fi
+}
+build_web() (
+  for cmd in node pnpm extism-js; do need "$cmd"; done
+  [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || fail 'Use Node 24 (see .nvmrc).'
+  cd "$ROOT"
+  phase 'Installing JavaScript dependencies'
+  pnpm --filter immich... --filter immich-web... --filter @immich/plugin-core... install --frozen-lockfile --prefer-offline --prod=false
+  if [[ -n "${prepare_task:-}" ]]; then progress_write dependencies.ready ready; fi
+  # Concurrent builds must not each run pnpm's automatic dependency installation.
+  export pnpm_config_verify_deps_before_run=false
+  export pnpm_config_sync_injected_deps_after_scripts='["build"]'
+  phase 'Building SDKs'
+  pnpm --filter @immich/sdk build
+  pnpm --filter @immich/plugin-sdk build
+  phase 'Building server, web app and core plugin'
+  pnpm --filter @immich/plugin-core build & plugin_pid=$!
+  pnpm --filter immich build & server_pid=$!
+  pnpm --filter immich-web build & web_pid=$!
+  wait_jobs "$plugin_pid" "$server_pid" "$web_pid"
+  mkdir -p "$IMMICH_BUILD_DATA/www" "$IMMICH_BUILD_DATA/plugins/immich-plugin-core"
+  cp -a web/build/. "$IMMICH_BUILD_DATA/www/"
+  cp -a packages/plugin-core/dist "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/"
+  cp packages/plugin-core/manifest.json "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/"
+)
+codec_libraries_present() {
+  local lib
+  for lib in vips heif de265 jxl raw jpeg tiff hwy; do
+    [[ -f "$OPENFRAME_CODECS/prefix/lib/lib$lib.so" ]] || return 1
+  done
+  [[ -s "$OPENFRAME_CODECS/prefix/etc/ImageMagick-7/policy.xml" ]]
+}
+build_codecs() (
+  need node; need python3
+  [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || fail 'Use Node 24.'
+  codec_env
+  mkdir -p -- "$(dirname -- "$OPENFRAME_CODECS")"
+  exec 7>"${OPENFRAME_CODECS}.install.lock"
+  flock -n 7 || fail 'Another codec installation is running.'
+  source_backup=''
+  trap 'result=$?; if [[ -n "$source_backup" ]]; then
+    if ((result)); then rm -rf -- "$OPENFRAME_CODECS"; mv -- "$source_backup/root" "$OPENFRAME_CODECS"; fi
+    rm -rf -- "$source_backup"
+  fi' EXIT
+  codec_args=()
+  if command -v pacman >/dev/null; then codec_args+=(--system-libs); fi
+  libs_key="$(input_key codecs)"
+  if [[ -f "$OPENFRAME_CODECS/libraries.stamp" && "$(< "$OPENFRAME_CODECS/libraries.stamp")" == "$libs_key" ]] && codec_libraries_present; then
+    if [[ ! -f "$OPENFRAME_CODECS/bundle.json" ]]; then
+      phase 'Verifying pinned codec sources'
+      python3 "$recipe/prepare.py" "${codec_args[@]}"
+    fi
+    echo 'Native libraries are up to date.'
+  else
+    bundle_ready=false
+    if [[ ! -v OPENFRAME_CODECS_FROM_SOURCE && -f "$ROOT/scripts/native/codecs-bundle.py" ]]; then
+      phase 'Downloading, verifying and relocating prebuilt codecs (source fallback available)'
+      if OPENFRAME_CODECS_PROGRESS="${prepare_task:+$OPENFRAME_STATE/progress/$prepare_task.detail}" \
+        python3 "$ROOT/scripts/native/codecs-bundle.py" install "$OPENFRAME_CODECS" \
+        "${OPENFRAME_CODECS_PREBUILT_JSON:-$ROOT/scripts/native/codecs-prebuilt.json}" \
+        "${XDG_CACHE_HOME:-$HOME/.cache}/openframe-codec-bundle/downloads"; then
+        bundle_ready=true
+      else
+        echo 'Prebuilt codec installation failed or no matching pin exists; using source build.' >&2
+      fi
+    fi
+    if [[ "$bundle_ready" == false ]]; then
+      if [[ -f "$OPENFRAME_CODECS/bundle.json" ]]; then
+        source_backup="$(mktemp -d "${OPENFRAME_CODECS}.source-backup.XXXXXXXX")"
+        mv -- "$OPENFRAME_CODECS" "$source_backup/root"
+      fi
+      phase 'Downloading and verifying pinned codec sources'
+      python3 "$recipe/prepare.py" "${codec_args[@]}"
+      rm -f -- "$OPENFRAME_CODECS/libraries.stamp"
+      phase 'Compiling native codec libraries'
+      bash "$recipe/build.sh"
+    fi
+    codec_libraries_present || fail 'Codec build did not produce all required libraries.'
+    printf '%s\n' "$libs_key" > "$OPENFRAME_CODECS/libraries.stamp.tmp"
+    mv -- "$OPENFRAME_CODECS/libraries.stamp.tmp" "$OPENFRAME_CODECS/libraries.stamp"
+  fi
+  if [[ -n "${prepare_task:-}" ]]; then
+    phase 'Waiting for JavaScript dependencies before building Sharp'
+    until [[ -f "$OPENFRAME_STATE/progress/dependencies.ready" ]]; do
+      [[ "$(< "$OPENFRAME_STATE/progress/web.status")" != failed ]] || fail 'JavaScript dependency installation failed.'
+      sleep 0.2
+    done
+  fi
+  phase 'Building Sharp against native codecs'
+  bash "$recipe/sharp.sh"
+)
+download_resources() (
+  need curl; need unzip
+  mkdir -p "$IMMICH_BUILD_DATA/geodata"
+  tmp="$(mktemp -d "$IMMICH_BUILD_DATA/geodata/.download.XXXXXXXX")"
+  trap 'rm -rf -- "$tmp"' EXIT
+  phase 'Downloading map and location data'
+  pids=()
+  for name in admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.zip; do
+    curl --fail --location --retry 3 "https://download.geonames.org/export/dump/$name" -o "$tmp/$name" & pids+=("$!")
+  done
+  curl --fail --location --retry 3 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson' -o "$tmp/ne_10m_admin_0_countries.geojson" & pids+=("$!")
+  wait_jobs "${pids[@]}"
+  unzip -q "$tmp/cities500.zip" -d "$tmp"
+  date -u +%F > "$tmp/geodata-date.txt"
+  for name in "${geodata_files[@]}"; do
+    [[ -s "$tmp/$name" ]] || fail "Empty download: $name"
+  done
+  for name in "${geodata_files[@]}"; do mv -- "$tmp/$name" "$IMMICH_BUILD_DATA/geodata/$name"; done
+)
+# Hash source contents, including local edits, but never generated build directories.
+input_key() (
+  set -e
+  cd "$ROOT"
+  {
+    printf '%s\n' "$ROOT" "$IMMICH_BUILD_DATA" "$OPENFRAME_CODECS" "$(uname -sm)"
+    sha256sum scripts/native/openframe "$OPENFRAME_CONFIG"
+    paths=(package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc .nvmrc mise.toml .env)
+    case "$1" in
+      web)
+        paths+=(web server packages/sdk packages/plugin-sdk packages/plugin-core i18n)
+        node --version; pnpm --version
+        env | LC_ALL=C sort | sed -n '/^PUBLIC_/p; /^IMMICH_BUILD/p; /^BUILD_STATS=/p'
+        ;;
+      ml) paths=(machine-learning/pyproject.toml machine-learning/uv.lock machine-learning/mise.toml); uv --version ;;
+      codecs)
+        paths+=("$recipe" scripts/native/codecs-bundle.py scripts/native/codecs-prebuilt.json)
+        if [[ -n "${OPENFRAME_CODECS_PREBUILT_JSON:-}" ]]; then paths+=("$OPENFRAME_CODECS_PREBUILT_JSON"); fi
+        printf '%s\n' "${OPENFRAME_CODECS_FROM_SOURCE+x}"
+        node --version
+        cc --version
+        if command -v pacman >/dev/null; then pacman -Q; else dpkg-query -W; fi
+        env | LC_ALL=C sort | sed -n '/^CC=/p; /^CXX=/p; /^CFLAGS=/p; /^CXXFLAGS=/p; /^LDFLAGS=/p'
+        ;;
+      resources) paths=() ;;
+    esac
+    for path in "${paths[@]}"; do
+      [[ -e "$path" ]] || continue
+      find "$path" \( -type d \( -name node_modules -o -name .git -o -name dist -o -name build -o -name .svelte-kit -o -name coverage -o -path server/test \) -prune \) -o \
+        \( -type f ! -name '*.tsbuildinfo' ! -name '*.log' -print0 \)
+    done | LC_ALL=C sort -z | xargs -0 -r sha256sum
+  } | sha256sum | cut -d ' ' -f1
+)
+outputs_present() {
+  local name version
+  case "$1" in
+    web)
+      for name in "$ROOT/server/dist/main.js" "$ROOT/web/build/index.html" "$IMMICH_BUILD_DATA/www/index.html" \
+        "$ROOT/packages/sdk/build/index.js" "$ROOT/packages/plugin-sdk/dist/index.js" \
+        "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/dist/plugin.wasm" "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/manifest.json" \
+        "$ROOT/node_modules/.modules.yaml" "$ROOT/server/node_modules/sharp/package.json"; do
+        [[ -s "$name" ]] || return 1
+      done
+      [[ -d "$ROOT/web/node_modules" && -d "$ROOT/packages/plugin-core/node_modules" ]]
+      ;;
+    ml) [[ -x "$ROOT/machine-learning/.venv/bin/python" && -s "$ROOT/machine-learning/.venv/pyvenv.cfg" ]] ;;
+    codecs)
+      codec_libraries_present || return 1
+      [[ -s "$OPENFRAME_CODECS/sharp-native/package.json" ]] || return 1
+      version="$(node -p 'require(process.argv[1]).version' "$OPENFRAME_CODECS/sharp-native/package.json")" || return 1
+      [[ -s "$OPENFRAME_CODECS/sharp-native/src/build/Release/sharp-linux-x64-$version.node" ]]
+      ;;
+    resources)
+      for name in "${geodata_files[@]}"; do [[ -s "$IMMICH_BUILD_DATA/geodata/$name" ]] || return 1; done
+      ;;
+  esac
+}
+prepare_one() (
+  prepare_task="$1"
+  trap 'result=$?; if ((result)); then progress_write "$prepare_task.status" failed; fi' EXIT
+  phase 'Checking existing outputs'
+  key="$(input_key "$prepare_task")"
+  stamp="$OPENFRAME_STATE/stamps/$prepare_task"
+  if [[ -f "$stamp" && "$(< "$stamp")" == "$key" ]] && outputs_present "$prepare_task"; then
+    if [[ "$prepare_task" == web ]]; then progress_write dependencies.ready ready; fi
+    phase 'Up to date'
+    progress_write "$prepare_task.status" skipped
+    exit 0
+  fi
+  rm -f -- "$stamp"
+  progress_write "$prepare_task.status" running
+  case "$prepare_task" in
+    web) build_web ;;
+    ml) phase 'Installing CPU machine learning dependencies'; sync_ml ;;
+    codecs) build_codecs ;;
+    resources) download_resources ;;
+  esac
+  outputs_present "$prepare_task" || fail "Missing outputs after $prepare_task"
+  printf '%s\n' "$key" > "$stamp.tmp"
+  mv -- "$stamp.tmp" "$stamp"
+  phase 'Complete'
+  progress_write "$prepare_task.status" "done"
+)
+prepare_all() {
+  umask 077
+  need flock
+  mkdir -p "$OPENFRAME_STATE/progress" "$OPENFRAME_STATE/stamps"
+  exec 8>"$OPENFRAME_STATE/prepare.lock"
+  flock -n 8 || fail 'Another prepare is running.'
+  codec_env
+  local task index result=0
+  local tasks=(web codecs resources) pids=()
+  rm -f -- "$OPENFRAME_STATE/progress/dependencies.ready"
+  for task in "${tasks[@]}"; do
+    progress_write "$task.status" pending
+    progress_write "$task.detail" Queued
+  done
+  for task in "${tasks[@]}"; do
+    prepare_one "$task" >> "$OPENFRAME_STATE/progress/$task.log" 2>&1 & pids+=("$!")
+  done
+  # Drain every task even if an earlier one fails; no orphan builds on failure.
+  for index in "${!pids[@]}"; do
+    if wait "${pids[index]}"; then :; else
+      progress_write "${tasks[index]}.status" failed
+      result=1
+    fi
+  done
+  for task in "${tasks[@]}"; do
+    case "$(< "$OPENFRAME_STATE/progress/$task.status")" in
+      done|skipped) ;;
+      *) progress_write "$task.status" failed; printf 'failed: %s\n' "$task" >&2; result=1 ;;
+    esac
+  done
+  return "$result"
+}
+geodata_files=(admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.txt ne_10m_admin_0_countries.geojson geodata-date.txt)
+# ── Update and uninstall ─────────────────────────────────────────────────────
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then yellow=$'\033[33m'; else yellow=''; fi
+say() { printf '%s\n' "$*"; }
+ask() {
+  # ask VAR PROMPT DEFAULT NO_TTY_MESSAGE. Answers come from the terminal, never piped input.
+  # The reply variable has a private name so it cannot shadow the caller's VAR.
+  local __ask_reply=''
+  { : < /dev/tty; } 2>/dev/null || fail "$4"
+  printf '  %s%s%s %s[%s]%s ' "$bold" "$2" "$reset" "$dim" "$3" "$reset" > /dev/tty
+  IFS= read -r __ask_reply < /dev/tty || __ask_reply=''
+  printf -v "$1" '%s' "$__ask_reply"
+}
+transient() { if [[ -t 1 ]]; then printf '\r\033[K%s' "$1"; fi; }
+size_of() {
+  local size
+  size="$(du -sh -- "$@" 2>/dev/null | awk '{print $1}' | tail -n 1 || true)"
+  printf '%s' "${size:-0}"
+}
+total_size() {
+  local path
+  local -a present=()
+  for path in "$@"; do if [[ -e "$path" ]]; then present+=("$path"); fi; done
+  if ((${#present[@]})); then du -csh -- "${present[@]}" 2>/dev/null | awk 'END {print $1}'; else printf '0'; fi
+}
+tilde() { if [[ "$1" == "$HOME"/* ]]; then printf '~%s' "${1#"$HOME"}"; else printf '%s' "$1"; fi; }
+# The folder install.sh created: its env file, private database and cache config.
+installer_dir() {
+  local dir
+  dir="$(dirname -- "$OPENFRAME_CONFIG")"
+  [[ "$dir" == /?* && "$dir" != "$HOME" && "$OPENFRAME_CONFIG" == "$dir/env" && "$OPENFRAME_STATE" == "$dir/state" ]] || return 1
+  [[ -f "$dir/postgres/PG_VERSION" && -f "$dir/redis.conf" ]] || return 1
+  grep -qx 'DB_USERNAME=openframe' "$dir/env" && grep -qx 'DB_PORT=5433' "$dir/env" || return 1
+  printf '%s' "$dir"
+}
+remove_services() {
+  local unit_dir="${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user" unit
+  if command -v systemctl >/dev/null; then
+    systemctl --user disable --now openframe openframe-ml openframe-redis openframe-db >/dev/null 2>&1 || true
+  fi
+  for unit in "${services[@]}"; do
+    # Only unit files written by install.sh.
+    if [[ -f "$unit_dir/$unit.service" ]] && grep -q '^Description=OpenFrame native' "$unit_dir/$unit.service"; then
+      rm -f -- "$unit_dir/$unit.service"
+    fi
+  done
+  if command -v systemctl >/dev/null; then
+    systemctl --user daemon-reload >/dev/null 2>&1 || true
+    systemctl --user reset-failed openframe openframe-ml openframe-redis openframe-db >/dev/null 2>&1 || true
+  fi
+}
+remove_wrapper() {
+  local wrapper="$HOME/.local/bin/openframe"
+  if [[ -f "$wrapper" ]] && grep -q '^# Created by the OpenFrame installer' "$wrapper"; then rm -f -- "$wrapper"; fi
+}
+uninstall_openframe() {
+  local mode="$1" assume_yes="$2" dir media answer='' asked=false source_inside=false freed
+  dir="$(installer_dir)" || fail "No installation made by install.sh was found at $(tilde "$(dirname -- "$OPENFRAME_CONFIG")"). Run this through the openframe command the installer created, or remove a manual installation by hand."
+  load_env
+  media="$IMMICH_MEDIA_LOCATION"
+  [[ "$ROOT" != "$dir/source" ]] || source_inside=true
+  cd "$HOME"
+  local -a rebuildable=("$dir/codecs" "$OPENFRAME_STATE/build" "$OPENFRAME_STATE/cache" "$OPENFRAME_STATE/stamps" "$OPENFRAME_STATE/progress")
+  if "$source_inside"; then rebuildable+=("$dir/source"); fi
+
+  say ''
+  say "  ${bold}Uninstall OpenFrame$reset"
+  say "  ${dim}This removes the app and its background services from this computer.$reset"
+  say ''
+  say "  ${bold}Your data$reset"
+  printf '    %-18s %-8s %s\n' 'Photos & videos' "$(size_of "$media")" "$dim$(tilde "$media")$reset"
+  printf '    %-18s %-8s %s\n' 'Database' "$(size_of "$dir/postgres")" "${dim}albums, people, faces and accounts$reset"
+  printf '    %-18s %-8s %s\n' 'App & build files' "$(total_size "${rebuildable[@]}")" "${dim}always removed, rebuilt on reinstall$reset"
+  say ''
+  if [[ -z "$mode" ]]; then
+    say "  ${bold}What should happen to your photos and data?$reset"
+    say "    ${bold}1$reset  Keep them        ${dim}remove only the app; reinstall later and everything is back$reset"
+    say "    ${bold}2$reset  Erase everything ${dim}permanently delete all photos, videos and the database$reset"
+    say "    ${bold}3$reset  Cancel"
+    say ''
+    ask answer 'Choose 1, 2 or 3' 1 'No terminal for questions. Run with --keep-data or --erase-everything.'
+    asked=true
+    case "$answer" in
+      ''|1) mode=keep ;;
+      2) mode=erase ;;
+      *) say "  Cancelled. Nothing was changed."; return 0 ;;
+    esac
+    say ''
+  fi
+  if [[ "$mode" == erase ]] && ! "$assume_yes"; then
+    say "  ${red}${bold}This permanently deletes $(size_of "$media") of photos and videos and the whole database.$reset"
+    say "  ${dim}It cannot be undone. Make sure you have a copy of anything you want to keep.$reset"
+    ask answer 'Type ERASE to confirm' 'cancel' 'No terminal for questions. Run with --erase-everything --yes.'
+    if [[ "$answer" != ERASE ]]; then say "  Cancelled. Nothing was changed."; return 0; fi
+    say ''
+  elif [[ "$mode" == keep ]] && ! "$asked" && ! "$assume_yes"; then
+    ask answer 'Remove the app and keep your data? (y/N)' N 'No terminal for questions. Run with --keep-data --yes.'
+    [[ "$answer" == [yY]* ]] || { say "  Cancelled. Nothing was changed."; return 0; }
+  fi
+
+  remove_services
+  say "  $green✓$reset Stopped and removed the background services"
+  if [[ "$mode" == erase ]]; then
+    freed="$(total_size "$dir")"
+    rm -rf -- "$dir"
+    remove_wrapper
+    say "  $green✓$reset Erased $(tilde "$dir") ${dim}($freed)$reset"
+    if [[ "$media" != "$dir"/* ]]; then
+      say "  $yellow!$reset Photos stored outside the folder were not touched: $(tilde "$media")"
+    fi
+    if ! "$source_inside"; then say "  ${dim}The source checkout at $(tilde "$ROOT") was left as it is.$reset"; fi
+    say ''
+    say "  ${bold}OpenFrame is uninstalled and all of its data is gone.$reset"
+  else
+    freed="$(total_size "${rebuildable[@]}")"
+    rm -rf -- "${rebuildable[@]}"
+    remove_wrapper
+    say "  $green✓$reset Removed the app and build files ${dim}($freed freed)$reset"
+    say "  $green✓$reset Kept your photos, database and settings in $(tilde "$dir")"
+    say ''
+    say "  ${bold}OpenFrame is uninstalled. Your data is safe.$reset"
+    say "  ${dim}To bring everything back, reinstall into the same folder:$reset"
+    say "    bash install.sh --dir $(tilde "$dir")"
+    say "  ${dim}To delete the data later: rm -rf $(tilde "$dir")$reset"
+  fi
+  say ''
+}
+
+prepare_progress() {
+  # One live line while `prepare` runs in the background; returns its status.
+  local pid="$1" status=0 task value line frames='⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏' i=0 started=$SECONDS elapsed
+  local -A label=([web]='web app' [codecs]='codecs' [ml]='smart search' [resources]='maps')
+  while kill -0 "$pid" 2>/dev/null; do
+    if [[ -t 1 ]]; then
+      line=''
+      for task in web codecs ml resources; do
+        value="$(cat "$OPENFRAME_STATE/progress/$task.status" 2>/dev/null || echo pending)"
+        case "$value" in
+          done|skipped) line+="$green✓$reset ${label[$task]}  " ;;
+          running) line+="$yellow${frames:i % 10:1}$reset ${label[$task]}  " ;;
+          failed) line+="$red✗$reset ${label[$task]}  " ;;
+          *) line+="$dim· ${label[$task]}$reset  " ;;
+        esac
+      done
+      elapsed=$((SECONDS - started))
+      printf '\r\033[K  %s%s%d:%02d%s' "$line" "$dim" $((elapsed / 60)) $((elapsed % 60)) "$reset"
+      i=$((i + 1))
+    fi
+    sleep 0.15
+  done
+  wait "$pid" || status=$?
+  if [[ -t 1 ]]; then printf '\r\033[K'; fi
+  return "$status"
+}
+wait_until_up() {
+  local port="${IMMICH_PORT:-2283}" attempt
+  for ((attempt = 0; attempt < 120; attempt++)); do
+    if curl --fail --silent --max-time 2 "http://127.0.0.1:$port/api/server/ping" >/dev/null; then return 0; fi
+    sleep 1
+  done
+  return 1
+}
+backup_database() {
+  local dir="$1" file pg_dump_bin
+  pg_dump_bin="${DB_BIN_DIRECTORY:+$DB_BIN_DIRECTORY/}pg_dump"
+  command -v "$pg_dump_bin" >/dev/null || return 1
+  mkdir -p "$dir"
+  file="$dir/openframe-$(date +%Y%m%d-%H%M%S)-$(git -C "$ROOT" rev-parse --short HEAD).sql.gz"
+  PGPASSWORD="$DB_PASSWORD" "$pg_dump_bin" -h "${DB_HOSTNAME:-127.0.0.1}" -p "${DB_PORT:-5432}" \
+    -U "$DB_USERNAME" -d "$DB_DATABASE_NAME" | gzip > "$file.tmp" || { rm -f -- "$file.tmp"; return 1; }
+  mv -- "$file.tmp" "$file"
+  # Keep the three newest pre-update backups.
+  find "$dir" -maxdepth 1 -name 'openframe-*.sql.gz' -printf '%T@ %p\n' | sort -rn | tail -n +4 | cut -d' ' -f2- |
+    while IFS= read -r old; do rm -f -- "$old"; done
+  printf '%s' "$file"
+}
+update_openframe() {
+  local check_only="$1" backup="$2" assume_yes="$3" branch upstream old new count answer='' backup_dir backup_file log
+  need git
+  load_env
+  git -C "$ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1 ||
+    fail "$(tilde "$ROOT") is not a git checkout, so it cannot update itself. Download the new version and run install.sh."
+  branch="$(git -C "$ROOT" symbolic-ref --short -q HEAD)" || fail 'The source checkout is not on a branch, so there is nothing to update from.'
+  upstream="$(git -C "$ROOT" rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)" ||
+    fail "Branch $branch does not track a remote branch, so there is nothing to update from."
+  say ''
+  transient '  Checking for updates…'
+  git -C "$ROOT" fetch --quiet 2>/dev/null || { transient ''; fail 'Could not reach the update server. Check your internet connection and try again.'; }
+  transient ''
+  old="$(git -C "$ROOT" rev-parse HEAD)" new="$(git -C "$ROOT" rev-parse "$upstream")"
+  if [[ "$old" == "$new" ]]; then
+    say "  $green✓$reset ${bold}OpenFrame is up to date$reset ${dim}($(git -C "$ROOT" log -1 --format='%h, %cd' --date=short))$reset"
+    say ''
+    return 0
+  fi
+  git -C "$ROOT" merge-base --is-ancestor HEAD "$upstream" ||
+    fail "The source checkout has its own commits on $branch, so it cannot be updated automatically."
+  count="$(git -C "$ROOT" rev-list --count "HEAD..$upstream")"
+  say "  ${bold}An update is available$reset ${dim}$(git -C "$ROOT" rev-parse --short HEAD) → $(git -C "$ROOT" rev-parse --short "$upstream"), $count change$([[ $count == 1 ]] || printf s)$reset"
+  git -C "$ROOT" log --no-decorate --format="    $dim•$reset %s" -n 8 "HEAD..$upstream"
+  if ((count > 8)); then say "    ${dim}…and $((count - 8)) more$reset"; fi
+  say ''
+  if "$check_only"; then say "  Run ${bold}openframe update$reset to install it."; say ''; return 0; fi
+  if [[ -n "$(git -C "$ROOT" status --porcelain --untracked-files=no)" ]]; then
+    fail "The source folder $(tilde "$ROOT") has local changes. Commit or discard them, then update again."
+  fi
+  if ! "$assume_yes"; then
+    say "  ${dim}Your photos stay where they are. OpenFrame rebuilds what changed and restarts at the end.$reset"
+    ask answer 'Install the update? (Y/n)' Y 'No terminal for questions. Run with --yes.'
+    [[ -z "$answer" || "$answer" == [yY]* ]] || { say "  Cancelled. Nothing was changed."; say ''; return 0; }
+    say ''
+  fi
+
+  if "$backup"; then
+    backup_dir="$(installer_dir || printf '%s' "$OPENFRAME_STATE")/backups"
+    if backup_file="$(backup_database "$backup_dir")"; then
+      say "  $green✓$reset Backed up the database ${dim}$(tilde "$backup_file")$reset"
+    else
+      fail 'Could not back up the database, so nothing was changed. Is OpenFrame running? Use --no-backup to skip this.'
+    fi
+  fi
+  git -C "$ROOT" merge --ff-only --quiet "$upstream"
+  say "  $green✓$reset Downloaded the new version"
+
+  mkdir -p "$OPENFRAME_STATE/progress"
+  log="$OPENFRAME_STATE/progress/update.log"
+  "$ROOT/scripts/native/openframe" prepare > "$log" 2>&1 &
+  if ! prepare_progress $!; then
+    say "  $red✗$reset The new version did not build. Going back to the previous version…"
+    git -C "$ROOT" reset --hard --quiet "$old"
+    "$ROOT/scripts/native/openframe" prepare >> "$log" 2>&1 &
+    if prepare_progress $!; then
+      say "  $green✓$reset Restored the previous version. OpenFrame keeps running as before."
+    else
+      say "  $red✗$reset Could not rebuild the previous version either."
+    fi
+    say "  ${dim}Details: $(tilde "$log") and $(tilde "$OPENFRAME_STATE/progress")/<part>.log$reset"
+    say ''
+    exit 1
+  fi
+  say "  $green✓$reset Built the changed parts"
+  "$ROOT/scripts/native/openframe" doctor >> "$log" 2>&1 || fail "The new build failed its checks. Details: $(tilde "$log")"
+  need systemctl
+  systemctl --user restart "${services[@]}"
+  transient '  Restarting…'
+  if wait_until_up; then
+    transient ''
+    say "  $green✓$reset Restarted"
+    say ''
+    say "  ${bold}OpenFrame is updated$reset ${dim}to $(git -C "$ROOT" log -1 --format='%h, %cd' --date=short)$reset"
+  else
+    transient ''
+    say "  $red✗$reset OpenFrame did not come back after restarting. See: openframe logs"
+    if [[ -n "${backup_file:-}" ]]; then say "  ${dim}Database backup from before the update: $(tilde "$backup_file")$reset"; fi
+    say ''
+    exit 1
+  fi
+  say ''
+}
+
 action="${1:-help}"
 case "$action" in
   init)
@@ -57,58 +614,38 @@ IMMICH_MACHINE_LEARNING_URL=http://127.0.0.1:3003
 ENV
     echo "Created $OPENFRAME_CONFIG. Configure PostgreSQL and Redis before starting."
     ;;
+  prepare)
+    [[ $# == 1 || ( $# == 2 && "$2" == --resume ) ]] || fail 'Usage: openframe prepare [--resume]'
+    load_env
+    prepare_all
+    ;;
   codecs)
     load_env
-    need node; need python3
-    [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || fail 'Use Node 24.'
-    export OPENFRAME_CODECS="${OPENFRAME_CODECS:-${XDG_DATA_HOME:-$HOME/.local/share}/openframe/codecs}"
-    [[ "$OPENFRAME_CODECS" == /* ]] || fail 'OPENFRAME_CODECS must be absolute.'
-    export OPENFRAME_SOURCE="$ROOT"
-    recipe="$ROOT/server/test/benchmarks/native-ubuntu/codecs"
-    python3 "$recipe/prepare.py"
-    bash "$recipe/build.sh"
-    bash "$recipe/sharp.sh"
-    echo "Codec build complete. Set OPENFRAME_CODECS='$OPENFRAME_CODECS' in $OPENFRAME_CONFIG, then run doctor and sample parity checks."
+    rm -f -- "$OPENFRAME_STATE/stamps/codecs"
+    build_codecs
     ;;
   build)
     load_env
-    for cmd in node pnpm extism-js curl unzip uv; do need "$cmd"; done
-    [[ "$(node -p 'process.versions.node.split(".")[0]')" == 24 ]] || fail 'Use Node 24 (see .nvmrc).'
-    cd "$ROOT"
-    pnpm --filter immich... --filter immich-web... --filter @immich/plugin-core... install --frozen-lockfile
-    pnpm --filter @immich/sdk build
-    pnpm --filter @immich/plugin-sdk build
-    pnpm --filter @immich/plugin-core build
-    pnpm --filter immich build
-    pnpm --filter immich-web build
-    mkdir -p "$IMMICH_BUILD_DATA/www" "$IMMICH_BUILD_DATA/plugins/immich-plugin-core"
-    cp -a web/build/. "$IMMICH_BUILD_DATA/www/"
-    cp -a packages/plugin-core/dist "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/"
-    cp packages/plugin-core/manifest.json "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/"
-    cd "$ROOT/machine-learning"
-    uv sync --frozen --extra cpu --no-dev --python 3.13
-    echo "Build complete. Run $0 resources once, then $0 doctor."
+    rm -f -- "$OPENFRAME_STATE/stamps/web" "$OPENFRAME_STATE/stamps/ml"
+    build_web & build_pid=$!
+    sync_ml & ml_pid=$!
+    wait_jobs "$build_pid" "$ml_pid"
+    echo "Build complete. Run $0 codecs and $0 resources, then $0 doctor."
+    ;;
+  build-ml)
+    load_env
+    rm -f -- "$OPENFRAME_STATE/stamps/ml"
+    sync_ml
     ;;
   resources)
     load_env
-    need curl; need unzip
-    mkdir -p "$IMMICH_BUILD_DATA/geodata"
-    tmp="$(mktemp -d "$IMMICH_BUILD_DATA/geodata/.download.XXXXXXXX")"
-    trap 'rm -rf -- "$tmp"' EXIT
-    for name in admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.zip; do
-      curl --fail --location --retry 3 "https://download.geonames.org/export/dump/$name" -o "$tmp/$name"
-    done
-    unzip -q "$tmp/cities500.zip" -d "$tmp"
-    curl --fail --location --retry 3 'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_10m_admin_0_countries.geojson' -o "$tmp/ne_10m_admin_0_countries.geojson"
-    date -u +%F > "$tmp/geodata-date.txt"
-    for name in admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.txt ne_10m_admin_0_countries.geojson geodata-date.txt; do
-      mv -- "$tmp/$name" "$IMMICH_BUILD_DATA/geodata/$name"
-    done
+    rm -f -- "$OPENFRAME_STATE/stamps/resources"
+    download_resources
     ;;
   doctor)
     load_env
     for cmd in node ffmpeg ffprobe perl gzip; do need "$cmd"; done
-    for path in "$ROOT/server/dist/main.js" "$IMMICH_BUILD_DATA/www/index.html" "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/dist/plugin.wasm" "$ROOT/machine-learning/.venv/bin/python"; do
+    for path in "$ROOT/server/dist/main.js" "$IMMICH_BUILD_DATA/www/index.html" "$IMMICH_BUILD_DATA/plugins/immich-plugin-core/dist/plugin.wasm"; do
       [[ -f "$path" ]] || fail "Missing $path; run build."
     done
     for name in admin1CodesASCII.txt admin2Codes.txt countryInfo.txt cities500.txt ne_10m_admin_0_countries.geojson geodata-date.txt; do
@@ -130,7 +667,13 @@ ENV
     ;;
   ml)
     load_env
+    [[ "${IMMICH_MACHINE_LEARNING_ENABLED:-false}" == true ]] || fail "ML is disabled"
+    sync_ml
     cd "$ROOT/machine-learning"
+    export MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL=ViT-B-32__openai
+    export MACHINE_LEARNING_PRELOAD__CLIP__VISUAL=ViT-B-32__openai
+    export MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION=buffalo_l
+    export MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION=buffalo_l
     export IMMICH_HOST=127.0.0.1 IMMICH_PORT=3003
     export MACHINE_LEARNING_CACHE_FOLDER="$OPENFRAME_STATE/cache"
     export HF_HOME="$OPENFRAME_STATE/cache/hf-cache"
@@ -138,9 +681,78 @@ ENV
     export PATH="$ROOT/machine-learning/.venv/bin:$PATH"
     exec python -m immich_ml
     ;;
-  help|--help|-h)
-    echo 'Usage: scripts/native/openframe {init|build|codecs|resources|doctor|start|ml|admin}'
-    echo 'Configuration: $OPENFRAME_CONFIG or ~/.config/openframe/env'
+  status)
+    load_env
+    need systemctl
+    printf '\n'
+    for unit in "${services[@]}"; do
+      state="$(systemctl --user is-active "$unit.service" 2>/dev/null || true)"
+      case "$state" in
+        active) mark="$green●$reset" ;;
+        activating|reloading) mark="${dim}●$reset" ;;
+        *) mark="$red●$reset"; state="${state:-not installed}" ;;
+      esac
+      printf '  %s %-17s %s\n' "$mark" "$unit" "$state"
+    done
+    port="${IMMICH_PORT:-2283}"
+    printf '\n'
+    if command -v curl >/dev/null && curl --fail --silent --max-time 2 "http://127.0.0.1:$port/api/server/ping" >/dev/null; then
+      printf '  %sWeb app is up%s at http://localhost:%s\n\n' "$green" "$reset" "$port"
+    else
+      printf '  %sWeb app is not responding%s on port %s. See: openframe logs\n\n' "$red" "$reset" "$port"
+      exit 1
+    fi
     ;;
-  *) fail "Unknown command: $1" ;;
+  logs)
+    load_env
+    need journalctl
+    shift
+    args=()
+    if (($#)) && [[ "$1" != -* ]]; then args+=(-u "$(unit_of "$1")"); shift
+    else for unit in "${services[@]}"; do args+=(-u "$unit"); done; fi
+    exec journalctl --user "${args[@]}" -n 50 -f "$@"
+    ;;
+  restart)
+    load_env
+    need systemctl
+    systemctl --user restart "${services[@]}"
+    printf 'Restarted. Run %sopenframe status%s in a few seconds to check.\n' "$bold" "$reset"
+    ;;
+  stop)
+    need systemctl
+    systemctl --user stop openframe openframe-ml openframe-redis openframe-db
+    echo 'Stopped. Start again with: openframe restart'
+    ;;
+  update)
+    shift
+    check_only=false backup=true assume_yes=false
+    while (($#)); do
+      case "$1" in
+        --check) check_only=true ;;
+        --no-backup) backup=false ;;
+        --yes|-y) assume_yes=true ;;
+        *) fail 'Usage: openframe update [--check] [--no-backup] [--yes]' ;;
+      esac
+      shift
+    done
+    update_openframe "$check_only" "$backup" "$assume_yes"
+    ;;
+  uninstall)
+    shift
+    mode='' assume_yes=false
+    while (($#)); do
+      case "$1" in
+        --keep-data) mode=keep ;;
+        --erase-everything) mode=erase ;;
+        --yes|-y) assume_yes=true ;;
+        *) fail 'Usage: openframe uninstall [--keep-data | --erase-everything] [--yes]' ;;
+      esac
+      shift
+    done
+    uninstall_openframe "$mode" "$assume_yes"
+    ;;
+  help|--help|-h)
+    usage
+    ;;
+  *) fail "unknown command: $1 (see: openframe help)" ;;
 esac

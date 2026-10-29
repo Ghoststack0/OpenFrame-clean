@@ -1,5 +1,5 @@
 import { createWriteStream } from 'node:fs';
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { buffer } from 'node:stream/consumers';
@@ -94,7 +94,7 @@ describe('streamed exports', () => {
   });
 
   it('validates inputs and refuses archives for iCloud', async () => {
-    expect(await resolveSources([test.directory, test.directory], 'icloud')).toEqual([test.directory]);
+    expect(await resolveSources([test.directory, test.directory], 'icloud')).toEqual([await realpath(test.directory)]);
     await expect(resolveSources([], 'takeout')).rejects.toThrow('At least');
     await expect(resolveSources([path.join(fixtures, 'media.zip')], 'icloud')).rejects.toThrow('folder');
     await expect(resolveSources([path.join(test.directory, 'missing')], 'takeout')).rejects.toThrow();
