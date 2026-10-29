@@ -18,6 +18,13 @@ export enum UploadState {
   DUPLICATED,
 }
 
+/** What a chunked (resumable) upload is doing right now */
+export type UploadPhase =
+  | { kind: 'chunks' }
+  | { kind: 'resumed'; from: number }
+  | { kind: 'retrying'; attempt: number }
+  | { kind: 'verifying' };
+
 export type UploadAsset = {
   id: string;
   file: File;
@@ -31,6 +38,10 @@ export type UploadAsset = {
   speed?: number;
   error?: unknown;
   message?: string;
+  /** Only set for chunked (resumable) uploads */
+  phase?: UploadPhase;
+  /** Chunked uploads that keep a session locally, so retrying resumes instead of starting over */
+  resumable?: boolean;
 };
 
 export enum OnboardingRole {

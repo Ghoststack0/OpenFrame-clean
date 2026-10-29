@@ -186,6 +186,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: true,
   },
   server: {
+    localUrls: [],
+    autoDetectLocalUrls: false,
     externalDomain: '',
     loginPageMessage: '',
     publicUsers: true,

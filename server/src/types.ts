@@ -411,6 +411,7 @@ export type JobItem =
 
   // Cleanup
   | { name: JobName.SessionCleanup; data?: IBaseJob }
+  | { name: JobName.UploadSessionCleanup; data?: IBaseJob }
   | { name: JobName.AuthChallengeCleanup; data?: IBaseJob }
   | { name: JobName.HlsSessionCleanup; data?: IBaseJob }
 
@@ -551,6 +552,7 @@ export type MemoriesState = {
 export type MediaLocation = { location: string };
 
 export interface SystemMetadata extends Record<SystemMetadataKey, Record<string, any>> {
+  [SystemMetadataKey.LanIdentity]: { secret: string };
   [SystemMetadataKey.AdminOnboarding]: { isOnboarded: boolean };
   [SystemMetadataKey.FacialRecognitionState]: { lastRun?: string };
   [SystemMetadataKey.License]: { licenseKey: string; activationKey: string; activatedAt: Date };

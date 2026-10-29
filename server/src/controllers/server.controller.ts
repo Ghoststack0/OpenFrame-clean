@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Put, Query } from '@nestjs/common';
 import { ApiNotFoundResponse, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto.js';
@@ -7,6 +7,9 @@ import {
   ServerApkLinksDto,
   ServerConfigDto,
   ServerFeaturesDto,
+  ServerIdentityResponseDto,
+  ServerLanCandidatesResponseDto,
+  ServerLanQueryDto,
   ServerMediaTypesResponseDto,
   ServerPingResponse,
   ServerStatsResponseDto,
@@ -72,6 +75,30 @@ export class ServerController {
   })
   pingServer(): ServerPingResponse {
     return this.service.ping();
+  }
+
+  @Get('lan-candidates')
+  @Authenticated()
+  @Header('Cache-Control', 'no-store')
+  @Endpoint({
+    summary: 'Get LAN candidates',
+    description: 'Discover direct URLs for this instance after login.',
+    history: new HistoryBuilder().added('v3.3.0'),
+  })
+  getLanCandidates(@Query() query: ServerLanQueryDto): Promise<ServerLanCandidatesResponseDto> {
+    return this.service.getLanCandidates(query);
+  }
+
+  @Get('identity')
+  @Authenticated({ public: true })
+  @Header('Cache-Control', 'no-store')
+  @Endpoint({
+    summary: 'Verify server identity',
+    description: 'Answer a fresh challenge without disclosing LAN addresses.',
+    history: new HistoryBuilder().added('v3.3.0'),
+  })
+  getServerIdentity(@Query() query: ServerLanQueryDto): Promise<ServerIdentityResponseDto> {
+    return this.service.getServerIdentity(query);
   }
 
   @Get('version')

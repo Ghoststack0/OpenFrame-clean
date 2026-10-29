@@ -67,7 +67,7 @@ class InstallTest(unittest.TestCase):
             '$(. /etc/os-release; printf \'%s:%s\' "$ID" "${VERSION_ID:-}")', 'ubuntu:24.04')
         script = script.replace('((EUID != 0))', 'true')
         # Never probe the real host's ports; a running OpenFrame would hold them.
-        script = script.replace('port_free() {\n', 'port_free() {\n  [[ -z "${BUSY_PORT:-}" ]] || { echo "Port $BUSY_PORT is already in use" >&2; return 1; }\n  return 0\n',1)
+        script = script.replace('port_free() {\n', 'port_free() {\n  for checked_port in "$@"; do [[ "$checked_port" != "${BUSY_PORT:-}" ]] || { echo "Port $BUSY_PORT is already in use" >&2; return 1; }; done\n  return 0\n',1)
         self.script = script
         self.installer = self.repo / 'install.sh'
         self.installer.write_text(script)
@@ -128,6 +128,17 @@ if [[ "$2" == cat ]]; then exit "${EXISTING_SERVICE:-1}"; fi
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertIn('IMMICH_MACHINE_LEARNING_ENABLED=false', (self.target / 'env').read_text())
         self.assertNotIn('enable --now --no-block openframe-ml', self.log.read_text())
+
+    def test_disabled_ml_does_not_reserve_its_port(self):
+        self.env['BUSY_PORT'] = '3003'
+        result = self.install('--native', '--without-ml')
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_enabled_ml_requires_its_port(self):
+        self.env['BUSY_PORT'] = '3003'
+        result = self.install('--native', '--with-ml')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertFalse(self.target.exists())
 
     def test_ml_native_background_service(self):
         result = self.install('--native', '--with-ml')

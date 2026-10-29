@@ -6,6 +6,7 @@ import { clearConfigCache } from 'src/utils/config.js';
 export const newSystemMetadataRepositoryMock = (): Mocked<RepositoryInterface<SystemMetadataRepository>> => {
   clearConfigCache();
   return {
+    getOrCreate: vitest.fn() as any,
     get: vitest.fn() as any,
     set: vitest.fn(),
     delete: vitest.fn(),

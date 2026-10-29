@@ -20,6 +20,10 @@ class AuthRepository {
     await SyncStreamRepository(_drift).reset();
   }
 
+  bool getAutomaticLanTransfer() => _settings.appConfig.network.automaticLanTransfer;
+
+  bool getAllowInsecureLanTransfer() => _settings.appConfig.network.allowInsecureLanTransfer;
+
   bool getEndpointSwitchingFeature() {
     return _settings.appConfig.network.autoEndpointSwitching;
   }

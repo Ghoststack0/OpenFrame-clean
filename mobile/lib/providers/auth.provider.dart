@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
+import 'package:immich_mobile/models/auth/pairing_payload.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -83,6 +84,31 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<LoginResponse> login(String email, String password) async {
     final response = await _authService.login(email, password);
     await saveAuthInfo(accessToken: response.accessToken);
+    return response;
+  }
+
+  /// The UI must show the selected server before calling this method.
+  /// Choose alternatives explicitly; never retry a bearer code at another host.
+  Future<LoginResponse> pairPhone(PairingPayload payload, {String? serverUrl}) async {
+    if (state.isAuthenticated || Store.tryGet(StoreKey.accessToken) != null) {
+      throw StateError('Sign out before pairing a phone');
+    }
+    final server = serverUrl ?? payload.serverUrls.first;
+    if (!payload.serverUrls.contains(server)) {
+      throw ArgumentError('Server must be a pairing URL candidate');
+    }
+    final resolved = await validateServerUrl(server);
+    if (Uri.parse(resolved).origin != Uri.parse(server).origin) {
+      throw StateError('Pairing discovery must stay on the selected server');
+    }
+    final endpoint = resolved.endsWith('/api') ? resolved : '$resolved/api';
+    _apiService.setEndpoint(endpoint);
+    await Store.put(StoreKey.serverEndpoint, endpoint);
+    final response = await _authService.redeemPairing(payload.code);
+    if (!await saveAuthInfo(accessToken: response.accessToken)) {
+      await logout();
+      throw StateError('Unable to save paired session');
+    }
     return response;
   }
 

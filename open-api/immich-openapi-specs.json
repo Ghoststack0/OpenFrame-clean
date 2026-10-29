@@ -4195,6 +4195,82 @@
         "x-immich-state": "Beta"
       }
     },
+    "/assets/processing-status": {
+      "post": {
+        "description": "Retrieve processing stages for up to 100 readable assets. Rejects the entire batch if any asset is inaccessible. Recent job failures are retained for seven days.",
+        "operationId": "getAssetProcessingStatus",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssetProcessingStatusRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AssetProcessingStatusResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get asset processing status",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Beta"
+          }
+        ],
+        "x-immich-permission": "asset.read",
+        "x-immich-state": "Beta"
+      }
+    },
     "/assets/statistics": {
       "get": {
         "description": "Retrieve various statistics about the assets owned by the authenticated user.",
@@ -4270,6 +4346,323 @@
         ],
         "x-immich-permission": "asset.statistics",
         "x-immich-state": "Stable"
+      }
+    },
+    "/assets/uploads": {
+      "post": {
+        "operationId": "createUpload",
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumableUploadCreateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumableUploadResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create resumable upload",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.upload"
+      }
+    },
+    "/assets/uploads/{id}": {
+      "head": {
+        "operationId": "headUpload",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "headers": {
+              "Upload-Expires": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Upload-Length": {
+                "schema": {
+                  "type": "integer"
+                }
+              },
+              "Upload-Offset": {
+                "schema": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Query resumable upload offset",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.upload"
+      },
+      "patch": {
+        "operationId": "patchUpload",
+        "parameters": [
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/offset+octet-stream"
+              ]
+            }
+          },
+          {
+            "name": "Upload-Offset",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/offset+octet-stream": {
+              "schema": {
+                "format": "binary",
+                "type": "string"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumableUploadResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Append resumable upload chunk",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.upload"
+      }
+    },
+    "/assets/uploads/{id}/finalize": {
+      "post": {
+        "operationId": "finalizeUpload",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/ResumableUploadFinalizeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetMediaResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Finalize resumable upload",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "asset.upload"
       }
     },
     "/assets/{id}": {
@@ -5760,6 +6153,146 @@
           }
         ],
         "x-immich-state": "Stable"
+      }
+    },
+    "/auth/pairing": {
+      "post": {
+        "operationId": "createPairing",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Create phone pairing code",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/auth/pairing/redeem": {
+      "post": {
+        "operationId": "redeemPairing",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairingRedeemDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Redeem phone pairing code",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/auth/pairing/{id}": {
+      "get": {
+        "operationId": "getPairingStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairingStatusDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get phone pairing status",
+        "tags": [
+          "Authentication"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v4.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v4.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
       }
     },
     "/auth/pin-code": {
@@ -13508,6 +14041,97 @@
         "x-immich-state": "Deprecated"
       }
     },
+    "/server/identity": {
+      "get": {
+        "description": "Answer a fresh challenge without disclosing LAN addresses.",
+        "operationId": "getServerIdentity",
+        "parameters": [
+          {
+            "name": "nonce",
+            "required": true,
+            "in": "query",
+            "description": "Fresh random 32-byte hexadecimal challenge",
+            "schema": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerIdentityResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Verify server identity",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ]
+      }
+    },
+    "/server/lan-candidates": {
+      "get": {
+        "description": "Discover direct URLs for this instance after login.",
+        "operationId": "getLanCandidates",
+        "parameters": [
+          {
+            "name": "nonce",
+            "required": true,
+            "in": "query",
+            "description": "Fresh random 32-byte hexadecimal challenge",
+            "schema": {
+              "pattern": "^[a-f0-9]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerLanCandidatesResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get LAN candidates",
+        "tags": [
+          "Server"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ]
+      }
+    },
     "/server/license": {
       "delete": {
         "description": "Delete the currently set server product key.",
@@ -14119,6 +14743,101 @@
         ],
         "x-immich-permission": "session.create",
         "x-immich-state": "Stable"
+      }
+    },
+    "/sessions/send-to-device": {
+      "post": {
+        "description": "Send 1 to 100 accessible assets to another online session of the same user via on_device_transfer. Requires a session token. Returns 404 for an unavailable session and 409 for an offline target. Delivery is ephemeral and best effort, with no acknowledgement or offline replay.",
+        "operationId": "sendToDevice",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeviceTransferDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceTransferResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Send assets to another session",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "session.read"
+      }
+    },
+    "/sessions/targets": {
+      "get": {
+        "description": "List other online sessions belonging to the signed-in user. Requires a session token.",
+        "operationId": "getDeviceTargets",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionTargetResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "List online target sessions",
+        "tags": [
+          "Sessions"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.3.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "session.read"
       }
     },
     "/sessions/{id}": {
@@ -19963,9 +20682,22 @@
       },
       "AdminConfigServerDto": {
         "properties": {
+          "autoDetectLocalUrls": {
+            "description": "Advertise private interface addresses using the server port",
+            "type": "boolean"
+          },
           "externalDomain": {
             "description": "External domain",
             "type": "string"
+          },
+          "localUrls": {
+            "description": "LAN base URLs, including any reverse proxy path. Only disclosed to authenticated users",
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "maxItems": 16,
+            "type": "array"
           },
           "loginPageMessage": {
             "description": "Login page message",
@@ -21599,6 +22331,98 @@
         ],
         "type": "string"
       },
+      "AssetProcessingEventV1": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/AssetProcessingStage"
+          },
+          "state": {
+            "$ref": "#/components/schemas/AssetProcessingState"
+          }
+        },
+        "required": [
+          "assetId",
+          "stage",
+          "state"
+        ],
+        "type": "object"
+      },
+      "AssetProcessingStage": {
+        "enum": [
+          "uploaded",
+          "metadata",
+          "thumbnails",
+          "video",
+          "smartSearch",
+          "faces"
+        ],
+        "type": "string"
+      },
+      "AssetProcessingState": {
+        "enum": [
+          "pending",
+          "complete",
+          "skipped",
+          "failed"
+        ],
+        "type": "string"
+      },
+      "AssetProcessingStatusRequestDto": {
+        "properties": {
+          "assetIds": {
+            "description": "Between 1 and 100 readable asset IDs",
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetIds"
+        ],
+        "type": "object"
+      },
+      "AssetProcessingStatusResponseDto": {
+        "properties": {
+          "assetId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "stages": {
+            "items": {
+              "properties": {
+                "stage": {
+                  "$ref": "#/components/schemas/AssetProcessingStage"
+                },
+                "state": {
+                  "$ref": "#/components/schemas/AssetProcessingState"
+                }
+              },
+              "required": [
+                "stage",
+                "state"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "assetId",
+          "stages"
+        ],
+        "type": "object"
+      },
       "AssetRejectReason": {
         "description": "Rejection reason if rejected",
         "enum": [
@@ -22517,6 +23341,88 @@
         },
         "type": "object"
       },
+      "DeviceTransferAction": {
+        "enum": [
+          "open",
+          "download"
+        ],
+        "type": "string"
+      },
+      "DeviceTransferDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/DeviceTransferAction"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "targetSessionId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "assetIds",
+          "targetSessionId"
+        ],
+        "type": "object"
+      },
+      "DeviceTransferResponseDto": {
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/DeviceTransferAction"
+          },
+          "assetIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": "array"
+          },
+          "id": {
+            "description": "Transfer ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "sentAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "sourceSessionId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "targetSessionId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "action",
+          "assetIds",
+          "id",
+          "sentAt",
+          "sourceSessionId",
+          "targetSessionId"
+        ],
+        "type": "object"
+      },
       "DownloadArchiveDto": {
         "properties": {
           "archiveName": {
@@ -23234,6 +24140,7 @@
           "PersonFileMigration",
           "PersonGenerateThumbnail",
           "SessionCleanup",
+          "UploadSessionCleanup",
           "SendMail",
           "SidecarQueueAll",
           "SidecarCheck",
@@ -25252,6 +26159,71 @@
         },
         "required": [
           "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "PairingRedeemDto": {
+        "properties": {
+          "code": {
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.[A-Za-z0-9_-]{43}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "PairingResponseDto": {
+        "properties": {
+          "code": {
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\.[A-Za-z0-9_-]{43}$",
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "serverUrls": {
+            "items": {
+              "format": "uri",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "code",
+          "expiresAt",
+          "id",
+          "serverUrls"
+        ],
+        "type": "object"
+      },
+      "PairingState": {
+        "enum": [
+          "pending",
+          "redeemed",
+          "expired",
+          "locked"
+        ],
+        "type": "string"
+      },
+      "PairingStatusDto": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/PairingState"
+          }
+        },
+        "required": [
+          "status"
         ],
         "type": "object"
       },
@@ -27740,6 +28712,123 @@
         ],
         "type": "string"
       },
+      "ResumableUploadCreateDto": {
+        "properties": {
+          "checksum": {
+            "description": "Hex or base64 SHA1",
+            "pattern": "^(?:[\\da-fA-F]{40}|[A-Za-z0-9+/]{27}=)$",
+            "type": "string"
+          },
+          "duration": {
+            "description": "Duration in milliseconds (for videos)",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "fileCreatedAt": {
+            "description": "File creation date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "fileModifiedAt": {
+            "description": "File modification date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 255,
+            "minLength": 1,
+            "type": "string"
+          },
+          "isFavorite": {
+            "description": "Mark as favorite",
+            "type": "boolean"
+          },
+          "livePhotoVideoId": {
+            "description": "Live photo video ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "metadata": {
+            "description": "Asset metadata items",
+            "items": {
+              "$ref": "#/components/schemas/AssetMetadataUpsertItemDto"
+            },
+            "type": "array"
+          },
+          "size": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          }
+        },
+        "required": [
+          "checksum",
+          "fileCreatedAt",
+          "fileModifiedAt",
+          "filename",
+          "size"
+        ],
+        "type": "object"
+      },
+      "ResumableUploadFinalizeDto": {
+        "properties": {
+          "sidecarData": {
+            "description": "Sidecar file data",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ResumableUploadResponseDto": {
+        "properties": {
+          "chunkSize": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "offset": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "size": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "chunkSize",
+          "expiresAt",
+          "id",
+          "offset",
+          "size"
+        ],
+        "type": "object"
+      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -28527,6 +29616,48 @@
         ],
         "type": "object"
       },
+      "ServerIdentityResponseDto": {
+        "properties": {
+          "proof": {
+            "description": "HMAC-SHA256 of the nonce, in hexadecimal",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "SHA-256 fingerprint of the persistent instance secret",
+            "type": "string"
+          }
+        },
+        "required": [
+          "proof",
+          "serverId"
+        ],
+        "type": "object"
+      },
+      "ServerLanCandidatesResponseDto": {
+        "properties": {
+          "proof": {
+            "description": "HMAC-SHA256 of the nonce, in hexadecimal",
+            "type": "string"
+          },
+          "serverId": {
+            "description": "SHA-256 fingerprint of the persistent instance secret",
+            "type": "string"
+          },
+          "urls": {
+            "description": "Candidate LAN base URLs without /api, unless explicitly configured",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "proof",
+          "serverId",
+          "urls"
+        ],
+        "type": "object"
+      },
       "ServerMediaTypesResponseDto": {
         "properties": {
           "image": {
@@ -28880,6 +30011,37 @@
           "id",
           "isPendingSyncReset",
           "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SessionTargetResponseDto": {
+        "properties": {
+          "deviceName": {
+            "description": "Device name inferred from existing session metadata",
+            "type": "string"
+          },
+          "deviceOS": {
+            "type": "string"
+          },
+          "deviceType": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "label": {
+            "description": "Friendly device label including a short session ID",
+            "type": "string"
+          }
+        },
+        "required": [
+          "deviceName",
+          "deviceOS",
+          "deviceType",
+          "id",
+          "label"
         ],
         "type": "object"
       },

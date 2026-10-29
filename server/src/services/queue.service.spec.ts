@@ -41,6 +41,7 @@ describe(QueueService.name, () => {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.UploadSessionCleanup },
         { name: JobName.AuthChallengeCleanup },
         { name: JobName.HlsSessionCleanup },
         { name: JobName.AuditTableCleanup },

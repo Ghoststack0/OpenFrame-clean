@@ -3,8 +3,10 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { setTimeout } from 'node:timers/promises';
+import z from 'zod';
 import type { JobCounts, JobItem, JobOf } from 'src/types.js';
 import { JobConfig } from 'src/decorators.js';
+import { AssetProcessingStage } from 'src/dtos/asset-processing.dto.js';
 import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto.js';
 import { ImmichWorker, JobName, JobStatus, MetadataKey, QueueCleanType, QueueJobStatus, QueueName } from 'src/enum.js';
 import { ConfigRepository } from 'src/repositories/config.repository.js';
@@ -279,6 +281,33 @@ export class JobRepository {
       default: {
         return null;
       }
+    }
+  }
+
+  async getAssetProcessingFailures(ids: string[]): Promise<AssetProcessingStage[][]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    const queue = this.getQueue(QueueName.BackgroundTask);
+    const client = await queue.getBackend().client;
+    const stages = Object.values(AssetProcessingStage);
+    const keys = ids.flatMap((id) => stages.map((stage) => queue.toKey(`processing-failure:${id}:${stage}`)));
+    // BullMQ's Redis interface exposes MGET through runCommand.
+    const values = z.array(z.string().nullable()).parse(await client.runCommand('mget', keys));
+    return ids.map((_, index) =>
+      stages.filter((_, stageIndex) => values[index * stages.length + stageIndex] === 'failed'),
+    );
+  }
+
+  async setAssetProcessingFailure(id: string, stage: AssetProcessingStage, failed: boolean): Promise<void> {
+    const queue = this.getQueue(QueueName.BackgroundTask);
+    const client = await queue.getBackend().client;
+    const key = queue.toKey(`processing-failure:${id}:${stage}`);
+    if (failed) {
+      // shortcut: failures expire after seven days, use durable history if older failures need to be displayed.
+      await client.set(key, 'failed', { EX: 7 * 24 * 60 * 60 });
+    } else {
+      await client.del(key);
     }
   }
 

@@ -7,10 +7,12 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { AssetProcessingEventV1 } from 'src/dtos/asset-processing.dto.js';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
 import { AuthDto } from 'src/dtos/auth.dto.js';
 import { NotificationDto } from 'src/dtos/notification.dto.js';
 import { ReleaseEventV1, ServerVersionResponseDto } from 'src/dtos/server.dto.js';
+import { DeviceTransferResponseDto } from 'src/dtos/session.dto.js';
 import { SyncAssetEditV1, SyncAssetExifV1, SyncAssetV2 } from 'src/dtos/sync.dto.js';
 import { type AppRestartEvent, type ArgsOf, EventRepository } from 'src/repositories/event.repository.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
@@ -44,7 +46,9 @@ export interface ClientEventMap {
   on_new_release: [ReleaseEventV1];
   on_notification: [NotificationDto];
   on_session_delete: [string];
+  on_device_transfer: [DeviceTransferResponseDto];
 
+  AssetProcessingStatusV1: [AssetProcessingEventV1];
   AssetUploadReadyV2: [{ asset: SyncAssetV2; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];
   AssetEditReadyV2: [{ asset: SyncAssetV2; edit: SyncAssetEditV1[] }];
@@ -109,6 +113,23 @@ export class WebsocketRepository implements OnGatewayConnection, OnGatewayDiscon
 
   clientBroadcast<T extends keyof ClientEventMap>(event: T, ...data: ClientEventMap[T]) {
     this.server?.emit(event, ...data);
+  }
+
+  async getOnlineSessionIds(userId: string): Promise<Set<string>> {
+    const sockets = await this.server?.in(userId).fetchSockets();
+    return new Set(
+      sockets?.flatMap((socket) => [...socket.rooms].filter((room) => room !== userId && room !== socket.id)),
+    );
+  }
+
+  async sendToSession(userId: string, payload: DeviceTransferResponseDto): Promise<boolean> {
+    // shortcut: commands are not replayed after disconnects, add an expiring queue if reconnect delivery is needed.
+    const sockets = await this.server?.in(userId).fetchSockets();
+    const targets = sockets?.filter((socket) => socket.rooms.has(payload.targetSessionId)) ?? [];
+    for (const socket of targets) {
+      socket.emit('on_device_transfer', payload);
+    }
+    return targets.length > 0;
   }
 
   serverSend<T extends ServerEvents>(event: T, ...args: ArgsOf<T>): void {

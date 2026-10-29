@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, PayloadTooLargeException } from '@nestjs/common';
 import { ZipArchive } from 'archiver';
 import { ChokidarOptions, watch as chokidarWatch } from 'chokidar';
 import fastGlob from 'fast-glob';
+import { createHash } from 'node:crypto';
 import {
   Dirent,
   ReadOptionsWithBuffer,
@@ -15,6 +16,7 @@ import {
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
+import { pipeline } from 'node:stream/promises';
 import { createGunzip, createGzip } from 'node:zlib';
 import picomatch from 'picomatch';
 import { CrawlOptionsDto, WalkOptionsDto } from 'src/dtos/library.dto.js';
@@ -53,6 +55,55 @@ export interface DiskUsage {
 export class StorageRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(StorageRepository.name);
+  }
+
+  /** Hard link where the filesystem supports it (e.g. not some SMB/CIFS or exFAT mounts), otherwise copy. */
+  async linkOrCopy(source: string, target: string) {
+    try {
+      await fs.link(source, target);
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      if (code !== 'EPERM' && code !== 'ENOTSUP' && code !== 'EOPNOTSUPP' && code !== 'EXDEV' && code !== 'ENOSYS') {
+        throw error;
+      }
+      await fs.copyFile(source, target, fs.constants.COPYFILE_EXCL);
+    }
+  }
+
+  async hashFile(filepath: string) {
+    const hash = createHash('sha1');
+    for await (const chunk of createReadStream(filepath)) {
+      hash.update(chunk);
+    }
+    return hash.digest();
+  }
+
+  async writeUploadChunk(filepath: string, input: Readable, offset: number, limit: number) {
+    const file = await fs.open(filepath, 'r+');
+    let size = 0;
+    const output = file.createWriteStream({ start: offset, autoClose: false });
+    try {
+      // Discard bytes written before a crash or an aborted request but never committed in the database.
+      await file.truncate(offset);
+      await pipeline(
+        input,
+        async function* (source) {
+          for await (const chunk of source) {
+            size += chunk.length;
+            if (size > limit) {
+              throw new PayloadTooLargeException('Upload chunk exceeds limit');
+            }
+            yield chunk;
+          }
+        },
+        output,
+      );
+      await file.sync();
+      return size;
+    } finally {
+      output.destroy();
+      await file.close();
+    }
   }
 
   realpath(filepath: string) {

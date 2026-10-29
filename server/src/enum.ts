@@ -382,6 +382,7 @@ export enum StorageFolder {
 export const StorageFolderSchema = z.enum(StorageFolder).describe('Storage folder').meta({ id: 'StorageFolder' });
 
 export enum SystemMetadataKey {
+  LanIdentity = 'lan-identity',
   MediaLocation = 'MediaLocation',
   ReverseGeocodingState = 'reverse-geocoding-state',
   FacialRecognitionState = 'facial-recognition-state',
@@ -941,6 +942,7 @@ export enum JobName {
   PersonGenerateThumbnail = 'PersonGenerateThumbnail',
 
   SessionCleanup = 'SessionCleanup',
+  UploadSessionCleanup = 'UploadSessionCleanup',
 
   SendMail = 'SendMail',
 

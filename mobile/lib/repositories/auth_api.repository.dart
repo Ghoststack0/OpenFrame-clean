@@ -26,6 +26,11 @@ class AuthApiRepository extends ApiRepository {
     return _mapLoginReponse(loginResponseDto);
   }
 
+  Future<LoginResponse> redeemPairing(String code) async {
+    final dto = await checkNull(_apiService.authenticationApi.redeemPairing(PairingRedeemDto(code: code)));
+    return _mapLoginReponse(dto);
+  }
+
   Future<void> logout() async {
     if (_apiService.apiClient.basePath.isEmpty) {
       return;

@@ -133,6 +133,7 @@
         {/if}
 
         <ActionMenuItem action={Actions.AddToAlbum} />
+        <ActionMenuItem action={Actions.SendToDevice} />
         <ActionMenuItem action={Actions.RemoveFromAlbum} />
 
         <ActionMenuItem action={StackActions.AddUploads} />

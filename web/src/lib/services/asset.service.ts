@@ -15,6 +15,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountCircleOutline,
   mdiAlertOutline,
+  mdiCellphoneLink,
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
@@ -49,6 +50,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import AssetAddToAlbumModal from '$lib/modals/AssetAddToAlbumModal.svelte';
 import AssetTagModal from '$lib/modals/AssetTagModal.svelte';
+import DeviceTransferModal from '$lib/modals/DeviceTransferModal.svelte';
 import ProfileImageCropperModal from '$lib/modals/ProfileImageCropperModal.svelte';
 import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
 import { removeAssetFromAlbumMutation } from '$lib/queries/album.query';
@@ -82,6 +84,13 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
     title: $t('share'),
     icon: mdiShareVariantOutline,
     onAction: () => modalManager.show(SharedLinkCreateModal, { assetIds }),
+  };
+
+  const SendToDevice: ActionItem = {
+    title: $t('send_to_device'),
+    icon: mdiCellphoneLink,
+    $if: () => assetIds.length > 0,
+    onAction: () => modalManager.show(DeviceTransferModal, { assetIds }),
   };
 
   const RemoveFromAlbum: ActionItem = {
@@ -132,6 +141,7 @@ export const getAssetBulkActions = ($t: MessageFormatter, album?: AlbumResponseD
   return {
     AddToAlbum,
     CreateSharedLink,
+    SendToDevice,
     RemoveFromAlbum,
     Tag,
     RefreshFacesJob,
@@ -234,6 +244,13 @@ export const getAssetActions = (
     shortcuts: [{ key: 'l' }],
     $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
     onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
+  };
+
+  const SendToDevice: ActionItem = {
+    title: $t('send_to_device'),
+    icon: mdiCellphoneLink,
+    $if: () => !!authUser && !sharedLink && asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
+    onAction: () => modalManager.show(DeviceTransferModal, { assetIds: [asset.id] }),
   };
 
   const RemoveFromAlbum: ActionItem = {
@@ -374,6 +391,7 @@ export const getAssetActions = (
     StopMotionPhoto,
     PlaySlideshow,
     AddToAlbum,
+    SendToDevice,
     RemoveFromAlbum,
     ZoomIn,
     ZoomOut,

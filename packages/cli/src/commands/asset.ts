@@ -6,20 +6,23 @@ import {
   AssetUploadAction,
   AssetVisibility,
   Permission,
+  RESUMABLE_UPLOAD_THRESHOLD,
   addAssetsToAlbum,
   checkBulkUpload,
   createAlbum,
   defaults,
   getAllAlbums,
   getSupportedMediaTypes,
+  uploadResumable,
 } from '@immich/sdk';
 import byteSize from 'byte-size';
 import { Matcher, watch as watchFs } from 'chokidar';
 import { MultiBar, Presets, SingleBar } from 'cli-progress';
 import { chunk } from 'lodash-es';
 import micromatch from 'micromatch';
-import { Stats, createReadStream, existsSync } from 'node:fs';
-import { stat, unlink } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { Stats, createReadStream, existsSync, openAsBlob } from 'node:fs';
+import { mkdir, readFile, rm, stat, unlink, writeFile } from 'node:fs/promises';
 import path, { basename } from 'node:path';
 import { Queue } from 'src/queue.js';
 import { BaseOptions, Batcher, authenticate, crawl, requirePermissions, s, sha1 } from 'src/utils.js';
@@ -46,6 +49,8 @@ export interface UploadOptionsDto {
   progress?: boolean;
   watch?: boolean;
   jsonOutput?: boolean;
+  signal?: AbortSignal;
+  configDirectory?: string;
 }
 
 class UploadFile extends File {
@@ -66,7 +71,7 @@ class UploadFile extends File {
   }
 }
 
-const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
+export const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   const { newFiles, duplicates } = await checkForDuplicates(files, options);
   const newAssets = await uploadFiles(newFiles, options);
   if (options.jsonOutput) {
@@ -75,6 +80,7 @@ const uploadBatch = async (files: string[], options: UploadOptionsDto) => {
   await updateAlbums([...newAssets, ...duplicates], options);
 
   await deleteFiles(newAssets, duplicates, options);
+  return [...newAssets, ...duplicates];
 };
 
 export const startWatch = async (
@@ -83,7 +89,16 @@ export const startWatch = async (
   {
     batchSize = UPLOAD_WATCH_BATCH_SIZE,
     debounceTimeMs = UPLOAD_WATCH_DEBOUNCE_TIME_MS,
-  }: { batchSize?: number; debounceTimeMs?: number } = {},
+    onBatch = (files: string[]) => uploadBatch(files, options),
+    onRemove,
+    handleSignals = true,
+  }: {
+    batchSize?: number;
+    debounceTimeMs?: number;
+    onBatch?: (files: string[]) => Promise<unknown>;
+    onRemove?: (filepath: string) => void;
+    handleSignals?: boolean;
+  } = {},
 ) => {
   const watcherIgnored: Matcher[] = [];
   const { image, video } = await getSupportedMediaTypes();
@@ -98,7 +113,7 @@ export const startWatch = async (
     debounceTimeMs,
     onBatch: async (paths: string[]) => {
       const uniquePaths = [...new Set(paths)];
-      await uploadBatch(uniquePaths, options);
+      await onBatch(uniquePaths);
     },
   });
 
@@ -127,16 +142,21 @@ export const startWatch = async (
   })
     .on('add', onFile)
     .on('change', onFile)
+    .on('unlink', (filepath) => onRemove?.(filepath))
     .on('error', (error) => console.error(`Watcher error: ${error}`));
 
-  process.on('SIGINT', async () => {
-    console.log('Exiting...');
-    await fsWatcher.close();
-    process.exit();
-  });
+  if (handleSignals) {
+    process.on('SIGINT', async () => {
+      console.log('Exiting...');
+      await fsWatcher.close();
+      process.exit();
+    });
+  }
+  return fsWatcher;
 };
 
 export const upload = async (paths: string[], baseOptions: BaseOptions, options: UploadOptionsDto) => {
+  options = { ...options, configDirectory: baseOptions.configDirectory };
   await authenticate(baseOptions);
   await requirePermissions([Permission.AssetUpload]);
 
@@ -176,7 +196,10 @@ const scan = async (pathsToCrawl: string[], options: UploadOptionsDto) => {
   return files;
 };
 
-export const checkForDuplicates = async (files: string[], { concurrency, skipHash, progress }: UploadOptionsDto) => {
+export const checkForDuplicates = async (
+  files: string[],
+  { concurrency, skipHash, progress, signal }: UploadOptionsDto,
+) => {
   if (skipHash) {
     console.log('Skipping hash check, assuming all files are new');
     return { newFiles: files, duplicates: [] };
@@ -268,7 +291,7 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
       if (!stats) {
         throw new Error(`Stats not found for ${filepath}`);
       }
-      const dto = { id: filepath, checksum: await sha1(filepath) };
+      const dto = { id: filepath, checksum: await sha1(filepath, signal) };
 
       results.push(dto);
       checkBulkUploadRequests.push(dto);
@@ -404,12 +427,66 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
   return newAssets;
 };
 
+const resumableSessions = new Map<string, string>();
+
 const uploadFile = async (
   input: string,
   stats: Stats,
-  { visibility }: UploadOptionsDto,
+  { visibility, signal, configDirectory }: UploadOptionsDto,
 ): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
+
+  if (stats.size >= RESUMABLE_UPLOAD_THRESHOLD) {
+    const checksum = await sha1(input);
+    const metadata = {
+      filename: basename(input),
+      size: stats.size,
+      checksum,
+      fileCreatedAt: stats.mtime.toISOString(),
+      fileModifiedAt: stats.mtime.toISOString(),
+      isFavorite: false,
+      visibility,
+    };
+    const sessionKey = createHash('sha256')
+      .update(JSON.stringify([baseUrl, headers, metadata]))
+      .digest('hex');
+    const directory = configDirectory ? path.join(configDirectory, 'uploads') : undefined;
+    const sessionPath = directory ? path.join(directory, sessionKey) : undefined;
+    let sessionId = resumableSessions.get(sessionKey);
+    if (sessionPath) {
+      try {
+        sessionId = await readFile(sessionPath, 'utf8');
+      } catch (error) {
+        if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) {
+          throw error;
+        }
+      }
+    }
+    const sidecarPath = findSidecar(input);
+    const sidecar = sidecarPath ? new File([await openAsBlob(sidecarPath)], basename(sidecarPath)) : undefined;
+    return uploadResumable({
+      file: await openAsBlob(input),
+      metadata,
+      sidecar,
+      sessionId,
+      signal,
+      onSession: async (id) => {
+        if (id) {
+          resumableSessions.set(sessionKey, id);
+        } else {
+          resumableSessions.delete(sessionKey);
+        }
+        if (sessionPath && directory) {
+          if (id) {
+            await mkdir(directory, { recursive: true, mode: 0o700 });
+            await writeFile(sessionPath, id, { mode: 0o600 });
+          } else {
+            await rm(sessionPath, { force: true });
+          }
+        }
+      },
+    });
+  }
 
   const formData = new FormData();
   formData.append('fileCreatedAt', stats.mtime.toISOString());
@@ -437,6 +514,7 @@ const uploadFile = async (
     redirect: 'error',
     headers: headers as Record<string, string>,
     body: formData,
+    ...(signal && { signal: AbortSignal.any([signal, AbortSignal.timeout(30 * 60_000)]) }),
     // eslint-disable-next-line unicorn/no-null
     window: null,
   });

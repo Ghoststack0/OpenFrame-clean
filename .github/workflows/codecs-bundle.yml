@@ -1,0 +1,104 @@
+name: Portable codec bundle
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    container: ubuntu:24.04
+    timeout-minutes: 120
+    # Compiling third-party sources never holds a token that can write releases.
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install build tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl python3 build-essential cmake ninja-build git autoconf automake libtool pkg-config meson nasm dpkg-dev xz-utils unzip strace
+      - name: Build and prove relocation
+        shell: bash
+        run: bash scripts/native/build-codecs-bundle.sh /tmp/bundle-output
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: codecs-bundle
+          path: |
+            /tmp/bundle-output/codecs.tar.gz
+            /tmp/bundle-output/codecs.tar.gz.sha256
+            /tmp/bundle-output/codecs.tar.gz.json
+          if-no-files-found: error
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: codecs-bundle
+          path: /tmp/bundle-output
+      - name: Publish immutable recipe asset and print pin for review
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          key=$(python3 scripts/native/codecs-bundle.py key)
+          tag="codecs-${key:0:16}"
+          # Refuse to overwrite an existing asset for this recipe.
+          gh release create "$tag" /tmp/bundle-output/codecs.tar.gz /tmp/bundle-output/codecs.tar.gz.sha256 --target "$GITHUB_SHA" --title "$tag" --notes "Ubuntu 24.04 x86_64 codecs. Recipe $key. Add the printed pin through a reviewed PR."
+          python3 - <<'PY' | tee -a "$GITHUB_STEP_SUMMARY"
+          import json, os
+          from pathlib import Path
+          entry = json.loads(Path('/tmp/bundle-output/codecs.tar.gz.json').read_text())
+          entry['url'] = f"https://github.com/{os.environ['GH_REPO']}/releases/download/codecs-{entry['recipe_key'][:16]}/codecs.tar.gz"
+          print('Add to scripts/native/codecs-prebuilt.json through a reviewed PR:\n```json')
+          print(json.dumps(entry, indent=2))
+          print('```')
+          PY
+  runtime:
+    needs: publish
+    runs-on: ubuntu-24.04
+    container: ubuntu:24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: codecs-bundle
+          path: /tmp/bundle-output
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: codecs-bundle
+          path: /tmp/bundle-output
+      - name: Install runtime tools only (no compilers or codec packages)
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl python3 binutils libstdc++6 libgcc-s1
+      - name: Verify closure and decode in a clean runtime
+        shell: bash
+        env:
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          key=$(python3 scripts/native/codecs-bundle.py key)
+          python3 - <<'PYTHON'
+          import json, os
+          from pathlib import Path
+          metadata = Path('/tmp/bundle-output/codecs.tar.gz.json')
+          entry = json.loads(metadata.read_text())
+          entry['url'] = f"https://github.com/{os.environ['GH_REPO']}/releases/download/codecs-{entry['recipe_key'][:16]}/codecs.tar.gz"
+          metadata.write_text(json.dumps(entry))
+          PYTHON
+          time python3 scripts/native/codecs-bundle.py install /tmp/runtime-codecs /tmp/bundle-output/codecs.tar.gz.json /tmp/download-cache
+          python3 scripts/native/codecs-bundle.py check /tmp/runtime-codecs
+          python3 scripts/native/codecs-bundle.py smoke /tmp/runtime-codecs
+          python3 scripts/native/codec-parity.py /tmp/runtime-codecs /tmp/runtime-codecs /tmp/parity

@@ -6,9 +6,12 @@
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
   import DeviceCard from '$lib/components/user-settings-page/DeviceCard.svelte';
+  import { getPhonePairingActions } from '$lib/services/phone-pairing.service';
 
   const query = createPreloadedQuery(getSessionsQuery);
   const devices = $derived(query.data);
+
+  const { Connect } = $derived(getPhonePairingActions($t));
 
   let currentSession = $derived(devices.find((device) => device.current));
   let otherSessions = $derived(devices.filter((device) => !device.current));
@@ -35,6 +38,16 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <div class="flex flex-col gap-4 sm:ms-8">
+      <div class="flex justify-end">
+        <Button
+          leadingIcon={Connect.icon}
+          shape="round"
+          size="small"
+          onclick={(event: MouseEvent) => Connect.onAction({ event, action: Connect })}
+        >
+          {Connect.title}
+        </Button>
+      </div>
       {#if currentSession}
         <div class="mb-6">
           <Text class="mb-2" fontWeight="medium" size="tiny" color="primary">

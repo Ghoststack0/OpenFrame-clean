@@ -610,7 +610,7 @@ main() {
   local mode='' decided=false cli_hint
   local port=2283 yes=false resume=false reply script_dir='' source_dir platform platform_name
   local redis_server pg_bin password lan_ip='' server_url unit_dir action free_kb parent missing='' choice=0
-  local -a checks=() packages=()
+  local -a checks=() packages=() required_ports=()
   install_dir="$HOME/openframe"
   while (($#)); do
     case "$1" in
@@ -737,10 +737,12 @@ main() {
         fail "Service $action already exists." 'Existing installations are never overwritten.' "Check it with: systemctl --user status $action"
       fi
     done
+    required_ports=("$port" 5433 6380)
+    if "$with_ml"; then required_ports+=(3003); fi
     if command -v python3 >/dev/null; then
-      port_free "$port" 5433 6380 3003 2>/dev/null || fail "$(port_free "$port" 5433 6380 3003 2>&1 | tail -n 1)" \
-        "OpenFrame needs ports $port (web), 5433, 6380 and 3003 on this machine." 'Stop whatever uses it, or pick another web port with --port.'
-      checks+=("$good$g_ok$off ${mute}Ports $port, 5433, 6380 and 3003 are free$off")
+      port_free "${required_ports[@]}" 2>/dev/null || fail "$(port_free "${required_ports[@]}" 2>&1 | tail -n 1)" \
+        "OpenFrame needs ports ${required_ports[*]} on this machine." 'Stop whatever uses it, or pick another web port with --port.'
+      checks+=("$good$g_ok$off ${mute}Ports ${required_ports[*]} are free$off")
     fi
     parent="$install_dir"
     while [[ ! -d "$parent" ]]; do parent="$(dirname -- "$parent")"; done
@@ -851,7 +853,7 @@ main() {
     [[ -x "$pg_bin/$action" ]] || fail "Missing $pg_bin/$action." 'Install the PostgreSQL server and client tools.'
   done
   [[ -f "$(pg_config --sharedir)/extension/vector.control" ]] || fail 'pgvector is not installed.' 'Install the pgvector package matching your PostgreSQL version.'
-  port_free "$port" 5433 6380 3003 || fail 'A required port was taken during setup.' "Ports: $port, 5433, 6380, 3003"
+  port_free "${required_ports[@]}" || fail 'A required port was taken during setup.' "Ports: ${required_ports[*]}"
   if [[ -n "${BASH_SOURCE[0]:-}" && -f "${BASH_SOURCE[0]}" ]]; then
     script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
   fi

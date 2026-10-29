@@ -65,6 +65,7 @@ import { MoveTable } from 'src/schema/tables/move.table.js';
 import { NaturalEarthCountriesTable } from 'src/schema/tables/natural-earth-countries.table.js';
 import { NotificationTable } from 'src/schema/tables/notification.table.js';
 import { OcrSearchTable } from 'src/schema/tables/ocr-search.table.js';
+import { PairingTable } from 'src/schema/tables/pairing.table.js';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table.js';
 import { PartnerTable } from 'src/schema/tables/partner.table.js';
 import { PasskeyTable } from 'src/schema/tables/passkey.table.js';
@@ -86,6 +87,7 @@ import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table.js'
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table.js';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table.js';
 import { TagTable } from 'src/schema/tables/tag.table.js';
+import { UploadSessionTable } from 'src/schema/tables/upload-session.table.js';
 import { UserAuditTable } from 'src/schema/tables/user-audit.table.js';
 import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.table.js';
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table.js';
@@ -104,6 +106,7 @@ import { WorkflowTable } from 'src/schema/tables/workflow.table.js';
 @Database({ name: 'immich' })
 export class ImmichDatabase {
   tables = [
+    UploadSessionTable,
     ActivityTable,
     AlbumAssetTable,
     AlbumAssetAuditTable,
@@ -124,6 +127,7 @@ export class ImmichDatabase {
     AssetOcrAuditTable,
     AssetTable,
     AuthChallengeTable,
+    PairingTable,
     AssetFileTable,
     AssetExifTable,
     ClusterGroupTable,
@@ -214,6 +218,7 @@ export interface Migrations {
 export interface DB {
   kysely_migrations: { timestamp: string; name: string };
 
+  upload_session: UploadSessionTable;
   activity: ActivityTable;
 
   album: AlbumTable;
@@ -228,6 +233,7 @@ export interface DB {
   asset: AssetTable;
   asset_audit: AssetAuditTable;
   auth_challenge: AuthChallengeTable;
+  pairing: PairingTable;
   asset_edit: AssetEditTable;
   asset_edit_audit: AssetEditAuditTable;
   asset_exif: AssetExifTable;

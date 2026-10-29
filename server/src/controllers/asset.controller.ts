@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
+import { AssetProcessingStatusRequestDto, AssetProcessingStatusResponseDto } from 'src/dtos/asset-processing.dto.js';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto.js';
 import {
   AssetBulkDeleteDto,
@@ -22,13 +23,33 @@ import { AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto.js';
 import { ApiTag, Permission, RouteKey } from 'src/enum.js';
 import { Auth, Authenticated } from 'src/middleware/auth.guard.js';
+import { AssetProcessingService } from 'src/services/asset-processing.service.js';
 import { AssetService } from 'src/services/asset.service.js';
 import { UUIDParamDto } from 'src/validation.js';
 
 @ApiTags(ApiTag.Assets)
 @Controller(RouteKey.Asset)
 export class AssetController {
-  constructor(private service: AssetService) {}
+  constructor(
+    private service: AssetService,
+    private processingService: AssetProcessingService,
+  ) {}
+
+  @Post('processing-status')
+  @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
+  @HttpCode(HttpStatus.OK)
+  @Endpoint({
+    summary: 'Get asset processing status',
+    description:
+      'Retrieve processing stages for up to 100 readable assets. Rejects the entire batch if any asset is inaccessible. Recent job failures are retained for seven days.',
+    history: new HistoryBuilder().added('v3').beta('v3'),
+  })
+  getAssetProcessingStatus(
+    @Auth() auth: AuthDto,
+    @Body() dto: AssetProcessingStatusRequestDto,
+  ): Promise<AssetProcessingStatusResponseDto[]> {
+    return this.processingService.getStatus(auth, dto);
+  }
 
   @Get('statistics')
   @Authenticated({ permission: Permission.AssetStatistics })

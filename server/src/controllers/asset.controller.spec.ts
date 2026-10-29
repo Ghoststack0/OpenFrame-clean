@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { AssetController } from 'src/controllers/asset.controller.js';
 import { AssetMetadataKey } from 'src/enum.js';
+import { AssetProcessingService } from 'src/services/asset-processing.service.js';
 import { AssetService } from 'src/services/asset.service.js';
 import { factory } from 'test/small.factory.js';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.js';
@@ -8,15 +9,40 @@ import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils.
 describe(AssetController.name, () => {
   let ctx: ControllerContext;
   const service = mockBaseService(AssetService);
+  const processingService = mockBaseService(AssetProcessingService);
 
   beforeAll(async () => {
-    ctx = await controllerSetup(AssetController, [{ provide: AssetService, useValue: service }]);
+    ctx = await controllerSetup(AssetController, [
+      { provide: AssetService, useValue: service },
+      { provide: AssetProcessingService, useValue: processingService },
+    ]);
     return () => ctx.close();
   });
 
   beforeEach(() => {
     ctx.reset();
     service.resetAllMocks();
+    processingService.resetAllMocks();
+  });
+
+  describe('POST /assets/processing-status', () => {
+    it.each([[], Array.from({ length: 101 }, () => factory.uuid()), ['invalid']].map((assetIds) => [assetIds]))(
+      'rejects an invalid batch %j',
+      async (...[assetIds]) => {
+        const { status } = await request(ctx.getHttpServer()).post('/assets/processing-status').send({ assetIds });
+        expect(status).toBe(400);
+        expect(processingService.getStatus).not.toHaveBeenCalled();
+      },
+    );
+
+    it('accepts a batch of 100 IDs', async () => {
+      const assetIds = Array.from({ length: 100 }, () => factory.uuid());
+      processingService.getStatus.mockResolvedValue([]);
+      const { status, body } = await request(ctx.getHttpServer()).post('/assets/processing-status').send({ assetIds });
+      expect(status).toBe(200);
+      expect(body).toEqual([]);
+      expect(processingService.getStatus).toHaveBeenCalledWith(undefined, { assetIds });
+    });
   });
 
   describe('PUT /assets', () => {

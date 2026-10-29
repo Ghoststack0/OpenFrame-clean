@@ -207,10 +207,10 @@ export const crawl = async (options: CrawlOptions): Promise<string[]> => {
   return globbedFiles.toSorted();
 };
 
-export const sha1 = (filepath: string) => {
+export const sha1 = (filepath: string, signal?: AbortSignal) => {
   const hash = createHash('sha1');
   return new Promise<string>((resolve, reject) => {
-    const rs = createReadStream(filepath);
+    const rs = createReadStream(filepath, { signal });
     rs.on('error', reject);
     rs.on('data', (chunk) => hash.update(chunk));
     rs.on('end', () => resolve(hash.digest('hex')));

@@ -11,6 +11,28 @@ const ServerPingResponseSchema = z
   })
   .meta({ id: 'ServerPingResponse' });
 
+const ServerLanQuerySchema = z.object({
+  nonce: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .describe('Fresh random 32-byte hexadecimal challenge'),
+});
+
+const ServerIdentitySchema = z
+  .object({
+    serverId: z.string().describe('SHA-256 fingerprint of the persistent instance secret'),
+    proof: z.string().describe('HMAC-SHA256 of the nonce, in hexadecimal'),
+  })
+  .meta({ id: 'ServerIdentityResponseDto' });
+
+const ServerLanCandidatesSchema = ServerIdentitySchema.extend({
+  urls: z.array(z.string()).describe('Candidate LAN base URLs without /api, unless explicitly configured'),
+}).meta({ id: 'ServerLanCandidatesResponseDto' });
+
+export class ServerLanQueryDto extends createZodDto(ServerLanQuerySchema) {}
+export class ServerIdentityResponseDto extends createZodDto(ServerIdentitySchema) {}
+export class ServerLanCandidatesResponseDto extends createZodDto(ServerLanCandidatesSchema) {}
+
 const ServerAboutResponseSchema = z
   .object({
     version: z.string().describe('Server version'),

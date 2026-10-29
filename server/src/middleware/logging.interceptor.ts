@@ -5,7 +5,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository.js';
 
 const maxArrayLength = 100;
 const replacer = (key: string, value: unknown) => {
-  if (key.toLowerCase().includes('password')) {
+  if (key.toLowerCase().includes('password') || key === 'code') {
     return '********';
   }
 

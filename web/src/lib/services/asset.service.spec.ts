@@ -74,6 +74,23 @@ describe('AssetService', () => {
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
     });
+
+    it('should offer send to device to signed-in users on regular assets', () => {
+      authManager.setUser(userAdminFactory.build());
+      setSharedLink(undefined);
+      const asset = assetFactory.build({ isTrashed: false });
+      expect(getAssetActions(() => '', asset).SendToDevice.$if?.()).toStrictEqual(true);
+    });
+
+    it('should not offer send to device for trashed assets or shared links', () => {
+      authManager.setUser(userAdminFactory.build());
+      setSharedLink(undefined);
+      const trashed = assetFactory.build({ isTrashed: true });
+      expect(getAssetActions(() => '', trashed).SendToDevice.$if?.()).toStrictEqual(false);
+
+      setSharedLink(sharedLinkFactory.build());
+      expect(getAssetActions(() => '', assetFactory.build()).SendToDevice.$if?.()).toStrictEqual(false);
+    });
   });
 
   describe('handleDownloadAsset', () => {

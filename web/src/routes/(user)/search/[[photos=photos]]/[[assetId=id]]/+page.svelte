@@ -373,6 +373,7 @@
             <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
               <ActionMenuItem action={Actions.AddToAlbum} />
               <DownloadAction menuItem />
+              <ActionMenuItem action={Actions.SendToDevice} />
               <ChangeDate menuItem />
               <ChangeDescription menuItem />
               <ChangeLocation menuItem />
