@@ -53,7 +53,7 @@ const canonicalOutput = async (filename: string): Promise<string> => {
 export const protectExports = async (filename: string, sources: string[]) => {
   const resolved = await canonicalOutput(path.resolve(filename));
   for (const source of sources) {
-    const relative = path.relative(source, resolved);
+    const relative = path.relative(await realpath(source), resolved);
     const stats = await lstat(source);
     if (
       !relative ||

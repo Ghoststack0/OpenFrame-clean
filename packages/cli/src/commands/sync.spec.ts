@@ -151,7 +151,10 @@ describe('desktop sync', () => {
       await saveState(root, state);
       expect(await loadState(root, state.serverUrl, userId)).toEqual(state);
       const stats = await lstat(path.join(root, STATE_FILE));
-      expect(stats.mode & 0o777).toBe(0o600);
+      // Windows does not implement POSIX owner/group permission bits.
+      if (process.platform !== 'win32') {
+        expect(stats.mode & 0o777).toBe(0o600);
+      }
       expect(await readdir(root)).toEqual([STATE_FILE, 'photo.jpg']);
       await expect(loadState(root, 'https://other.test/api', userId)).rejects.toThrow('another server/account');
       await expect(loadState(root, state.serverUrl, otherId)).rejects.toThrow('another server/account');

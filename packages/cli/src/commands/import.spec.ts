@@ -1,6 +1,6 @@
 import { addAssetsToAlbum, createAlbum, getAllAlbums, updateAsset } from '@immich/sdk';
 import { createWriteStream } from 'node:fs';
-import { access, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
@@ -41,7 +41,7 @@ describe('import command', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     existingLinks.clear();
-    root = await mkdtemp(path.join(os.tmpdir(), 'import-command-test-'));
+    root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'import-command-test-')));
     source = path.join(root, 'Google Photos');
     base = { configDirectory: path.join(root, 'config') };
     progressFile = path.join(root, 'progress.json');
