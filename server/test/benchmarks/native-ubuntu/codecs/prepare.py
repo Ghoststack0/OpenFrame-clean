@@ -143,4 +143,11 @@ if not verify_only:
         text = path.read_text()
         if str(root) not in text:
             path.write_text(text.replace("/usr", str(root / "sysroot/usr")))
+if not system_libs and manifest.get("pkgConfigModules"):
+    pkgconfig = [root / "sysroot/usr/lib/x86_64-linux-gnu/pkgconfig",
+                 root / "sysroot/usr/share/pkgconfig"]
+    env = dict(os.environ, PKG_CONFIG_LIBDIR=os.pathsep.join(map(str, pkgconfig)), PKG_CONFIG_PATH="")
+    subprocess.run(["pkg-config", "--print-errors", "--exists", *manifest["pkgConfigModules"]],
+                   env=env, check=True)
+
 print("All pinned codec source and patch checksums passed." if system_libs else "All pinned codec source, patch and Ubuntu package checksums passed.")

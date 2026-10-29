@@ -971,6 +971,27 @@
       "version": "1.15-1ubuntu2",
       "file": "libxcb1_1.15-1ubuntu2_amd64.deb",
       "sha256": "e1c6611d11ad7398326f1bf028afc34c3b14c51d917a3426b966ed4b9687fa58"
+    },
+    {
+      "package": "shared-mime-info",
+      "version": "2.4-4",
+      "architecture": "amd64",
+      "file": "shared-mime-info_2.4-4_amd64.deb",
+      "sha256": "7a774ea291ab99bfa987866c6b68e825531eeea7c8a732dd47d14cf480453fda"
+    },
+    {
+      "package": "libxft-dev",
+      "version": "2.3.6-1build1",
+      "architecture": "amd64",
+      "file": "libxft-dev_2.3.6-1build1_amd64.deb",
+      "sha256": "c50b6489d22037e8e602fcf3b14c4b36b689923c1d0171eafbcae88426d1c3a9"
+    },
+    {
+      "package": "libxft2",
+      "version": "2.3.6-1build1",
+      "architecture": "amd64",
+      "file": "libxft2_2.3.6-1build1_amd64.deb",
+      "sha256": "b4f4f3255c0b8773b260c61cbe20ee7c63799cfc0e4e389fa58375dd480b093a"
     }
   ],
   "patches": [
@@ -998,5 +1019,10 @@
       "url": "https://archive.ubuntu.com/ubuntu/pool/main/t/tiff/tiff_4.5.1+git230720-4ubuntu2.5.debian.tar.xz",
       "sha256": "e3106320d41790b741b0db9a7fccf72b6a8d425743b6407e9a9dd369d958be76"
     }
+  ],
+  "pkgConfigModules": [
+    "gdk-pixbuf-2.0",
+    "librsvg-2.0",
+    "pangocairo"
   ]
 }

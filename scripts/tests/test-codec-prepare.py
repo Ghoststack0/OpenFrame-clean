@@ -17,6 +17,31 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class CodecPrepareTest(unittest.TestCase):
+    @unittest.skipUnless(shutil.which('pkg-config'), 'pkg-config is required')
+    def test_pkg_config_dependencies_are_checked_before_building(self):
+        with tempfile.TemporaryDirectory() as folder:
+            folder = Path(folder)
+            script = folder / 'prepare.py'
+            script.write_text((ROOT / 'server/test/benchmarks/native-ubuntu/codecs/prepare.py').read_text())
+            (folder / 'manifest.json').write_text(json.dumps({
+                'baseImagesCommit': 'unused', 'ubuntuPackages': [], 'sources': [], 'patches': [],
+                'pkgConfigModules': ['openframe-fixture'],
+            }))
+            codecs = folder / 'codecs'
+            metadata = codecs / 'sysroot/usr/share/pkgconfig'
+            metadata.mkdir(parents=True)
+            (metadata / 'openframe-fixture.pc').write_text(
+                'Name: fixture\nDescription: fixture\nVersion: 1\nRequires: openframe-missing\n')
+            command = [os.sys.executable, str(script)]
+            env = dict(os.environ, OPENFRAME_CODECS=str(codecs))
+            result = subprocess.run(command, env=env, text=True, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('openframe-missing', result.stderr)
+            (metadata / 'openframe-missing.pc').write_text(
+                'Name: dependency\nDescription: dependency\nVersion: 1\n')
+            result = subprocess.run(command, env=env, text=True, capture_output=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_missing_shared_runtime_is_rejected_before_compilation(self):
         with tempfile.TemporaryDirectory() as folder:
             folder = Path(folder)
