@@ -53,8 +53,9 @@ const canonicalOutput = async (filename: string): Promise<string> => {
 export const protectExports = async (filename: string, sources: string[]) => {
   const resolved = await canonicalOutput(path.resolve(filename));
   for (const source of sources) {
-    const relative = path.relative(source, resolved);
-    const stats = await lstat(source);
+    const canonicalSource = await realpath(source);
+    const relative = path.relative(canonicalSource, resolved);
+    const stats = await lstat(canonicalSource);
     if (
       !relative ||
       (stats.isDirectory() && relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
