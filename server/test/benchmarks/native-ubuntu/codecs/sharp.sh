@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
+# shellcheck source=./jobs.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/jobs.sh"
+npm_config_jobs="$(codec_build_jobs)"
+export npm_config_jobs
+if command -v ccache >/dev/null; then
+  export CC="ccache ${CC:-cc}" CXX="ccache ${CXX:-c++}"
+fi
 cd "${OPENFRAME_SOURCE:-$HOME/openframe-native-validation-20261026}"
 app="${OPENFRAME_SOURCE:-$PWD/app}"
 root="${OPENFRAME_CODECS:-$PWD/codec-build}"
@@ -16,10 +23,10 @@ mkdir -p "$root/bin"
 ln -sfn "$app/node_modules/.pnpm/node-gyp@13.1.0/node_modules/node-gyp/bin/node-gyp.js" "$root/bin/node-gyp"
 export PATH="$root/bin:$PATH"
 original=$(readlink -f "$app/server/node_modules/sharp")
-if [[ ! -d "$root/sharp-native" ]]; then
- mkdir "$root/sharp-native"
- cp -a "$original"/. "$root/sharp-native/"
-fi
+# Refresh the source on lockfile upgrades; retaining an old Sharp copy is unsafe.
+rm -rf -- "$root/sharp-native"
+mkdir "$root/sharp-native"
+cp -a "$original"/. "$root/sharp-native/"
 rm -rf -- "$root/sharp-native/node_modules"
 mkdir -p "$root/sharp-native/node_modules"
 # pnpm keeps runtime dependencies beside the original package, not inside it.

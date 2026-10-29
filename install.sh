@@ -486,7 +486,7 @@ docker_usable() {
 }
 docker_compose() { docker compose --project-directory "$install_dir" "$@"; }
 docker_install() {
-  local tag project attempt ready=false service
+  local tag project attempt ready=false
   docker_usable || fail 'Docker is unavailable.' 'Install Docker with Compose v2+ and grant your user access, or use --native.'
   for action in git curl python3 od tr; do need "$action"; done
   # shellcheck disable=SC2015 # fail exits
@@ -564,10 +564,8 @@ ENV
       sed -i 's/^\(OPENFRAME_[A-Z]*_IMAGE=.*\):commit-[0-9a-f]*$/\1:main/' "$install_dir/.env"
       run docker_compose --progress plain pull immich-server || true
     fi
-    for service in immich-server:SERVER; do
-      docker image inspect "$(sed -n "s/^OPENFRAME_${service#*:}_IMAGE=//p" "$install_dir/.env")" >/dev/null 2>&1 ||
-        unavailable+=("${service%:*}")
-    done
+    docker image inspect "$(sed -n 's/^OPENFRAME_SERVER_IMAGE=//p' "$install_dir/.env")" >/dev/null 2>&1 ||
+      unavailable+=(immich-server)
   fi
   set_state pull 'done'
   if ((${#unavailable[@]})); then
