@@ -833,6 +833,144 @@
       "architecture": "amd64",
       "file": "libltdl7_2.4.7-7build1_amd64.deb",
       "sha256": "02d0d2d7e1bf73f838a92f8df7a9b07b698c837e82bd89aee6a581cf793cd966"
+    },
+    {
+      "package": "libfontconfig1",
+      "version": "2.15.0-1.1ubuntu2",
+      "file": "libfontconfig1_2.15.0-1.1ubuntu2_amd64.deb",
+      "sha256": "a2bc05cfef021fdb84285036f98eda5ebec3c4b7a378f5aa2bdba5c4d3d8d586"
+    },
+    {
+      "package": "libfreetype6",
+      "version": "2.13.2+dfsg-1ubuntu0.2",
+      "file": "libfreetype6_2.13.2+dfsg-1ubuntu0.2_amd64.deb",
+      "sha256": "8c6d3bac5a6197fa2f48b2d56f04f3ffecaa7082eeab91b0939f97a40adc88a6"
+    },
+    {
+      "package": "libx11-6",
+      "version": "2:1.8.7-1ubuntu0.1",
+      "file": "libx11-6_2%3a1.8.7-1ubuntu0.1_amd64.deb",
+      "sha256": "9102f73477081a9a57994c80587ca9760341f644ed51bdfa46f2248083d418b3"
+    },
+    {
+      "package": "libxau6",
+      "version": "1:1.0.9-1build6",
+      "file": "libxau6_1%3a1.0.9-1build6_amd64.deb",
+      "sha256": "e40d29f1d1a62393bacaedebe0da3d9006084152a9f7e5e029293f08ce1c5c80"
+    },
+    {
+      "package": "libxdmcp6",
+      "version": "1:1.1.3-0ubuntu6",
+      "file": "libxdmcp6_1%3a1.1.3-0ubuntu6_amd64.deb",
+      "sha256": "bcd336fce11ce2a45f34d0f95e6980af22529f22147e8f98c156e5cee8ee42bb"
+    },
+    {
+      "package": "libxext6",
+      "version": "2:1.3.4-1build2",
+      "file": "libxext6_2%3a1.3.4-1build2_amd64.deb",
+      "sha256": "45783969a9ece9d7b7b733b8c60981584c53c6bc5ee3b42d295d2f80d1285679"
+    },
+    {
+      "package": "libxrender1",
+      "version": "1:0.9.10-1.1build1",
+      "file": "libxrender1_1%3a0.9.10-1.1build1_amd64.deb",
+      "sha256": "d70bd831aebe8d4834b5dd2ed98df26dd6bd27f1042c47543bd7f66df1ae22ea"
+    },
+    {
+      "package": "libcairo-gobject2",
+      "version": "1.18.0-3build1",
+      "file": "libcairo-gobject2_1.18.0-3build1_amd64.deb",
+      "sha256": "f5483cbe43455fc9e9cba7f0e166bd0a731c02db2902ba562719848f72e8c403"
+    },
+    {
+      "package": "libcairo-script-interpreter2",
+      "version": "1.18.0-3build1",
+      "file": "libcairo-script-interpreter2_1.18.0-3build1_amd64.deb",
+      "sha256": "e104466e7d816672a711db42746af528d210197231f12e3c712c06ac9a79b214"
+    },
+    {
+      "package": "libdatrie1",
+      "version": "0.2.13-3build1",
+      "file": "libdatrie1_0.2.13-3build1_amd64.deb",
+      "sha256": "1ae164e40e413eac4fbd38ce1c6ef9591f7a03278ad9076d71fa29258727f447"
+    },
+    {
+      "package": "libgraphite2-3",
+      "version": "1.3.14-2ubuntu0.24.04.1",
+      "file": "libgraphite2-3_1.3.14-2ubuntu0.24.04.1_amd64.deb",
+      "sha256": "2413ea0f6670d6610ee7c2f550551d69fa341f4b9c78e20eb397f0d1bbe914cb"
+    },
+    {
+      "package": "libharfbuzz-cairo0",
+      "version": "8.3.0-2build2",
+      "file": "libharfbuzz-cairo0_8.3.0-2build2_amd64.deb",
+      "sha256": "44017a53403de66b4fdfe8aeb59782a36d6278965eb39c73a74ccb421236dca5"
+    },
+    {
+      "package": "libharfbuzz-gobject0",
+      "version": "8.3.0-2build2",
+      "file": "libharfbuzz-gobject0_8.3.0-2build2_amd64.deb",
+      "sha256": "852ead77ff5695f7e5ccde583d2339fde63220f8fc60a507278918db551a56ce"
+    },
+    {
+      "package": "libharfbuzz-icu0",
+      "version": "8.3.0-2build2",
+      "file": "libharfbuzz-icu0_8.3.0-2build2_amd64.deb",
+      "sha256": "9098670758e60b190d7edf367ad57e954bfc1b2a616def3f4e281062e036a843"
+    },
+    {
+      "package": "libharfbuzz-subset0",
+      "version": "8.3.0-2build2",
+      "file": "libharfbuzz-subset0_8.3.0-2build2_amd64.deb",
+      "sha256": "acd9db760e372a931ae04d834998366fb50717e1ba590c987224b3b72b2e411d"
+    },
+    {
+      "package": "libmd0",
+      "version": "1.1.0-2build1.1",
+      "file": "libmd0_1.1.0-2build1.1_amd64.deb",
+      "sha256": "e5ba01d3c41f256aaf57ec59aa0554857162e3e7f97cdfbff1ed2c0e8d720ee7"
+    },
+    {
+      "package": "libpangoxft-1.0-0",
+      "version": "1.52.1+ds-1build1",
+      "file": "libpangoxft-1.0-0_1.52.1+ds-1build1_amd64.deb",
+      "sha256": "ec0d4711e958ab6dc09ad52b48c55f8d8a549e73e8b19eb2cf483b2cfd0e57ab"
+    },
+    {
+      "package": "libthai0",
+      "version": "0.1.29-2build1",
+      "file": "libthai0_0.1.29-2build1_amd64.deb",
+      "sha256": "5ada7045c5f84a4b774e6449151800aa6470e8d01dc9d6124ef4a44ae6af5508"
+    },
+    {
+      "package": "libtiffxx6",
+      "version": "4.5.1+git230720-4ubuntu2.5",
+      "file": "libtiffxx6_4.5.1+git230720-4ubuntu2.5_amd64.deb",
+      "sha256": "badbb2d6e939f8abe2d4062322f8efff1b525174ec8d5e86f1f7c2ea40545cc9"
+    },
+    {
+      "package": "libwebpdecoder3",
+      "version": "1.3.2-0.4build3",
+      "file": "libwebpdecoder3_1.3.2-0.4build3_amd64.deb",
+      "sha256": "b1fa298b942141acec1cf14ef70870dd43393ba28c4409c8badb6ad681753548"
+    },
+    {
+      "package": "libxcb-render0",
+      "version": "1.15-1ubuntu2",
+      "file": "libxcb-render0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "7d83a0668b1a693b5ea2e496206e8371fb6beda4c54a2b4b3902005915c272c5"
+    },
+    {
+      "package": "libxcb-shm0",
+      "version": "1.15-1ubuntu2",
+      "file": "libxcb-shm0_1.15-1ubuntu2_amd64.deb",
+      "sha256": "229d1280d459f1ba44c22939d3f9b61d9d20932d9a646b3fe4ce50be4cdf2325"
+    },
+    {
+      "package": "libxcb1",
+      "version": "1.15-1ubuntu2",
+      "file": "libxcb1_1.15-1ubuntu2_amd64.deb",
+      "sha256": "e1c6611d11ad7398326f1bf028afc34c3b14c51d917a3426b966ed4b9687fa58"
     }
   ],
   "patches": [

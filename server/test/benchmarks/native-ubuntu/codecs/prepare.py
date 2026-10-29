@@ -95,6 +95,14 @@ for package in ([] if system_libs else manifest["ubuntuPackages"]):
         subprocess.run(["dpkg-deb", "-x", path, root / "sysroot"], check=True)
         extracted.write_text(package["sha256"])
 
+# Reject incomplete development packages before compiling any native library.
+if not system_libs:
+    dangling = sorted(str(p.relative_to(root / "sysroot"))
+                      for p in (root / "sysroot").rglob("*.so")
+                      if p.is_symlink() and not p.exists())
+    if dangling:
+        raise SystemExit("Missing shared runtime targets in sysroot:\n" + "\n".join(dangling))
+
 base = f"https://raw.githubusercontent.com/immich-app/base-images/{manifest['baseImagesCommit']}/server/sources/"
 downloads = [(s["url"], root / "sources" / s["archive"], s["sha256"]) for s in manifest["sources"]]
 downloads += [(base + p["path"], root / p["path"], p["sha256"]) for p in manifest["patches"]]
