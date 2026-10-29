@@ -133,6 +133,7 @@
 
         <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
           <DownloadAction menuItem />
+          <ActionMenuItem action={Actions.SendToDevice} />
           <ActionMenuItem action={StackActions.Stack} />
           <ActionMenuItem action={StackActions.Unstack} />
           {#if isLinkActionAvailable}

@@ -374,8 +374,12 @@ export type AdminConfigReverseGeocodingDto = {
     enabled: boolean;
 };
 export type AdminConfigServerDto = {
+    /** Advertise private interface addresses using the server port */
+    autoDetectLocalUrls?: boolean;
     /** External domain */
     externalDomain: string;
+    /** LAN base URLs, including any reverse proxy path. Only disclosed to authenticated users */
+    localUrls?: string[];
     /** Login page message */
     loginPageMessage: string;
     /** Public users */
@@ -1181,6 +1185,47 @@ export type AssetMetadataBulkResponseDto = {
         [key: string]: any;
     };
 };
+export type AssetProcessingStatusRequestDto = {
+    /** Between 1 and 100 readable asset IDs */
+    assetIds: string[];
+};
+export type AssetProcessingStatusResponseDto = {
+    assetId: string;
+    stages: {
+        stage: AssetProcessingStage;
+        state: AssetProcessingState;
+    }[];
+};
+export type ResumableUploadCreateDto = {
+    /** Hex or base64 SHA1 */
+    checksum: string;
+    /** Duration in milliseconds (for videos) */
+    duration?: number;
+    /** File creation date */
+    fileCreatedAt: string;
+    /** File modification date */
+    fileModifiedAt: string;
+    filename: string;
+    /** Mark as favorite */
+    isFavorite?: boolean;
+    /** Live photo video ID */
+    livePhotoVideoId?: string;
+    /** Asset metadata items */
+    metadata?: AssetMetadataUpsertItemDto[];
+    size: number;
+    visibility?: AssetVisibility;
+};
+export type ResumableUploadResponseDto = {
+    chunkSize: number;
+    expiresAt: string;
+    id: string;
+    offset: number;
+    size: number;
+};
+export type ResumableUploadFinalizeDto = {
+    /** Sidecar file data */
+    sidecarData?: Blob;
+};
 export type ExifResponseDto = {
     /** City name */
     city?: string | null;
@@ -1495,6 +1540,18 @@ export type LogoutResponseDto = {
     redirectUri: string;
     /** Logout successful */
     successful: boolean;
+};
+export type PairingResponseDto = {
+    code: string;
+    expiresAt: string;
+    id: string;
+    serverUrls: string[];
+};
+export type PairingRedeemDto = {
+    code: string;
+};
+export type PairingStatusDto = {
+    status: PairingState;
 };
 export type PinCodeResetDto = {
     /** User password (required if PIN code is not provided) */
@@ -2918,6 +2975,20 @@ export type ServerFeaturesDto = {
     /** Whether trash feature is enabled */
     trash: boolean;
 };
+export type ServerIdentityResponseDto = {
+    /** HMAC-SHA256 of the nonce, in hexadecimal */
+    proof: string;
+    /** SHA-256 fingerprint of the persistent instance secret */
+    serverId: string;
+};
+export type ServerLanCandidatesResponseDto = {
+    /** HMAC-SHA256 of the nonce, in hexadecimal */
+    proof: string;
+    /** SHA-256 fingerprint of the persistent instance secret */
+    serverId: string;
+    /** Candidate LAN base URLs without /api, unless explicitly configured */
+    urls: string[];
+};
 export type LicenseKeyDto = {
     /** Activation key */
     activationKey: string;
@@ -3038,6 +3109,29 @@ export type SessionCreateResponseDto = {
     token: string;
     /** Last update date */
     updatedAt: string;
+};
+export type DeviceTransferDto = {
+    action: DeviceTransferAction;
+    assetIds: string[];
+    targetSessionId: string;
+};
+export type DeviceTransferResponseDto = {
+    action: DeviceTransferAction;
+    assetIds: string[];
+    /** Transfer ID */
+    id: string;
+    sentAt: string;
+    sourceSessionId: string;
+    targetSessionId: string;
+};
+export type SessionTargetResponseDto = {
+    /** Device name inferred from existing session metadata */
+    deviceName: string;
+    deviceOS: string;
+    deviceType: string;
+    id: string;
+    /** Friendly device label including a short session ID */
+    label: string;
 };
 export type SessionUpdateDto = {
     /** Reset pending sync state */
@@ -3386,6 +3480,11 @@ export type WorkflowShareResponseDto = {
     steps: WorkflowShareStepDto[];
     /** Workflow trigger type */
     trigger: WorkflowTrigger;
+};
+export type AssetProcessingEventV1 = {
+    assetId: string;
+    stage: AssetProcessingStage;
+    state: AssetProcessingState;
 };
 export type LicenseResponseDto = UserLicense;
 export type ReleaseEventV1 = {
@@ -4912,6 +5011,26 @@ export function updateBulkAssetMetadata({ assetMetadataBulkUpsertDto }: {
     })));
 }
 /**
+ * Get asset processing status
+ */
+export function getAssetProcessingStatus({ key, slug, assetProcessingStatusRequestDto }: {
+    key?: string;
+    slug?: string;
+    assetProcessingStatusRequestDto: AssetProcessingStatusRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetProcessingStatusResponseDto[];
+    }>(`/assets/processing-status${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: assetProcessingStatusRequestDto
+    })));
+}
+/**
  * Get asset statistics
  */
 export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
@@ -4929,6 +5048,90 @@ export function getAssetStatistics({ isFavorite, isTrashed, visibility }: {
     }))}`, {
         ...opts
     }));
+}
+/**
+ * Create resumable upload
+ */
+export function createUpload({ key, slug, resumableUploadCreateDto }: {
+    key?: string;
+    slug?: string;
+    resumableUploadCreateDto: ResumableUploadCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: ResumableUploadResponseDto;
+    }>(`/assets/uploads${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: resumableUploadCreateDto
+    })));
+}
+/**
+ * Query resumable upload offset
+ */
+export function headUpload({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/assets/uploads/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "HEAD"
+    }));
+}
+/**
+ * Append resumable upload chunk
+ */
+export function patchUpload({ contentType, uploadOffset, id, key, slug, body }: {
+    contentType: "application/offset+octet-stream";
+    uploadOffset: number;
+    id: string;
+    key?: string;
+    slug?: string;
+    body: Blob;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ResumableUploadResponseDto;
+    }>(`/assets/uploads/${encodeURIComponent(id)}${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts,
+        method: "PATCH",
+        body,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "Content-Type": contentType,
+            "Upload-Offset": uploadOffset
+        })
+    }));
+}
+/**
+ * Finalize resumable upload
+ */
+export function finalizeUpload({ id, key, slug, resumableUploadFinalizeDto }: {
+    id: string;
+    key?: string;
+    slug?: string;
+    resumableUploadFinalizeDto: ResumableUploadFinalizeDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetMediaResponseDto;
+    }>(`/assets/uploads/${encodeURIComponent(id)}/finalize${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.multipart({
+        ...opts,
+        method: "POST",
+        body: resumableUploadFinalizeDto
+    })));
 }
 /**
  * Retrieve an asset
@@ -5271,6 +5474,46 @@ export function logout(opts?: Oazapfts.RequestOpts) {
     }>("/auth/logout", {
         ...opts,
         method: "POST"
+    }));
+}
+/**
+ * Create phone pairing code
+ */
+export function createPairing(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: PairingResponseDto;
+    }>("/auth/pairing", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Redeem phone pairing code
+ */
+export function redeemPairing({ pairingRedeemDto }: {
+    pairingRedeemDto: PairingRedeemDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: LoginResponseDto;
+    }>("/auth/pairing/redeem", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: pairingRedeemDto
+    })));
+}
+/**
+ * Get phone pairing status
+ */
+export function getPairingStatus({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: PairingStatusDto;
+    }>(`/auth/pairing/${encodeURIComponent(id)}`, {
+        ...opts
     }));
 }
 /**
@@ -6970,6 +7213,36 @@ export function getServerFeatures(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Verify server identity
+ */
+export function getServerIdentity({ nonce }: {
+    nonce: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerIdentityResponseDto;
+    }>(`/server/identity${QS.query(QS.explode({
+        nonce
+    }))}`, {
+        ...opts
+    }));
+}
+/**
+ * Get LAN candidates
+ */
+export function getLanCandidates({ nonce }: {
+    nonce: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ServerLanCandidatesResponseDto;
+    }>(`/server/lan-candidates${QS.query(QS.explode({
+        nonce
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Delete server product key
  */
 export function deleteServerLicense(opts?: Oazapfts.RequestOpts) {
@@ -7117,6 +7390,32 @@ export function createSession({ sessionCreateDto }: {
         method: "POST",
         body: sessionCreateDto
     })));
+}
+/**
+ * Send assets to another session
+ */
+export function sendToDevice({ deviceTransferDto }: {
+    deviceTransferDto: DeviceTransferDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: DeviceTransferResponseDto;
+    }>("/sessions/send-to-device", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: deviceTransferDto
+    })));
+}
+/**
+ * List online target sessions
+ */
+export function getDeviceTargets(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: SessionTargetResponseDto[];
+    }>("/sessions/targets", {
+        ...opts
+    }));
 }
 /**
  * Delete a session
@@ -8499,6 +8798,20 @@ export enum AssetJobName {
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
 }
+export enum AssetProcessingStage {
+    Uploaded = "uploaded",
+    Metadata = "metadata",
+    Thumbnails = "thumbnails",
+    Video = "video",
+    SmartSearch = "smartSearch",
+    Faces = "faces"
+}
+export enum AssetProcessingState {
+    Pending = "pending",
+    Complete = "complete",
+    Skipped = "skipped",
+    Failed = "failed"
+}
 export enum PersonUserRole {
     Read = "read",
     Write = "write",
@@ -8524,6 +8837,12 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
+}
+export enum PairingState {
+    Pending = "pending",
+    Redeemed = "redeemed",
+    Expired = "expired",
+    Locked = "locked"
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
@@ -8655,6 +8974,7 @@ export enum JobName {
     PersonFileMigration = "PersonFileMigration",
     PersonGenerateThumbnail = "PersonGenerateThumbnail",
     SessionCleanup = "SessionCleanup",
+    UploadSessionCleanup = "UploadSessionCleanup",
     SendMail = "SendMail",
     SidecarQueueAll = "SidecarQueueAll",
     SidecarCheck = "SidecarCheck",
@@ -8692,6 +9012,10 @@ export enum SearchSuggestionType {
     CameraMake = "camera-make",
     CameraModel = "camera-model",
     CameraLensModel = "camera-lens-model"
+}
+export enum DeviceTransferAction {
+    Open = "open",
+    Download = "download"
 }
 export enum SharedLinkType {
     Album = "ALBUM",

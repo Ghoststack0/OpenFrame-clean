@@ -4,6 +4,8 @@ import { JobRepository } from 'src/repositories/job.repository.js';
 
 export const newJobRepositoryMock = (): Mocked<RepositoryInterface<JobRepository>> => {
   return {
+    getAssetProcessingFailures: vitest.fn().mockImplementation((ids: string[]) => ids.map(() => [])),
+    setAssetProcessingFailure: vitest.fn(),
     setup: vitest.fn(),
     startWorkers: vitest.fn(),
     watchWorkers: vitest.fn(),

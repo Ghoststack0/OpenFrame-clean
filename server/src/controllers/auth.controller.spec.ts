@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import request from 'supertest';
 import { AuthController } from 'src/controllers/auth.controller.js';
 import { LoginResponseDto } from 'src/dtos/auth.dto.js';
@@ -88,6 +88,47 @@ describe(AuthController.name, () => {
       expect(status).toEqual(400);
       expect(body).toEqual(errorDto.badRequest('Admin setup is not available'));
       expect(service.adminSignUp).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('phone pairing endpoints', () => {
+    const id = '11111111-1111-4111-8111-111111111111';
+    const code = `${id}.${'A'.repeat(43)}`;
+
+    it('requires authentication to issue and poll codes', async () => {
+      ctx.authenticate.mockRejectedValue(new UnauthorizedException());
+      const issued = await request(ctx.getHttpServer()).post('/auth/pairing');
+      const polled = await request(ctx.getHttpServer()).get(`/auth/pairing/${id}`);
+      expect(issued.status).toBe(401);
+      expect(polled.status).toBe(401);
+      expect(service.createPairing).not.toHaveBeenCalled();
+      expect(service.getPairingStatus).not.toHaveBeenCalled();
+    });
+
+    it('rejects malformed codes without echoing them', async () => {
+      const response = await request(ctx.getHttpServer())
+        .post('/auth/pairing/redeem')
+        .send({ code: `${code}.invalid` });
+      expect(response.status).toBe(400);
+      expect(JSON.stringify(response.body)).not.toContain(code);
+      expect(service.redeemPairing).not.toHaveBeenCalled();
+    });
+
+    it('accepts unauthenticated redemption and reads mobile device headers', async () => {
+      service.redeemPairing.mockResolvedValue(mediumFactory.loginResponse());
+      const response = await request(ctx.getHttpServer())
+        .post('/auth/pairing/redeem')
+        .set('deviceModel', 'iPhone')
+        .set('deviceType', 'iOS')
+        .send({ code });
+      expect(response.status).toBe(200);
+      expect(response.headers['cache-control']).toBe('no-store');
+      expect(ctx.authenticate).not.toHaveBeenCalled();
+      expect(service.redeemPairing).toHaveBeenCalledWith(
+        { code },
+        expect.objectContaining({ deviceOS: 'iOS', deviceType: 'iPhone' }),
+      );
+      expect(response.body.accessToken).toEqual(expect.any(String));
     });
   });
 

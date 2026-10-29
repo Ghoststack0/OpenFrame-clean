@@ -47,6 +47,9 @@ export const newStorageRepositoryMock = (): Mocked<RepositoryInterface<StorageRe
   StorageCore.setMediaLocation('/data');
 
   return {
+    linkOrCopy: vitest.fn(),
+    hashFile: vitest.fn(),
+    writeUploadChunk: vitest.fn(),
     createZipStream: vitest.fn(),
     createPlainReadStream: vitest.fn(),
     createReadStream: vitest.fn(),

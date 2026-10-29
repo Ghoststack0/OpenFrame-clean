@@ -1,4 +1,6 @@
-import { derived, get, writable } from 'svelte/store';
+import { derived, get, readonly, writable } from 'svelte/store';
+import { assetProcessingStore } from '$lib/stores/asset-processing';
+import { uploadedAssets } from '$lib/stores/upload-processing';
 import { UploadState, type UploadAsset } from '$lib/types';
 
 export type UploadProgress = {
@@ -61,6 +63,7 @@ function createUploadStore() {
     items.some((item) => item.state === UploadState.ERROR || item.state === UploadState.DUPLICATED),
   );
   const settledBytes = writable(0);
+  const concurrency = writable(2);
   const progress = derived([uploadAssets, settledBytes], ([$items, $settled]) => getUploadProgress($items, $settled));
   const settle = (items: UploadAsset[]) => {
     const bytes = items.reduce((sum, item) => sum + item.file.size, 0);
@@ -97,14 +100,16 @@ function createUploadStore() {
     });
   };
 
-  const updateProgress = (id: string, loaded: number, total: number) => {
+  const updateProgress = (id: string, loaded: number, total: number, uploadedBeforeStart = 0) => {
     updateAssetMap(id, (v) => {
-      const uploadSpeed = v.startDate ? loaded / ((Date.now() - v.startDate) / 1000) : 0;
+      const uploadSpeed = v.startDate
+        ? Math.max(0, loaded - uploadedBeforeStart) / Math.max(0.001, (Date.now() - v.startDate) / 1000)
+        : 0;
       return {
         ...v,
         progress: Math.floor((loaded / total) * 100),
         speed: uploadSpeed,
-        eta: Math.ceil((total - loaded) / uploadSpeed),
+        eta: uploadSpeed > 0 ? Math.ceil((total - loaded) / uploadSpeed) : 0,
       };
     });
   };
@@ -128,6 +133,11 @@ function createUploadStore() {
   };
 
   const updateItem = (id: string, partialObject: Partial<UploadAsset>) => {
+    const item = partialObject.assetId ? get(uploadAssets).find((item) => item.id === id) : undefined;
+    if (partialObject.assetId && item && partialObject.state !== UploadState.DUPLICATED) {
+      uploadedAssets.add(partialObject.assetId, item.file);
+      assetProcessingStore.track(partialObject.assetId);
+    }
     updateAssetMap(id, (v) => ({ ...v, ...partialObject }));
   };
 
@@ -182,6 +192,8 @@ function createUploadStore() {
     stats.set({ errors: 0, duplicates: 0, success: 0, total: 0 });
   };
 
+  const setConcurrency = (value: number) => concurrency.set(value);
+
   const track = (value: 'success' | 'duplicate' | 'error') => {
     stats.update((stats) => {
       switch (value) {
@@ -211,6 +223,8 @@ function createUploadStore() {
     remainingUploads,
     isDismissible,
     isUploading,
+    concurrency: readonly(concurrency),
+    setConcurrency,
     track,
     dismissErrors,
     reset,

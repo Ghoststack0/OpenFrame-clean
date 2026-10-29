@@ -4,6 +4,7 @@ import { ApiKeyService } from 'src/services/api-key.service.js';
 import { ApiService } from 'src/services/api.service.js';
 import { AssetFileService } from 'src/services/asset-file.service.js';
 import { AssetMediaService } from 'src/services/asset-media.service.js';
+import { AssetProcessingService } from 'src/services/asset-processing.service.js';
 import { AssetService } from 'src/services/asset.service.js';
 import { AuthAdminService } from 'src/services/auth-admin.service.js';
 import { AuthService } from 'src/services/auth.service.js';
@@ -30,6 +31,7 @@ import { PasskeyService } from 'src/services/passkey.service.js';
 import { PersonService } from 'src/services/person.service.js';
 import { PluginService } from 'src/services/plugin.service.js';
 import { QueueService } from 'src/services/queue.service.js';
+import { ResumableUploadService } from 'src/services/resumable-upload.service.js';
 import { SearchService } from 'src/services/search.service.js';
 import { ServerService } from 'src/services/server.service.js';
 import { SessionService } from 'src/services/session.service.js';
@@ -54,6 +56,7 @@ import { WorkflowExecutionService } from 'src/services/workflow-execution.servic
 import { WorkflowService } from 'src/services/workflow.service.js';
 
 export const services = [
+  ResumableUploadService,
   ApiKeyService,
   ActivityService,
   AlbumService,
@@ -61,6 +64,7 @@ export const services = [
   AssetFileService,
   AssetMediaService,
   AssetService,
+  AssetProcessingService,
   AuthService,
   AuthAdminService,
   CliService,

@@ -82,10 +82,15 @@ class ApiService {
   Future<String> resolveAndSetEndpoint(String serverUrl) async {
     final endpoint = await resolveEndpoint(serverUrl);
     setEndpoint(endpoint);
-
-    // Save in local database for next startup
     await Store.put(StoreKey.serverEndpoint, endpoint);
     return endpoint;
+  }
+
+  /// Activates an already verified API URL for native uploads and API requests.
+  Future<void> activateEndpoint(String endpoint) async {
+    setEndpoint(endpoint);
+    await Store.put(StoreKey.serverEndpoint, endpoint);
+    await updateHeaders();
   }
 
   /// Takes a server URL and attempts to resolve the API endpoint.
@@ -171,6 +176,10 @@ class ApiService {
 
   static List<String> getServerUrls() {
     final urls = <String>[];
+    final publicUrl = Store.tryGet(StoreKey.serverUrl);
+    if (publicUrl != null && publicUrl.isNotEmpty) {
+      urls.add(publicUrl);
+    }
     final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
     if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
       urls.add(serverEndpoint);

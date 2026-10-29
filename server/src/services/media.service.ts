@@ -639,6 +639,18 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
+  isVideoConversionRequired(
+    config: ConfigFFmpegDto,
+    videoStream: VideoStreamInfo,
+    format: VideoFormat,
+    audioStream?: AudioStreamInfo,
+  ): boolean {
+    return (
+      this.getTranscodeTarget(config, videoStream, audioStream) !== TranscodeTarget.None ||
+      this.isRemuxRequired(config, format)
+    );
+  }
+
   private getTranscodeTarget(
     config: ConfigFFmpegDto,
     videoStream: VideoStreamInfo,

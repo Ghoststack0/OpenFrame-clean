@@ -3,9 +3,12 @@ import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import type { AuthDto } from 'src/dtos/auth.dto.js';
 import { Endpoint, HistoryBuilder } from 'src/decorators.js';
 import {
+  DeviceTransferDto,
+  DeviceTransferResponseDto,
   SessionCreateDto,
   SessionCreateResponseDto,
   SessionResponseDto,
+  SessionTargetResponseDto,
   SessionUpdateDto,
 } from 'src/dtos/session.dto.js';
 import { ApiTag, Permission } from 'src/enum.js';
@@ -17,6 +20,30 @@ import { UUIDParamDto } from 'src/validation.js';
 @Controller('sessions')
 export class SessionController {
   constructor(private service: SessionService) {}
+
+  @Get('targets')
+  @Authenticated({ permission: Permission.SessionRead })
+  @Endpoint({
+    summary: 'List online target sessions',
+    description: 'List other online sessions belonging to the signed-in user. Requires a session token.',
+    history: new HistoryBuilder().added('v3.3.0'),
+  })
+  getDeviceTargets(@Auth() auth: AuthDto): Promise<SessionTargetResponseDto[]> {
+    return this.service.getTargets(auth);
+  }
+
+  @Post('send-to-device')
+  @HttpCode(HttpStatus.OK)
+  @Authenticated({ permission: Permission.SessionRead })
+  @Endpoint({
+    summary: 'Send assets to another session',
+    description:
+      'Send 1 to 100 accessible assets to another online session of the same user via on_device_transfer. Requires a session token. Returns 404 for an unavailable session and 409 for an offline target. Delivery is ephemeral and best effort, with no acknowledgement or offline replay.',
+    history: new HistoryBuilder().added('v3.3.0'),
+  })
+  sendToDevice(@Auth() auth: AuthDto, @Body() dto: DeviceTransferDto): Promise<DeviceTransferResponseDto> {
+    return this.service.sendToDevice(auth, dto);
+  }
 
   @Post()
   @Authenticated({ permission: Permission.SessionCreate })

@@ -5,6 +5,7 @@
   import AvatarEditModal from '$lib/modals/AvatarEditModal.svelte';
   import HelpAndFeedbackModal from '$lib/modals/HelpAndFeedbackModal.svelte';
   import { Route } from '$lib/route';
+  import { getPhonePairingActions } from '$lib/services/phone-pairing.service';
   import { getAboutInfoQuery } from '$lib/queries/server.query';
   import { Button, Icon, IconButton, modalManager } from '@immich/ui';
   import { createQuery } from '@tanstack/svelte-query';
@@ -21,6 +22,8 @@
 
   const query = createQuery(getAboutInfoQuery);
   const info = $derived(query.data);
+
+  const { Connect } = $derived(getPhonePairingActions($t));
 </script>
 
 <div
@@ -69,6 +72,24 @@
         <div class="flex place-content-center place-items-center gap-2 px-2 text-center">
           <Icon icon={mdiCog} size="18" aria-hidden />
           {$t('account_settings')}
+        </div>
+      </Button>
+      <Button
+        onclick={(event: MouseEvent) => {
+          onClose?.();
+          void Connect.onAction({ event, action: Connect });
+        }}
+        size="small"
+        color="secondary"
+        variant="ghost"
+        shape="round"
+        class="border hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:bg-gray-500 dark:text-white dark:hover:bg-immich-dark-primary/50"
+      >
+        <div class="flex place-content-center place-items-center gap-2 px-2 text-center">
+          {#if Connect.icon}
+            <Icon icon={Connect.icon} size="18" aria-hidden />
+          {/if}
+          {Connect.title}
         </div>
       </Button>
       {#if authManager.user.isAdmin}

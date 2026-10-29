@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getUploadProgress, uploadAssetsStore } from '$lib/stores/upload';
 import { UploadState, type UploadAsset } from '$lib/types';
 
@@ -45,6 +45,21 @@ describe('getUploadProgress', () => {
 
 describe('uploadAssetsStore.progress', () => {
   beforeEach(() => uploadAssetsStore.reset());
+
+  it('counts resumed bytes in progress without counting them as transferred this run', () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
+    try {
+      uploadAssetsStore.addItem(asset('resume', 1000));
+      uploadAssetsStore.markStarted('resume');
+      now.mockReturnValue(3000);
+      uploadAssetsStore.updateProgress('resume', 500, 1000, 500);
+      expect(get(uploadAssetsStore)[0].eta).toBe(0);
+      uploadAssetsStore.updateProgress('resume', 600, 1000, 500);
+      expect(get(uploadAssetsStore.progress)).toEqual({ loaded: 600, total: 1000, percent: 60, speed: 50 });
+    } finally {
+      now.mockRestore();
+    }
+  });
 
   it('does not move backwards when a finished upload is removed', () => {
     uploadAssetsStore.addItem(asset('a', 100));

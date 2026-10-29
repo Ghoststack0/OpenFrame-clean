@@ -51,7 +51,7 @@ const AssetMediaBaseSchema = z.object({
     .meta({ type: 'string', format: 'binary', [ApiCustomExtension.Required]: true }),
 });
 
-const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
+export const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
   isFavorite: stringToBool.optional().describe('Mark as favorite'),
   visibility: AssetVisibilitySchema.optional(),
   livePhotoVideoId: z.uuidv4().optional().describe('Live photo video ID'),

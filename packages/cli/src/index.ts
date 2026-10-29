@@ -5,7 +5,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { upload } from 'src/commands/asset.js';
 import { login, logout } from 'src/commands/auth.js';
+import { importExport } from 'src/commands/import.js';
 import { serverInfo } from 'src/commands/server-info.js';
+import { sync } from 'src/commands/sync.js';
 import { version } from '../package.json';
 
 const defaultConfigDirectory = path.join(os.homedir(), '.config/immich/');
@@ -47,7 +49,11 @@ program
   .usage('[paths...] [options]')
   .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
   .addOption(new Option('-i, --ignore <pattern>', 'Pattern to ignore').env('IMMICH_IGNORE_PATHS'))
-  .addOption(new Option('--skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
+  .addOption(
+    new Option('--skip-hash', 'Skip duplicate checks; large resumable uploads still require a checksum')
+      .env('IMMICH_SKIP_HASH')
+      .default(false),
+  )
   .addOption(new Option('-H, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
   .addOption(
     new Option('-a, --album', 'Automatically create albums based on folder name')
@@ -95,5 +101,55 @@ program
   )
   .argument('[paths...]', 'One or more paths to assets to be uploaded')
   .action((paths, options) => upload(paths, program.opts(), options));
+
+const importCommand = program.command('import').description('Import a Google Takeout or iCloud Photos export');
+for (const format of ['takeout', 'icloud'] as const) {
+  const command = importCommand
+    .command(format)
+    .description(
+      `Import ${format === 'takeout' ? 'Google Takeout folders or archive parts' : 'an extracted iCloud Photos folder'}`,
+    )
+    .argument(format === 'takeout' ? '<paths...>' : '<folder>', 'Export paths')
+    .option('-n, --dry-run', 'Scan without connecting or uploading; write a JSON report')
+    .option('--progress-file <file>', 'Local resume state (default: config-directory/imports)')
+    .option('--report <file>', 'New JSON problem report (default: config-directory/imports)');
+  if (format === 'takeout') {
+    command
+      .option('--include-partner', 'Include items marked as partner-shared')
+      .option('--include-trashed', 'Import trashed items as ordinary assets');
+  }
+  command.action(async (inputs: string | string[], options) => {
+    try {
+      await importExport(format, typeof inputs === 'string' ? [inputs] : inputs, program.opts(), options);
+    } catch (error) {
+      console.error(String(error));
+      process.exitCode = 1;
+    }
+  });
+}
+
+program
+  .command('sync')
+  .description('Keep a local folder in sync with OpenFrame (uploads and watches by default)')
+  .argument('<folder>', 'Existing local folder, scanned recursively')
+  .option('--once', 'Run one sync pass and exit')
+  .option('--download', 'Also download missing originals from your library')
+  .option('--download-album <name>', 'Download only from the album with this exact name')
+  .option('--template <template>', 'Download path template in UTC', 'YYYY/MM/{originalFileName}')
+  .option('-a, --album', 'Automatically create upload albums based on folder name')
+  .addOption(new Option('-A, --album-name <name>', 'Add uploaded assets to this album').conflicts('album'))
+  .option('-i, --ignore <pattern>', 'Upload pattern to ignore')
+  .option('-H, --include-hidden', 'Include hidden files and folders in uploads')
+  .option('--propagate-local-deletions', 'Move previously synced assets to server trash when removed locally')
+  .option('--propagate-server-deletions', 'Delete unchanged synced local files when trashed or deleted on the server')
+  .option('-n, --dry-run', 'Show planned transfers and deletions without changing files or the server')
+  .action(async (folder, options) => {
+    try {
+      await sync(folder, program.opts(), { ...options, concurrency: 1 });
+    } catch (error) {
+      console.error(`Sync failed: ${error}`);
+      process.exitCode = 1;
+    }
+  });
 
 program.parse(process.argv);
