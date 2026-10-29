@@ -167,7 +167,6 @@ jobs:
       context: machine-learning
       dockerfile: machine-learning/Dockerfile
       platforms: ${{ matrix.platforms }}
-      runner-mapping: ${{ matrix.runner-mapping }}
       suffixes: ${{ matrix.suffixes }}
       tags: &tag-rules |
         type=ref,event=branch,enable=${{ !startsWith(github.ref, 'refs/heads/release/') }}
