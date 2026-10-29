@@ -1,6 +1,6 @@
 import { addAssetsToAlbum, createAlbum, getAllAlbums, updateAsset } from '@immich/sdk';
 import { createWriteStream } from 'node:fs';
-import { access, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, readdir, readFile, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { pipeline } from 'node:stream/promises';
@@ -41,7 +41,7 @@ describe('import command', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     existingLinks.clear();
-    root = await realpath(await mkdtemp(path.join(os.tmpdir(), 'import-command-test-')));
+    root = await mkdtemp(path.join(os.tmpdir(), 'import-command-test-'));
     source = path.join(root, 'Google Photos');
     base = { configDirectory: path.join(root, 'config') };
     progressFile = path.join(root, 'progress.json');
@@ -139,7 +139,8 @@ describe('import command', () => {
     );
     const journal = await readFile(progressFile, 'utf8');
     expect(
-      JSON.parse(journal.trim().split('\n').at(-1) ?? '').assets[path.join(source, 'Trip', 'a.jpg')].completed,
+      JSON.parse(journal.trim().split('\n').at(-1) ?? '').assets[await realpath(path.join(source, 'Trip', 'a.jpg'))]
+        .completed,
     ).toBeUndefined();
     await importExport('takeout', [source], base, { progressFile });
     expect(uploadImportFile).toHaveBeenCalledTimes(1);
@@ -223,7 +224,7 @@ describe('import command', () => {
       importExport('takeout', [source], base, { dryRun: true, progressFile: path.join(source, 'new.json') }),
     ).rejects.toThrow('outside the export');
     const alias = path.join(root, 'alias');
-    await symlink(source, alias);
+    await symlink(source, alias, 'dir');
     await expect(protectExports(path.join(alias, 'new', 'report.json'), [source])).rejects.toThrow(
       'outside the export',
     );
