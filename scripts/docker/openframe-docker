@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+dir="$(dirname -- "$(readlink -f -- "${BASH_SOURCE[0]}")")"
+[[ -f "$dir/.openframe-docker" && -f "$dir/.env" && -f "$dir/compose.yml" ]] || { echo 'Not an installer-managed Docker installation.' >&2; exit 1; }
+compose() { docker compose --project-directory "$dir" "$@"; }
+ml_enabled() { grep -qx "IMMICH_MACHINE_LEARNING_ENABLED=true" "$dir/.env"; }
+case "${1:-help}" in
+  ml-setup)
+    ml_enabled || exit 0
+    compose --profile ml pull immich-machine-learning
+    compose --profile ml up -d --no-deps immich-machine-learning
+    ;;
+  status) compose ps ;;
+  logs) shift; compose logs --follow "$@" ;;
+  restart) compose up -d --pull never --no-build; compose restart; if ml_enabled; then nohup "$dir/openframe" ml-setup > "$dir/ml-setup.log" 2>&1 </dev/null & disown; fi ;;
+  stop) compose stop ;;
+  update)
+    # Install pins the exact commit; updates follow the newest published main build.
+    sed -i 's/^\(OPENFRAME_[A-Z]*_IMAGE=.*\):commit-[0-9a-f]*$/\1:main/' "$dir/.env"
+    compose pull immich-server || { echo 'Could not download the update. Nothing was changed.' >&2; exit 1; }
+    # Like native updates, keep the three newest database backups from before an update.
+    mkdir -p "$dir/backups"
+    backup="$dir/backups/openframe-$(date +%Y%m%d-%H%M%S).sql.gz"
+    # shellcheck disable=SC2016 # POSTGRES_USER expands inside the database container
+    if compose exec -T database sh -c 'pg_dumpall --clean --if-exists -U "$POSTGRES_USER"' | gzip > "$backup.tmp"; then
+      mv -- "$backup.tmp" "$backup"
+      echo "Backed up the database: $backup"
+      find "$dir/backups" -maxdepth 1 -name 'openframe-*.sql.gz' -printf '%T@ %p\n' | sort -rn | tail -n +4 | cut -d' ' -f2- |
+        while IFS= read -r old; do rm -f -- "$old"; done
+    else
+      rm -f -- "$backup.tmp"
+      echo 'Could not back up the database, so nothing was changed. Is OpenFrame running?' >&2
+      exit 1
+    fi
+    compose up -d --no-build
+    if ml_enabled; then nohup "$dir/openframe" ml-setup > "$dir/ml-setup.log" 2>&1 </dev/null & disown; fi
+    ;;
+  uninstall)
+    shift
+    mode='' yes=false asked=false
+    for arg in "$@"; do
+      case "$arg" in
+        --keep-data|--erase-everything)
+          [[ -z "$mode" || "$mode" == "$arg" ]] || { echo 'Choose one data option.' >&2; exit 1; }
+          mode="$arg" ;;
+        --yes) yes=true ;;
+        *) echo "Unknown option: $arg" >&2; exit 1 ;;
+      esac
+    done
+    if [[ -z "$mode" ]]; then
+      printf '1 Keep photos and database (default)\n2 Erase everything\n3 Cancel\n'
+      read -r -p 'Choose [1]: ' answer </dev/tty
+      asked=true
+      case "$answer" in ''|1) mode=--keep-data ;; 2) mode=--erase-everything ;; *) exit 0 ;; esac
+    fi
+    if ! "$yes"; then
+      if [[ "$mode" == --erase-everything ]]; then
+        read -r -p "Permanently delete photos and database in $dir? Type ERASE: " answer </dev/tty
+        [[ "$answer" == ERASE ]] || exit 0
+      elif ! "$asked"; then
+        read -r -p 'Remove the app and keep your data? [y/N] ' answer </dev/tty
+        [[ "$answer" == [yY]* ]] || exit 0
+      fi
+    fi
+    compose --profile ml down --remove-orphans
+    if [[ "$mode" == --erase-everything ]]; then
+      [[ "$dir" != / && "$dir" != "$HOME" && ! -d "$dir/.git" ]] || { echo 'Refusing unsafe erase path.' >&2; exit 1; }
+      # PostgreSQL files belong to the container user. Delete only these fixed
+      # bind mounts using the already-installed database image, without host sudo.
+      compose run --rm --no-deps --user 0 --entrypoint sh database -c 'find /var/lib/postgresql/data -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +'
+      compose run --rm --no-deps --user 0 --entrypoint sh immich-server -c 'find /data -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +'
+      if ml_enabled; then compose --profile ml run --rm --no-deps --user 0 --entrypoint sh immich-machine-learning -c 'find /cache -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +'; fi
+      compose --profile ml down --remove-orphans
+    fi
+    if [[ "$(readlink "$HOME/.local/bin/openframe" || true)" == "$dir/openframe" ]]; then rm -- "$HOME/.local/bin/openframe"; fi
+    if [[ "$mode" == --erase-everything ]]; then rm -rf -- "$dir"; else echo "Kept photos, database and configuration in $dir"; fi
+    ;;
+  help|--help|-h) echo 'openframe status | logs [service] | restart | stop | update | uninstall [--keep-data|--erase-everything] [--yes]'; echo 'Update backs up the database, then moves to the newest published OpenFrame images.' ;;
+  *) echo "Unknown command: $1" >&2; exit 1 ;;
+esac

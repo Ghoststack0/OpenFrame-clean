@@ -1,0 +1,11 @@
+services:
+  immich-server:
+    build:
+      context: ${OPENFRAME_SOURCE:?Set OPENFRAME_SOURCE}
+      dockerfile: server/Dockerfile
+  immich-machine-learning:
+    build:
+      context: ${OPENFRAME_SOURCE:?Set OPENFRAME_SOURCE}/machine-learning
+      dockerfile: Dockerfile
+      args:
+        DEVICE: cpu
