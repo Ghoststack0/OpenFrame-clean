@@ -57,3 +57,17 @@ jobs:
             BUILD_SOURCE_REF=${{ github.ref_name }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+      - name: Verify published images allow anonymous installation
+        if: github.event_name != 'pull_request'
+        env:
+          PUBLISHED_TAGS: ${{ steps.meta.outputs.tags }}
+        run: |
+          set -euo pipefail
+          anonymous_config=$(mktemp -d)
+          trap 'rm -rf -- "$anonymous_config"' EXIT
+          while IFS= read -r tag; do
+            if ! docker --config "$anonymous_config" manifest inspect "$tag" >/dev/null; then
+              echo "::error::Published image $tag cannot be downloaded anonymously. Check package visibility before offering it to installers."
+              exit 1
+            fi
+          done <<< "$PUBLISHED_TAGS"
